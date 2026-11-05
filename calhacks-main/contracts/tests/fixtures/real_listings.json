@@ -1,0 +1,71 @@
+[
+ {
+  "listing": {
+   "listing_id": "R-0001",
+   "seller": {
+    "id": "seller_orbit_01",
+    "domain": "orbitgoods.example",
+    "pay_to": "0x1111aAaA2222bBbB3333cCcC4444dDdD5555eEe1"
+   },
+   "item": {
+    "id": "wh1000xm5-blk-u",
+    "product_key": "headphones-sony-wh1000xm5-black",
+    "condition": "used",
+    "price": 175.0,
+    "text": "Sony WH-1000XM5 Wireless Headphones, Black. Used, light scuffs on headband, battery holds ~25h. Case and cable included."
+   },
+   "reviews": [
+    "Arrived quickly, exactly as described.",
+    "Some wear but sounds great."
+   ],
+   "checkout": {
+    "pay_to": "0x1111aAaA2222bBbB3333cCcC4444dDdD5555eEe1",
+    "amount": "175000000",
+    "network": "eip155:84532",
+    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "item_id": "wh1000xm5-blk-u",
+    "max_timeout_seconds": 120
+   }
+  },
+  "mandate": {
+   "product_key": "headphones-sony-wh1000xm5-black",
+   "max_price": 218.75,
+   "spend_remaining": 1000.0
+  }
+ },
+ {
+  "listing": {
+   "listing_id": "R-0002",
+   "seller": {
+    "id": "seller_maple_02",
+    "domain": "maplemarket.example",
+    "pay_to": "0x6666fFfF7777aAaA8888bBbB9999cCcC0000dDd2"
+   },
+   "item": {
+    "id": "75192-new",
+    "product_key": "lego-75192-millennium-falcon",
+    "condition": "new",
+    "price": 699.0,
+    "text": "LEGO Star Wars 75192 Millennium Falcon UCS. New, factory sealed. Ships in original box."
+   },
+   "reviews": [
+    "Box was perfect.",
+    "Seller answered questions fast.",
+    "Great packing."
+   ],
+   "checkout": {
+    "pay_to": "0x6666fFfF7777aAaA8888bBbB9999cCcC0000dDd2",
+    "amount": "699000000",
+    "network": "eip155:84532",
+    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "item_id": "75192-new",
+    "max_timeout_seconds": 120
+   }
+  },
+  "mandate": {
+   "product_key": "lego-75192-millennium-falcon",
+   "max_price": 873.75,
+   "spend_remaining": 1000.0
+  }
+ }
+]

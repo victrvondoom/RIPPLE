@@ -1,0 +1,114 @@
+{
+  "$defs": {
+    "FailureCluster": {
+      "additionalProperties": false,
+      "properties": {
+        "cause": {
+          "title": "Cause",
+          "type": "string"
+        },
+        "family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Family"
+        },
+        "count": {
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "example_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Example Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cause",
+        "count"
+      ],
+      "title": "FailureCluster",
+      "type": "object"
+    },
+    "FeatureChange": {
+      "additionalProperties": false,
+      "properties": {
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "add",
+            "modify",
+            "remove"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature",
+        "action",
+        "rationale"
+      ],
+      "title": "FeatureChange",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The part of the round report the coordinator LLM writes itself (structured output).",
+  "properties": {
+    "failures_by_cluster": {
+      "items": {
+        "$ref": "#/$defs/FailureCluster"
+      },
+      "title": "Failures By Cluster",
+      "type": "array"
+    },
+    "feature_changes": {
+      "items": {
+        "$ref": "#/$defs/FeatureChange"
+      },
+      "title": "Feature Changes",
+      "type": "array"
+    },
+    "train_params": {
+      "additionalProperties": true,
+      "title": "Train Params",
+      "type": "object"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "failures_by_cluster",
+    "feature_changes"
+  ],
+  "title": "CoordinatorOutput",
+  "type": "object"
+}

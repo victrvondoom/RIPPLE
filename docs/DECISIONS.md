@@ -1,0 +1,23 @@
+# Decisions
+- **D-1 Deterministic analyzers first.** Agents are rule-based so the whole workflow is reproducible, testable and honest without API keys. A model provider abstraction exists but only rewrites client-email wording, with facts verified to survive, and is labelled.
+- **D-2 `node:sqlite`.** Zero native deps, embedded persistence, works with Node ≥ 22.13. Trade-off: Node marks it experimental (warning on start). Swap-point is `db/db.ts`.
+- **D-3 Hono + React/Vite, hash routing.** Small surface, single deployable (API serves the built UI). No router library needed for 8 views.
+- **D-4 Packs as code objects.** Declarative rules + analyzers type-checked against one interface; the DB stores per-workspace role→user mapping only.
+- **D-5 Verification by read-back, not by report.** Connectors expose `observe()`; engine ignores the executor's own return value for success.
+- **D-6 Staleness re-proposes rather than silently revalidates.** Old actions become `stale`; new proposals need fresh approval unless identical content was already verified.
+- **D-7 Local connectors only.** No real email/chat is sent in this build; modes are labelled in UI and evidence. Real connectors would implement the same `Connector` interface.
+- **D-8 Switch: one RIPPLE agent + registered role agents.** Per the protocol docs Switch agents are registered out of band and invited via `create_room.agent_names`; RIPPLE addresses them with `send_targeted_message`. Authoritative analysis remains RIPPLE-side; Switch replies are advisory (recorded, never state-changing).
+- **D-9 Completion needs human review items + acks.** Qualified reviews (e.g. allergen review) are `review` work items and gate completion; routine tasks are recorded as unresolved follow-ups rather than gating.
+- **D-10 Docs source for Switch.** `docs.switchagents.ai` was unreachable from the build sandbox; the official repo `sandbox-quantum/switch` (commit 473c2e6) `docs/official/` + `core/.../operations/definitions.py` were read instead.
+- **D-11 Packs derive status from evidence only.** SubmitReady/MoveMate/InvoiceGuard compute requirement/obligation/discrepancy status from recorded data; "complete" without evidence stays incomplete; N/A claims need a human answer.
+- **D-12 Transparent heuristics over opaque scoring.** PodFlow highlight scores and ShiftRelay urgency scores are small additive rules whose reasons are shown to users; they are deterministic and unit-tested, not validated on real data.
+- **D-13 Approvals bound to what was shown.** PodFlow's clip approval key embeds a fingerprint of the candidate set, so a revised transcript cannot inherit an old approval.
+- **D-14 Different approval levels.** Routine communications need a manager; commercial commitments (ScopeGuard change order) need the workspace owner. The engine enforces it; the UI explains it.
+- **D-15 Readiness packs complete only on evidence-backed state.** Consequence: they need a follow-up submission. Accepted trade-off (limitation 5 in progress.md) rather than letting a mission complete with open obligations.
+- **D-16 Cross-domain = shared platform, not shared data.** Missions of different packs share the workspace, people, approval queue, Control Center and audit infrastructure but never each other's plan data; tests assert this.
+- **D-17 Switch postponed.** No work on real Switch this phase; local mode and mock-tested adapter untouched.
+- **D-18 One orchestrator, dependency-driven re-runs.** The engine dispatches role tasks; a role re-runs only when its fingerprint changes (its declared inputs or its dependencies' outputs). Requests are messages that are honoured only when the target's inputs changed. Chosen over free-form agent chat so that every re-run has a recorded reason.
+- **D-19 Bounded loops with escalation.** MAX_PASSES = 3 per analysis revision. On the bound the mission is blocked for a human with an explicit question. No automatic retry beyond the bound.
+- **D-20 Validated output before state.** Agent output is checked for identity, schema and references before drafts, questions or actions are created. Rejection is an audited event plus a blocking human question, not a silent drop.
+- **D-21 Orchestration events reuse the audit log.** `orch_*` audit rows instead of a parallel event table, to avoid duplicate state.
+- **D-22 Switch heartbeat echoes the server generation.** Switch 0.31.0 announces `generation` on connection_state and fences heartbeats with it (switch-core ConnectionBeatRequest). The adapter now echoes it when present and omits it otherwise.

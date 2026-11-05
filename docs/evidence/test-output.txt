@@ -1,0 +1,22 @@
+# npm test (vitest) — 2026-11-02T07:18:19Z
+
+ RUN  v5.0.5 /home/user/fsdvsrfged
+
+
+ Test Files  12 passed (12)
+      Tests  85 passed (85)
+   Start at  07:18:20
+   Duration  6.94s (tests 87%, import 11%, transform 2%)
+
+    Isolate  12 workers spawned · ~140ms startup each (spawn + environment, per file)
+             at least ~420ms faster with isolate: false — reuses workers across files instead of one per file
+
+
+# npm run typecheck
+> tsc --noEmit -p tsconfig.json
+
+exit=0
+# npm run lint
+> eslint src
+
+exit=0

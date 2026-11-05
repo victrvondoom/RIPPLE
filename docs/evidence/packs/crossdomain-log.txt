@@ -1,0 +1,11 @@
+Created demo missions for all 8 packs through the Workflow Packs page (labelled sample data) and ran analysis on each
+Control Center shows 16 missions across 8 domains in one table
+Domain filter: 16 → 2 (Agency Operations only)
+Status filter "Blocked": 6 mission(s) from different domains, each with its reason
+"Approval required" filter: 3 mission(s)
+Owner filter "Maya Chen": 8 missions across domains
+Recent-change filter works
+One approvals queue holds 9 approvals across domains, with manager- and owner-level requirements
+People & Agents lists the domain-specific owners and every pack’s agent roles
+Work Graph selector lists 16 analysed missions
+No unexpected browser console errors

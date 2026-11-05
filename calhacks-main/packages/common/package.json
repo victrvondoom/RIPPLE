@@ -1,0 +1,27 @@
+{
+  "name": "@calhacks/common",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./document": "./src/Document.tsx",
+    "./db": "./src/db.ts",
+    "./market": "./src/market.ts",
+    "./dates": "./src/dates.ts",
+    "./x402": "./src/x402.ts",
+    "./base.css": "./src/base.css",
+    "./next-config": "./next-config.mjs",
+    "./eslint-config": "./eslint-config.mjs"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*"
+  },
+  "dependencies": {
+    "@x402/core": "^2.28.0",
+    "@x402/evm": "^2.28.0",
+    "@x402/next": "^2.28.0",
+    "mongodb": "^7.7.0",
+    "server-only": "^0.0.1"
+  }
+}

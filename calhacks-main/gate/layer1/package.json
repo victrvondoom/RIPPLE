@@ -1,0 +1,21 @@
+{
+  "name": "@calhacks/gate-layer1",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Layer 1 of the payment Gate: fixed rules that are never learned and never overridden.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "gate-l1": "node src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

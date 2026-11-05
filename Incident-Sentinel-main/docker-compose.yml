@@ -1,0 +1,22 @@
+services:
+  infrastructure-simulator:
+    build: .
+    container_name: sentinel-infra
+    command: python -m uvicorn mock_infrastructure:app --host 0.0.0.0 --port 8090
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  mcp-tools:
+    build: .
+    container_name: sentinel-mcp
+    command: python mcp_sentinel_tools.py
+    environment:
+      - INFRA_API=http://infrastructure-simulator:8090
+    depends_on:
+      infrastructure-simulator:
+        condition: service_healthy

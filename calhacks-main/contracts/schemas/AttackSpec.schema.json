@@ -1,0 +1,99 @@
+{
+  "additionalProperties": false,
+  "description": "An order for test listings, sent to the Bitdeer attack factory.",
+  "properties": {
+    "spec_id": {
+      "title": "Spec Id",
+      "type": "string"
+    },
+    "family": {
+      "description": "Scam family from families.json, or 'legit_hard'",
+      "title": "Family",
+      "type": "string"
+    },
+    "n": {
+      "maximum": 500,
+      "minimum": 1,
+      "title": "N",
+      "type": "integer"
+    },
+    "legit_ratio": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Legit Ratio",
+      "type": "number"
+    },
+    "mode": {
+      "enum": [
+        "mutate_real",
+        "generate"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "base_listing_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Base Listing Ids",
+      "type": "array"
+    },
+    "target_weakness": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Weakness"
+    },
+    "attacker_knowledge": {
+      "default": "blind",
+      "enum": [
+        "blind",
+        "white_box"
+      ],
+      "title": "Attacker Knowledge",
+      "type": "string"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model"
+    },
+    "temperature": {
+      "anyOf": [
+        {
+          "maximum": 2,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Temperature"
+    }
+  },
+  "required": [
+    "spec_id",
+    "family",
+    "n",
+    "legit_ratio",
+    "mode"
+  ],
+  "title": "AttackSpec",
+  "type": "object"
+}

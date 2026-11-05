@@ -1,0 +1,16 @@
+{
+  "name": "@calhacks/amazon",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "@calhacks/common": "*"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*"
+  }
+}

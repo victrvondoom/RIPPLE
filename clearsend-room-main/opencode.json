@@ -1,0 +1,6 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+  "small_model": "openrouter/google/gemma-4-31b-it:free",
+  "instructions": ["AGENTS.md", "docs/skills/*.md"]
+}

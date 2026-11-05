@@ -1,0 +1,11 @@
+InvoiceGuard: mission created from the sample plan (Draft)
+Baseline v1 approved and saved
+Impact graph rendered and node highlighting works
+Agent findings show domain-specific results
+Approved 2 proposed action(s) after reading exact content
+Actions executed; each independently verified (state Verifying)
+Early completion REFUSED by the server with a visible checklist
+ravi: acknowledged transfers / completed review items assigned to them
+maya: acknowledged transfers / completed review items assigned to them
+Completion criteria satisfied → Completed with outcome record and new baseline
+No unexpected browser console errors (401 pre-login probe and deliberate 4xx refusals excluded)

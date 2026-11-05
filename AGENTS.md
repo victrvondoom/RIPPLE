@@ -1,0 +1,64 @@
+# AGENTS.md — RIPPLE
+
+Read this first. Then read `progress.md` (resume point) and `docs/ARCHITECTURE.md`.
+
+## Product vision
+RIPPLE is one centralized workflow & intervention platform: *one change → every consequence identified → every responsible person coordinated → every approved action verified.* It is NOT a chatbot or a generic task manager. One engine, one data model, one dependency graph, one approval/action/evidence ledger; **domain packs are configuration**, never separate apps.
+
+## Architecture (one line each — details in docs/ARCHITECTURE.md)
+- `src/server/engine/` mission engine (state machine, baselines, changes, analysis orchestration, approvals, actions, verification, completion). **Pack-agnostic.**
+- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry, inherited from competitor projects; see `docs/INHERITANCE.md`) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
+- `src/server/collab/` `CollabPort` boundary; `local.ts` (labelled local mode), `switch.ts` (Switch agent-protocol adapter).
+- `src/server/connectors/` file-backed local connectors (document store, internal outbox, email dry-run) with idempotency + read-back `observe()`.
+- `src/server/agents/provider.ts` model-provider abstraction (deterministic default; optional Anthropic wording-only).
+- `src/server/api/` Hono HTTP API + read models (`snapshot.ts`). `src/server/db/` SQLite (`node:sqlite`).
+- `src/web/` React UI (no business logic; it renders server read models).
+
+## Conventions
+- TypeScript strict. Business rules live in `engine/` or `packs/`, never in React components.
+- Every tenant-owned row has `workspace_id`; every query filters by it. Never add an unscoped query on tenant tables.
+- State changes ONLY via `Engine.transition()` (validated by `engine/states.ts`) and always audited.
+- New domain = new `WorkflowPack` object registered in `packs/registry.ts`. If you need to change the engine for a pack, ask whether the abstraction is wrong first.
+- Agent/analyzer output is structured (`RoleResult`) and labelled with its analyzer id; deterministic vs model output must stay distinguishable.
+
+## Run / test
+```bash
+npm install
+npm run start          # builds the web app and serves everything on http://localhost:8787
+npm test               # vitest (engine, packs, API, Switch adapter vs mock)
+npm run typecheck && npm run lint
+scripts/fresh-server.sh && node scripts/e2e.mjs            # BEO + SceneShift browser journey on a throw-away DB
+node scripts/e2e-packs.mjs <scopeguard|invoiceguard|shiftrelay|movemate|podflow|submitready>   # one pack's browser journey
+node scripts/e2e-crossdomain.mjs                           # all packs in one Control Center
+```
+Dev users (password `RIPPLE_SEED_PASSWORD`, default `ripple-demo`): maya@ (manager), luis@ (chef), priya@, dan@, sam@ (owner), vera@ (viewer) `@harborvine.example`.
+
+## Adding or changing a pack (read before touching `packs/`)
+A pack is one `WorkflowPack` object (`engine/types.ts`): schemas, roles + `roleOrder`, artifact catalog, propagation `rules`/`artifactEdges`/`decisions`, `detectChanges(plan, change, answers)`, `applyChange`, `analyzeRole` (returns `RoleResult` via the `Out` builder in `packs/common.ts`), optional `parseAnswer`, `verifyAction(action, observed, revisedPlan, ctx)`, `completionChecks(ctx)`, `labels`. Rules of thumb: derive statuses only from recorded data/evidence; ask a *blocking* question (and propose no actions) when a human decision is missing; keep question keys stable per decision (bind approvals to what was shown, see PodFlow `clip_selection_<fp>`); state the limits of what the pack did not do in its drafts; write a `verifyAction` that re-checks the *domain promise* (e.g. no price in client message); never branch on pack id in the engine/UI. Map every human role in `seed.ts` and add pack tests (the cross-domain test enforces sample validity and no orphan roles).
+
+## Hard rules — no fake functionality, no false completion claims
+1. Switch integration is POSTPONED. Never claim a Switch connection works unless it was exercised against a real Switch server; today it has only been tested against a **mock of the documented protocol** (`tests/switch.test.ts`). Say so.
+2. An action is `verified` only when `Engine.verifyAction` independently re-reads the real effect. Never set action status from an agent's claim.
+3. A mission completes only through `evaluateCompletion` (all criteria met). Do not bypass it.
+4. Agents may flag allergen risks / missing info for qualified human review. They must never certify food safety (a verifier check also enforces wording).
+5. Connectors are local/dry-run. Do not describe them as sending real email/chat or paying/submitting anything. Packs must never claim a requirement is satisfied without recorded evidence, never promise price/dates (ScopeGuard), never move money or accuse (InvoiceGuard), never give legal conclusions (MoveMate), never claim media was processed (PodFlow).
+6. Do not claim tests/e2e passed without running them; paste real output into `docs/TESTING.md`/`progress.md`.
+7. No secrets in git. `.env` is ignored; `.env.example` documents variables.
+8. Label limitations honestly (see "Known limitations" in `progress.md`).
+
+## Current implementation status
+See `progress.md` (authoritative) and `docs/IMPLEMENTATION_PLAN.md`.
+
+## Reality Gap Engine (session 7) — read docs/REALITY_GAP_ENGINE.md
+- `src/server/reality/` holds the intended/declared/observed comparison, gap classes, counterfactual recovery, passports and the RIGOR benchmark. Connected systems are the **Reality Lab sandbox**, which must always be labelled as not production.
+- Rules:
+  - never mark an operation VERIFIED without an independent read;
+  - never retry an EXECUTION_UNKNOWN write before a read-back;
+  - approvals bind to plan/recovery hashes;
+  - RIGOR metrics must stay computed from `bench_cases` rows;
+  - scenario `truth` is for the scorer only, and the engine must never read `lab_effects` or `Lab.truth()`.
+
+## Orchestration (session 5)
+- `src/server/engine/orchestrator.ts` holds the Mission Orchestrator rules (fingerprints, output validation, MAX_PASSES). `Engine.orchestrate()` persists role tasks in `workflow_tasks`. Packs declare `roleDeps` and optional `roleInputs`; they never need to change the engine.
+- Agents are deterministic analyzers. A role re-runs only when its inputs changed. Agent requests are honoured only when the target's inputs changed. The loop stops at MAX_PASSES and escalates to a human.
+- Switch is still POSTPONED: the installed 0.31.0 was stopped and not connected. See docs/SWITCH.md.

@@ -1,0 +1,40 @@
+import { useState } from 'react';
+import { fmtTime, useApi } from '../api';
+import { Empty, ErrorView, Loading, StateBadge, Status, STATE_NAME } from '../components/ui';
+import type { Me } from '../App';
+
+const Section = ({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) => <div className="card"><div className="row between"><h2>{title}</h2>{count !== undefined && <span className="badge">{count}</span>}</div>{children}</div>;
+export function ControlCenter({ me }: { me: Me }) {
+  const { data, error, loading, reload } = useApi<any>('/overview', 5000);
+  const [f, setF] = useState({ domain: '', state: '', owner: '', approval: false, stuck: false, recent: '' });
+  if (loading && !data) return <Loading />; if (error) return <ErrorView error={error} retry={reload} />; if (!data) return null;
+  const active = data.missions.filter((m: any) => !['completed', 'cancelled', 'draft'].includes(m.state));
+  const dom = [...new Set<string>(data.missions.map((m: any) => m.domain))]; const owners = [...new Set<string>(data.missions.flatMap((m: any) => m.owners))];
+  const cutoff = f.recent ? Date.now() - Number(f.recent) * 3600_000 : 0;
+  const shown = data.missions.filter((m: any) => (!f.domain || m.domain === f.domain) && (!f.state || m.state === f.state) && (!f.owner || m.owners.includes(f.owner)) && (!f.approval || m.pending_approvals > 0) && (!f.stuck || ['blocked', 'recovery_required'].includes(m.state) || m.overdue > 0) && (!cutoff || (m.last_change_at && Date.parse(m.last_change_at) >= cutoff)));
+  const link = (m: any) => <a href={`#/mission/${m.id}`}>{m.title}</a>;
+  return <>
+    <div className="row between"><div><h1>Control Center</h1><p className="muted" style={{ margin: 0 }}>{me.workspace.name} · collaboration: <strong>{me.collab.mode === 'switch' ? 'Switch' : 'LOCAL mode (not Switch)'}</strong></p></div><a className="btn primary" href="#/missions">New / open missions</a></div>
+    <div className="grid g4" style={{ margin: '14px 0' }}>
+      {[['Active missions', active.length], ['Awaiting approval', data.awaitingApproval.length], ['Blocked', data.blocked.length], ['Failed / stale actions', data.problemActions.length]].map(([l, n]) => <div className="card" key={l as string} style={{ marginBottom: 0 }}><div className="muted small">{l}</div><div className="stat">{n}</div></div>)}
+    </div>
+    <div className="card"><div className="row between"><h2>All missions across domains ({shown.length}/{data.missions.length})</h2>
+      <div className="row" role="search" aria-label="Mission filters">
+        <select aria-label="Domain" value={f.domain} onChange={(e) => setF({ ...f, domain: e.target.value })} style={{ width: 'auto' }}><option value="">All domains</option>{dom.map((d) => <option key={d}>{d}</option>)}</select>
+        <select aria-label="Status" value={f.state} onChange={(e) => setF({ ...f, state: e.target.value })} style={{ width: 'auto' }}><option value="">Any status</option>{Object.entries(STATE_NAME).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+        <select aria-label="Owner" value={f.owner} onChange={(e) => setF({ ...f, owner: e.target.value })} style={{ width: 'auto' }}><option value="">Any owner</option>{owners.map((o) => <option key={o}>{o}</option>)}</select>
+        <select aria-label="Recent change" value={f.recent} onChange={(e) => setF({ ...f, recent: e.target.value })} style={{ width: 'auto' }}><option value="">Any time</option><option value="24">Changed in 24h</option><option value="168">Changed in 7d</option></select>
+        <label className="inline" style={{ margin: 0 }}><input type="checkbox" checked={f.approval} onChange={(e) => setF({ ...f, approval: e.target.checked })} />Approval required</label>
+        <label className="inline" style={{ margin: 0 }}><input type="checkbox" checked={f.stuck} onChange={(e) => setF({ ...f, stuck: e.target.checked })} />Blocked / overdue</label></div></div>
+      {shown.length ? <div className="table-wrap"><table><thead><tr><th>Mission</th><th>Domain</th><th>State</th><th>Approvals</th><th>Open work</th><th>Owners</th><th>Last change</th></tr></thead><tbody>{shown.map((m: any) => <tr key={m.id}><td>{link(m)}<div className="small muted">{m.pack_name}</div></td><td className="small">{m.domain}</td><td><StateBadge state={m.state} />{m.overdue > 0 && <span className="badge b-bad" style={{ marginLeft: 4 }}>{m.overdue} overdue</span>}</td><td>{m.pending_approvals || '—'}</td><td>{m.open_work || '—'}</td><td className="small">{m.owners.join(', ') || '—'}</td><td className="small">{fmtTime(m.last_change_at)}</td></tr>)}</tbody></table></div> : <Empty>No missions match these filters.</Empty>}</div>
+    <div className="grid g2">
+      <Section title="Blocked missions" count={data.blocked.length + data.recovery.length}>{[...data.blocked, ...data.recovery].length ? <ul className="list">{[...data.blocked, ...data.recovery].map((m: any) => <li key={m.id}><div className="row between">{link(m)}<StateBadge state={m.state} /></div><div className="small muted">{m.state_reason}</div></li>)}</ul> : <Empty>Nothing is blocked.</Empty>}</Section>
+      <Section title="Awaiting approval" count={data.pendingApprovals.length}>{data.pendingApprovals.length ? <ul className="list">{data.pendingApprovals.map((a: any) => <li key={a.id}><a href={`#/mission/${a.mission_id}`}>{a.title}</a><div className="small muted">{a.mission_title} · needs {a.required_role}</div></li>)}</ul> : <Empty>No approvals pending.</Empty>}</Section>
+      <Section title="Recent changes" count={data.recentChanges.length}>{data.recentChanges.length ? <ul className="list">{data.recentChanges.map((c: any) => <li key={c.id}><div className="row between"><span>Change #{c.seq} · <a href={`#/mission/${c.mission_id}`}>{c.mission_title}</a></span><Status s={c.status} /></div><div className="small muted">{c.items.map((i: any) => `${i.label}: ${i.before} → ${i.after}`).join(' · ')} · {fmtTime(c.created_at)}</div></li>)}</ul> : <Empty>No changes yet. Create a mission and enter a client change.</Empty>}</Section>
+      <Section title="Failed or stale actions" count={data.problemActions.length}>{data.problemActions.length ? <ul className="list">{data.problemActions.map((a: any) => <li key={a.id}><div className="row between"><a href={`#/mission/${a.mission_id}`}>{a.title}</a><Status s={a.status} /></div><div className="small muted">{a.mission_title} · {a.last_error ?? a.stale_reason}</div></li>)}</ul> : <Empty>No failed or stale actions.</Empty>}</Section>
+      <Section title="Outstanding work" count={data.outstandingWork.length}>{data.outstandingWork.length ? <div className="table-wrap"><table><thead><tr><th>Task</th><th>Dept</th><th>Owner</th><th>Mission</th></tr></thead><tbody>{data.outstandingWork.slice(0, 12).map((w: any) => <tr key={w.id}><td>{w.title}<div className="small muted">{w.kind}</div></td><td>{w.department}</td><td>{w.owner ?? '—'}</td><td><a href={`#/mission/${w.mission_id}`}>{w.mission_title}</a></td></tr>)}</tbody></table></div> : <Empty>No outstanding work.</Empty>}</Section>
+      <Section title="Recent verified outcomes" count={data.recentOutcomes.length}>{data.recentOutcomes.length ? <ul className="list">{data.recentOutcomes.map((o: any) => <li key={o.id}><a href={`#/mission/${o.mission_id}`}>{o.mission_title}</a><div className="small">{o.summary}</div><div className="small muted">Baseline v{o.new_baseline_version} · {o.unresolved.length} unresolved item(s) recorded · {fmtTime(o.created_at)}</div></li>)}</ul> : <Empty>No mission has completed yet. Completion requires verified evidence.</Empty>}</Section>
+    </div>
+    {data.openQuestions.length > 0 && <Section title="Open questions needing a human" count={data.openQuestions.length}><ul className="list">{data.openQuestions.map((q: any) => <li key={q.id}><span className={`badge ${q.blocking ? 'b-bad' : 'b-warn'}`}>{q.blocking ? 'blocking' : 'non-blocking'}</span> {q.text}<div className="small muted"><a href={`#/mission/${q.mission_id}`}>{q.mission_title}</a></div></li>)}</ul></Section>}
+  </>;
+}

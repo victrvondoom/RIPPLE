@@ -1,0 +1,12 @@
+{
+  "networks": [
+    "eip155:84532"
+  ],
+  "assets": {
+    "eip155:84532": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+  },
+  "max_timeout_s": 120,
+  "usdc_decimals": 6,
+  "unknown_seller_cap_usd": 100,
+  "note": "unknown_seller_cap_usd: a wallet that is not on the known-seller list may be paid only up to this amount per purchase; Layer 2 then decides. Above it, Layer 1 skips. $100 lets about 92% of the 294 scraped listings in calhacks.listings through (median $36, p90 $85) while bounding the loss to any seller we don't know."
+}

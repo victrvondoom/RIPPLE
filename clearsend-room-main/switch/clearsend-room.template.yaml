@@ -1,0 +1,98 @@
+# ClearSend Room: one Switch room where a payer, a recipient and a verifier
+# finish a cross-border payment with an AI agent (flights + PayPal sandbox + escrow).
+#
+# Import in Switch Console: Templates -> Import -> this file.
+# Console creates the OpenCode agent (free OpenRouter model), clones this repo
+# into its directory, creates the room on your messaging app with you in it,
+# and posts the kickoff. Format: docs/TEMPLATES.md in sandbox-quantum/switch.
+version: 1
+
+params:
+  name:
+    type: string
+    label: Agent name
+    default: clearsend
+    pattern: "[a-z0-9][a-z0-9._-]*"
+  bridge:
+    type: bridge
+    description: Messaging app for the room (Mattermost ships with local Switch; Slack, Discord, Telegram, Teams also work).
+    default: [Slack, Discord, Mattermost, $first]
+  provider:
+    type: provider
+    description: OpenCode runs the free OpenRouter model. Claude Code or Codex also work if you prefer them.
+    default: [opencode]
+    input: advanced
+  model:
+    type: string
+    description: Free model only (OpenRouter ":free").
+    default: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+    input: advanced
+  location:
+    type: location
+    default: local
+    input: advanced
+  directory:
+    type: directory
+    default: "{$agents_dir}/{agent}"
+    input: advanced
+
+agent:
+  name: "{name}"
+  display_name: ClearSend
+  description: Books real flights and runs PayPal sandbox escrow with the payer, recipient and verifier in the room. Never moves money without a human yes.
+  provider: "{provider}"
+  model: "{model}"
+  location: "{location}"
+  directory: "{directory}"
+  repo: https://github.com/dukemawex/clearsend-room
+  addressing: anyone
+  auto_mode: true
+  instructions: |
+    You are ClearSend, the payments teammate in this room. Your full operating
+    manual is AGENTS.md in your working directory, with one skill per job in
+    docs/skills/. Read AGENTS.md before your first reply and follow it exactly.
+    You act only through `node cli/clearsend.mjs <command>`; never call PayPal,
+    Upstash or flight APIs any other way, never invent a price, and never
+    create a PayPal order, release or refund without a person in this room
+    typing an explicit yes, which you pass verbatim with --confirmed-by and
+    --confirmation.
+
+room:
+  name: clearsend-room
+  description: Cross-border remittance, flight booking and escrow, settled together by people and the ClearSend agent.
+  bridge: "{bridge}"
+  agents: ["{name}"]
+  users: ["{$creator}"]
+  instructions: |
+    This room settles cross-border payments. Three people take part:
+    the PAYER funds, the RECIPIENT delivers and gets paid, the VERIFIER
+    approves the release. @{name} searches flights, quotes FX and fees,
+    creates PayPal sandbox orders, keeps the escrow, and checks deliverables
+    against the written spec.
+
+    Rules for everyone in the room:
+    - Money moves only after the right person types an explicit yes here:
+      the payer for "book it" / "fund", the verifier for "approve release".
+      The recipient can never approve their own release.
+    - Reply in the thread of the escrow or trip you are talking about.
+    - Prices come only from a provider. Open-data results say "fare unavailable".
+    - Every step is mirrored on the dashboard; the agent posts the link.
+    - Say plainly when something failed. Nobody works around a failure quietly.
+  docs:
+    - name: escrow-lifecycle
+      description: The escrow states and who acts at each one
+      instructions: Consult before any escrow action; post the matching row when you report a state change.
+      content: |
+        created   -> payer types "confirm fund"; agent creates the PayPal order and posts the approve link
+        created   -> payer approves in PayPal and says "paid"; agent captures -> funded
+        funded    -> recipient posts the deliverable; agent submits it -> submitted
+        submitted -> agent verifies against the spec, posts each criterion -> verified | rejected
+        verified  -> verifier types "approve release"; agent sends the PayPal payout -> released
+        rejected  -> recipient fixes and reposts (-> submitted) or payer/verifier types "refund" -> refunded
+        Role links are HMAC-signed; each person only opens their own.
+
+kickoff: |
+  @{name} you are live in this room. Read AGENTS.md, run
+  `node cli/clearsend.mjs health`, then introduce yourself in three lines:
+  what you can do here, which integrations are configured (from health),
+  and one example request for a flight and one for an escrow.

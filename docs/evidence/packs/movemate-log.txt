@@ -1,0 +1,16 @@
+MoveMate: mission created from the sample plan (Draft)
+Baseline v1 approved and saved
+Analysis BLOCKED on missing human input; reason shown, no actions proposed
+Answered "owner_ob_keys" = "Leo" → re-analysis
+Impact graph rendered and node highlighting works
+Agent findings show domain-specific results
+Approved 3 proposed action(s) after reading exact content
+Actions executed; each independently verified (state Verifying)
+Early completion REFUSED by the server with a visible checklist
+nina: acknowledged transfers / completed review items assigned to them
+leo: acknowledged transfers / completed review items assigned to them
+Completion refused: evidence-backed readiness not yet met (explicit pack criterion)
+Follow-up check-in submitted through the UI: all 8 obligations done with 5 evidence items (new revision; prior submission kept in history)
+Follow-up actions approved, executed and verified (identical landlord email carried over, not re-sent)
+Completion criteria satisfied → Completed with outcome record and new baseline
+No unexpected browser console errors (401 pre-login probe and deliberate 4xx refusals excluded)

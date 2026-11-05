@@ -1,0 +1,32 @@
+{
+  "name": "calhacks",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/agent/web",
+    "apps/store-a",
+    "apps/store-b",
+    "apps/store-c",
+    "apps/store-d",
+    "gate/layer1"
+  ],
+  "scripts": {
+    "dev": "concurrently -n agent-api,agent-web,store-a,store-b,store-c,store-d \"npm run dev:agent-api\" \"npm run dev:agent-web\" \"npm run dev:store-a\" \"npm run dev:store-b\" \"npm run dev:store-c\" \"npm run dev:store-d\"",
+    "dev:agent-api": "cd apps/agent/api && uv run fastapi dev app/main.py --port 8000",
+    "dev:agent-web": "npm run dev -w agent-web",
+    "dev:store-a": "npm run dev -w store-a",
+    "dev:store-b": "npm run dev -w store-b",
+    "dev:store-c": "npm run dev -w store-c",
+    "dev:store-d": "npm run dev -w store-d",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test:checkout": "node scripts/test-checkout.mjs",
+    "test:gate-l1": "npm test -w @calhacks/gate-layer1"
+  },
+  "devDependencies": {
+    "@x402/evm": "^2.28.0",
+    "@x402/fetch": "^2.28.0",
+    "concurrently": "^9.2.1",
+    "viem": "^2.57.11"
+  }
+}

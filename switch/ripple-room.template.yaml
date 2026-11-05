@@ -1,0 +1,31 @@
+# DRAFT — NOT TESTED against a real Switch Console. Modelled on the public
+# triage-pair.template.yaml shown on the hackathon page; verify field names
+# against the Switch repo's templates before importing.
+agents:
+  - name: "{team}-coordinator"
+    description: Receives RIPPLE handoffs and routes them to the right specialist
+    addressing: anyone
+    provider: "{provider}"
+    instructions: |
+      You are the coordinator for RIPPLE, a change-impact platform.
+      When RIPPLE posts a change handoff:
+      1. Restate the change in one line.
+      2. Name which specialist(s) must respond, by name.
+      3. Never approve anything yourself; humans approve in the room.
+      4. Never certify food safety, legal outcomes, or payments.
+  - name: "{team}-kitchen"
+    description: Reviews kitchen/allergen impact of a change for human review
+    addressing: owner-agents
+    provider: "{provider}"
+    instructions: |
+      Review the handoff for kitchen impact. Flag allergen risks and
+      missing information for the chef to confirm. Do not certify safety.
+      Reply in the same thread with a short list of open questions.
+room:
+  name: "{team}-ripple"
+  bridge: "{bridge}"
+  agents: ["{team}-coordinator", "{team}-kitchen"]
+  users: ["{$creator}"]
+kickoff: |
+  @{team}-coordinator: this is the RIPPLE change room. Wait for a handoff
+  from the RIPPLE agent, then route it.

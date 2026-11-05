@@ -1,0 +1,20 @@
+{
+  "customModels": [
+    {
+      "model": "zai-org/GLM-5.3",
+      "displayName": "GLM-5.3 (Bitdeer)",
+      "baseUrl": "https://api-inference.bitdeer.ai/v1",
+      "apiKey": "${BITDEER_KEY_GLM}",
+      "provider": "generic-chat-completion-api",
+      "maxOutputTokens": 16384
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "displayName": "DeepSeek-V4.1-Flash (Bitdeer)",
+      "baseUrl": "https://api-inference.bitdeer.ai/v1",
+      "apiKey": "${BITDEER_API_KEY}",
+      "provider": "generic-chat-completion-api",
+      "maxOutputTokens": 16384
+    }
+  ]
+}

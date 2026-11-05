@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "listing_id": {
+      "title": "Listing Id",
+      "type": "string"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Bitdeer model, or null when only code changed the listing",
+      "title": "Model"
+    },
+    "temperature": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Temperature"
+    },
+    "prompt_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Version"
+    },
+    "spec_id": {
+      "title": "Spec Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "listing_id",
+    "model",
+    "spec_id"
+  ],
+  "title": "GenInfo",
+  "type": "object"
+}

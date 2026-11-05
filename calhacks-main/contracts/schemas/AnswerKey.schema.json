@@ -1,0 +1,67 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "listing_id": {
+      "title": "Listing Id",
+      "type": "string"
+    },
+    "label": {
+      "description": "Set by code, never by the LLM",
+      "enum": [
+        "scam",
+        "legit"
+      ],
+      "title": "Label",
+      "type": "string"
+    },
+    "family": {
+      "description": "Scam type or legit subtype from families.json; 'real' for real listings",
+      "title": "Family",
+      "type": "string"
+    },
+    "base_listing_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The real listing it came from",
+      "title": "Base Listing Id"
+    },
+    "attack_diff": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Exactly what changed, e.g. {\"checkout.pay_to\": \"0x45fE…c862 → 0x45fE…c8a2\"}",
+      "title": "Attack Diff",
+      "type": "object"
+    },
+    "attacker_knowledge": {
+      "anyOf": [
+        {
+          "enum": [
+            "blind",
+            "white_box"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attacker Knowledge"
+    }
+  },
+  "required": [
+    "listing_id",
+    "label",
+    "family"
+  ],
+  "title": "AnswerKey",
+  "type": "object"
+}

@@ -1,0 +1,288 @@
+{
+  "run": {
+    "id": "rigor_57707910-934",
+    "seed": "rigor-demo-1",
+    "code_version": "62b3e0570c62",
+    "status": "completed",
+    "total": 124
+  },
+  "metrics": {
+    "byBaseline": {
+      "B1-single-agent": {
+        "cases": 31,
+        "verifiedCompletion": {
+          "num": 3,
+          "den": 17,
+          "rate": 0.17647058823529413
+        },
+        "falseSuccess": {
+          "num": 27,
+          "den": 31,
+          "rate": 0.8709677419354839
+        },
+        "duplicateSideEffects": {
+          "num": 6,
+          "den": 44,
+          "rate": 0.13636363636363635
+        },
+        "unauthorizedMutation": {
+          "num": 2,
+          "den": 44,
+          "rate": 0.045454545454545456
+        },
+        "staleEvidenceAcceptance": {
+          "num": 5,
+          "den": 6,
+          "rate": 0.8333333333333334
+        },
+        "approvalBypass": {
+          "num": 4,
+          "den": 44,
+          "rate": 0.09090909090909091
+        },
+        "recoverySuccess": {
+          "num": 0,
+          "den": 0,
+          "rate": null
+        },
+        "medianRecoveryMs": {
+          "num": null,
+          "den": 0,
+          "rate": null
+        },
+        "partialCommitDetection": {
+          "num": 0,
+          "den": 4,
+          "rate": 0
+        },
+        "evidenceCompleteness": {
+          "num": 86,
+          "den": 215,
+          "rate": 0.4
+        },
+        "handoffReliability": {
+          "num": 44,
+          "den": 45,
+          "rate": 0.9777777777777777
+        },
+        "reconciliationAccuracy": {
+          "num": 1,
+          "den": 8,
+          "rate": 0.125
+        },
+        "expectedGapRecall": {
+          "num": 0,
+          "den": 33,
+          "rate": 0
+        }
+      },
+      "B2-handoffs-no-reconciliation": {
+        "cases": 31,
+        "verifiedCompletion": {
+          "num": 3,
+          "den": 17,
+          "rate": 0.17647058823529413
+        },
+        "falseSuccess": {
+          "num": 24,
+          "den": 28,
+          "rate": 0.8571428571428571
+        },
+        "duplicateSideEffects": {
+          "num": 6,
+          "den": 41,
+          "rate": 0.14634146341463414
+        },
+        "unauthorizedMutation": {
+          "num": 0,
+          "den": 41,
+          "rate": 0
+        },
+        "staleEvidenceAcceptance": {
+          "num": 5,
+          "den": 6,
+          "rate": 0.8333333333333334
+        },
+        "approvalBypass": {
+          "num": 3,
+          "den": 41,
+          "rate": 0.07317073170731707
+        },
+        "recoverySuccess": {
+          "num": 0,
+          "den": 0,
+          "rate": null
+        },
+        "medianRecoveryMs": {
+          "num": null,
+          "den": 0,
+          "rate": null
+        },
+        "partialCommitDetection": {
+          "num": 0,
+          "den": 4,
+          "rate": 0
+        },
+        "evidenceCompleteness": {
+          "num": 80,
+          "den": 200,
+          "rate": 0.4
+        },
+        "handoffReliability": {
+          "num": 41,
+          "den": 42,
+          "rate": 0.9761904761904762
+        },
+        "reconciliationAccuracy": {
+          "num": 1,
+          "den": 8,
+          "rate": 0.125
+        },
+        "expectedGapRecall": {
+          "num": 3,
+          "den": 33,
+          "rate": 0.09090909090909091
+        }
+      },
+      "B3-approval-no-verification": {
+        "cases": 31,
+        "verifiedCompletion": {
+          "num": 10,
+          "den": 17,
+          "rate": 0.5882352941176471
+        },
+        "falseSuccess": {
+          "num": 12,
+          "den": 23,
+          "rate": 0.5217391304347826
+        },
+        "duplicateSideEffects": {
+          "num": 0,
+          "den": 39,
+          "rate": 0
+        },
+        "unauthorizedMutation": {
+          "num": 0,
+          "den": 39,
+          "rate": 0
+        },
+        "staleEvidenceAcceptance": {
+          "num": 5,
+          "den": 6,
+          "rate": 0.8333333333333334
+        },
+        "approvalBypass": {
+          "num": 0,
+          "den": 39,
+          "rate": 0
+        },
+        "recoverySuccess": {
+          "num": 0,
+          "den": 0,
+          "rate": null
+        },
+        "medianRecoveryMs": {
+          "num": null,
+          "den": 0,
+          "rate": null
+        },
+        "partialCommitDetection": {
+          "num": 0,
+          "den": 4,
+          "rate": 0
+        },
+        "evidenceCompleteness": {
+          "num": 108,
+          "den": 180,
+          "rate": 0.6
+        },
+        "handoffReliability": {
+          "num": 39,
+          "den": 39,
+          "rate": 1
+        },
+        "reconciliationAccuracy": {
+          "num": 1,
+          "den": 8,
+          "rate": 0.125
+        },
+        "expectedGapRecall": {
+          "num": 8,
+          "den": 33,
+          "rate": 0.24242424242424243
+        }
+      },
+      "B4-resolve-full": {
+        "cases": 31,
+        "verifiedCompletion": {
+          "num": 17,
+          "den": 17,
+          "rate": 1
+        },
+        "falseSuccess": {
+          "num": 0,
+          "den": 17,
+          "rate": 0
+        },
+        "duplicateSideEffects": {
+          "num": 0,
+          "den": 34,
+          "rate": 0
+        },
+        "unauthorizedMutation": {
+          "num": 0,
+          "den": 34,
+          "rate": 0
+        },
+        "staleEvidenceAcceptance": {
+          "num": 0,
+          "den": 6,
+          "rate": 0
+        },
+        "approvalBypass": {
+          "num": 0,
+          "den": 34,
+          "rate": 0
+        },
+        "recoverySuccess": {
+          "num": 7,
+          "den": 8,
+          "rate": 0.875
+        },
+        "medianRecoveryMs": {
+          "num": 32,
+          "den": 7,
+          "rate": null
+        },
+        "partialCommitDetection": {
+          "num": 4,
+          "den": 4,
+          "rate": 1
+        },
+        "evidenceCompleteness": {
+          "num": 158,
+          "den": 160,
+          "rate": 0.9875
+        },
+        "handoffReliability": {
+          "num": 34,
+          "den": 34,
+          "rate": 1
+        },
+        "reconciliationAccuracy": {
+          "num": 8,
+          "den": 8,
+          "rate": 1
+        },
+        "expectedGapRecall": {
+          "num": 33,
+          "den": 33,
+          "rate": 1
+        }
+      }
+    },
+    "cases": 124,
+    "computedAt": "2026-11-04T14:29:55.722Z",
+    "note": "Computed from the bench_cases rows of this run only."
+  }
+}

@@ -1,0 +1,32 @@
+[project]
+name = "redteam"
+version = "0.1.0"
+description = "Red-team loop: Bitdeer attack generation, holdout, MCP tools and the Factory coordinator"
+authors = [
+    { name = "Aruneem Bhowmick", email = "aruneem.bhowmick@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "calhacks-contracts",
+    "cryptography>=50.0.2",
+    "droid-sdk>=0.5.0",
+    "gate",
+    "mcp>=1.30,<2",
+    "openai>=3.37.0",
+    "pydantic>=2.14.1",
+    "python-dotenv>=1.2.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.23,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mongomock>=4.3",
+    "pytest>=9.1.1",
+]
+
+[tool.uv.sources]
+calhacks-contracts = { path = "../contracts", editable = true }
+gate = { path = "../gate", editable = true }

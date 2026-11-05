@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "description": "Debug info for a listing. Never part of the Listing, never seen by the Gate.",
+  "properties": {
+    "listing_id": {
+      "title": "Listing Id",
+      "type": "string"
+    },
+    "source": {
+      "description": "e.g. apify:ebay, apify:depop, synthetic",
+      "title": "Source",
+      "type": "string"
+    },
+    "url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Url"
+    },
+    "fetched_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fetched At"
+    }
+  },
+  "required": [
+    "listing_id",
+    "source"
+  ],
+  "title": "ListingMeta",
+  "type": "object"
+}

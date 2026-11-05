@@ -1,0 +1,10 @@
+{
+  "actorSpecification": 1,
+  "name": "store-crawler",
+  "title": "Store Crawler",
+  "description": "Standby web server that searches x402 storefronts (/.well-known/store.json) and streams listings and item pages as NDJSON.",
+  "version": "0.2",
+  "usesStandbyMode": true,
+  "defaultMemoryMbytes": 256,
+  "dockerfile": "../Dockerfile"
+}

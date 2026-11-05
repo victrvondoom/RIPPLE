@@ -1,0 +1,7 @@
+{
+  "stream_mode": "drift",
+  "commit_sha": "e89b44d",
+  "producer_version": "checkout-service@v3.0.0-stripe",
+  "schema_note": "BREAKING: `discount_cents` deprecated (NULL); nested `promo_struct.discount_cents` added",
+  "updated_at": "2026-11-03T14:56:58.095403+00:00"
+}

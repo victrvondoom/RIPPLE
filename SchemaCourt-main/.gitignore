@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.streamlit/
+.DS_Store
+Thumbs.db
+*.log
+scratch/
+build_video/
+clip1(final).mp4
+clip2(final).mp4
+clip3.mp4
+.venv/
+venv/

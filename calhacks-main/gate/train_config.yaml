@@ -1,0 +1,13 @@
+# Layer 2 training config. The red-team coordinator may edit this file (and gate/features/*.py), nothing else.
+kind: lightgbm            # lightgbm | logreg
+features: all             # "all" or a list of feature names from gate/features/
+exclude_features: []
+params:                   # passed to LightGBM (n_estimators = boosting rounds); logreg reads only C
+  n_estimators: 200
+  num_leaves: 15
+  learning_rate: 0.05
+  min_data_in_leaf: 10
+  lambda_l2: 1.0
+threshold:
+  max_fpr: 0.02           # threshold = lowest risk cut with validation fpr_l2 <= max_fpr
+seed: 7

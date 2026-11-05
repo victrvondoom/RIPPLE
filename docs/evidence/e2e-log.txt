@@ -1,0 +1,22 @@
+Signed in as Event Manager; Control Center shows LOCAL mode label
+Created mission from sample original plan (state: Draft)
+Approved baseline v1 (state: Baseline ready)
+Change submitted → mission BLOCKED, reason explains missing vegan count; no actions proposed
+Answered vegan count=18 → re-analysis → Awaiting approval
+Impact graph rendered with node highlighting
+Agent findings show allergen conflict flagged for qualified human review
+Collaboration room shows LOCAL-mode banner and real handoff messages
+Drafts tab shows revised BEO with provenance
+Approved 5 actions individually (state: Executing, ready)
+Owner armed dev fault injection on email connector (audited)
+Failed execution is visible; mission = Recovery required (nothing marked successful)
+Explicit retry succeeded → all actions verified (state: Verifying)
+Head Chef acknowledged their update and completed the qualified allergen review
+Procurement acknowledged their update
+Service acknowledged their update
+Complete clicked early → server REFUSED: open review item (Procurement list review) listed
+Procurement Lead completed their review item
+Completion criteria all met → mission Completed with outcome record and baseline v2
+SceneShift mission analysed on the same engine (script change → takes, continuity, departments)
+Mobile viewport (390px): no horizontal page overflow
+No unexpected browser console errors (only the pre-login 401 probe and the 1 deliberate 422 refusal)

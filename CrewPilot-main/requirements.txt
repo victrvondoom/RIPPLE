@@ -1,0 +1,9 @@
+# Switch agent transport (SSE down, HTTP operations up)
+aiohttp>=3.9,<4.0
+
+# LLM providers (only the selected provider is imported at runtime)
+openai>=1.50,<3.0
+anthropic>=0.40,<1.0
+
+# Configuration
+python-dotenv>=1.0,<2.0

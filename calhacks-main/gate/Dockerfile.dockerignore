@@ -1,0 +1,13 @@
+# Build context for gate/Dockerfile (built from the repo root): only contracts/, gate/ and gates/ are used.
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+apps
+packages
+redteam
+setup
+scripts
+gate/models/*.json
+gate/tests
+.git
