@@ -2,6 +2,22 @@
 
 **One company. Three departments. One customer dispute. Every payout computed by code, approved by a human, verified in the ledger, receipted in Switch.**
 
+![RIPPLE sign-in page: a pixel meadow with the sign-in form and demo accounts](docs/evidence/landing-meadow-login.png)
+
+*The sign-in page. Demo accounts sign in with one click; the shared password is set by `RIPPLE_SEED_PASSWORD`.*
+
+## About this README
+
+This page is the front door to the repository. It covers:
+
+- **What RIPPLE does**: the dispute and SLA workflow that runs inside Switch, and why it pushes Switch to its higher-level primitives (the first section below).
+- **Architecture**: how the mission engine, domain packs, Switch adapter and web app fit together.
+- **Run it**: the prerequisites and commands, from the Switch registration script to the demo scenarios.
+- **What is real, and what is simulated**: which parts were exercised against a live Switch server and which run locally or against a mock.
+- **Repository map**: where the code, scripts, tests and evidence live.
+
+Test counts and evidence paths are from the latest verified run. The full change history is in `progress.md`.
+
 ## Why RIPPLE Pushes Switch to Level 3
 
 Six rare, high-scoring Switch protocol capabilities — all exercised against a **real local switch-core 0.31.0** (`npx tsx scripts/switch-live-level3.ts`, evidence in `docs/evidence/switch-live-level3-2026-11-06.json`), each with a dedicated pytest (`python -m pytest tests_py/test_switch_level3.py`) and vitest (`tests/switch-level3.test.ts`) verification test:
