@@ -165,7 +165,7 @@ describe('Switch Level 3 primitives (mock switch-core 0.31 shapes; live run: scr
     expect(boot.body.body).toContain('!assign-agent @ripple');
     expect(boot.conn).toMatch(/^[0-9a-f-]{36}$/);                                                  // posted after claiming the intake room
     const tpl = readFileSync('switch/ripple-room.template.yaml', 'utf-8');
-    expect(tpl).toMatch(/^#.*\nversion: 2$/m);
+    expect(tpl).toMatch(/^#.*\r?\nversion: 2\r?$/m); // CRLF-safe: Windows checkouts convert the template's line endings
     expect(tpl).toContain('type: room');
     expect(tpl).toContain('name: settlement-signer');
     expect(tpl).toContain('exclusive: true');

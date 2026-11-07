@@ -10,12 +10,15 @@ export function verifyPassword(pw: string, stored: string) {
 }
 
 export const DEMO_USERS = [
-  { email: 'sam@harborvine.example', name: 'Sam Rivera', role: 'owner', department: 'Operations', title: 'Owner & Escrow Controller', map: ['escrow_controller', 'depgate_owner'] as string[] },
-  { email: 'maya@harborvine.example', name: 'Maya Chen', role: 'manager', department: 'Event Management', title: 'Operations Lead & Commander', map: ['human_manager', 'human_pm', 'human_owner', 'sre_lead', 'data_steward', 'incident_commander'] },
+  { email: 'sam@harborvine.example', name: 'Sam Rivera', role: 'owner', department: 'Operations', title: 'Owner & Escrow Controller', map: ['escrow_controller', 'depgate_owner', 'ev_venue_av'] as string[] },
+  { email: 'maya@harborvine.example', name: 'Maya Chen', role: 'manager', department: 'Event Management', title: 'Operations Lead & Commander', map: ['human_manager', 'human_pm', 'human_owner', 'sre_lead', 'data_steward', 'incident_commander', 'ev_speaker_keynote'] },
   { email: 'luis@harborvine.example', name: 'Luis Ortega', role: 'member', department: 'Kitchen', title: 'Head Chef', map: ['human_chef'] },
   { email: 'priya@harborvine.example', name: 'Priya Nair', role: 'member', department: 'Procurement', title: 'Procurement & Escrow Lead', map: ['human_buyer'] },
   { email: 'dan@harborvine.example', name: 'Dan Okafor', role: 'member', department: 'Service', title: 'Service & Engineering Lead', map: ['human_service', 'lead_engineer'] },
   { email: 'vera@harborvine.example', name: 'Vera Holt', role: 'viewer', department: 'Finance', title: 'Observer (read-only)', map: [] },
+  // --- run-of-show pack (event day): the lead planner publishes; the panel lead confirms the panel's slot ---
+  { email: 'alex@harborvine.example', name: 'Alex Morgan', role: 'manager', department: 'Event Management', title: 'Lead Planner', map: ['ev_lead_planner'] },
+  { email: 'jamie@harborvine.example', name: 'Jamie Okoro', role: 'member', department: 'Program', title: 'Panel Lead', map: ['ev_panel_lead'] },
   // --- people for the other workflow packs (same workspace, same engine) ---
   { email: 'ana@harborvine.example', name: 'Ana Silva', role: 'member', department: 'Agency Delivery', title: 'Delivery Lead', map: ['human_lead'] },
   { email: 'ravi@harborvine.example', name: 'Ravi Menon', role: 'member', department: 'Finance', title: 'Finance Controller', map: ['human_finance', 'human_reviewer', 'revenue_controller'] },

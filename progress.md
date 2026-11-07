@@ -1,5 +1,21 @@
 # progress.md - resume here
 
+## Session 18: Run of Show pack (event day, deterministic core only)
+Request (owner): an event-day agent for the run of show, built on the single engine. The Switch/Mattermost agent from the owner's write-up (`agent/switch-client.mjs`, `server/agent-api.mjs`, the `stageleaf` repo) is **not in this repository** and was not built or run here.
+- **New pack `run-of-show`** (`src/server/packs/runofshow/pack.ts`, domain "Event Operations", extended registry; catalogued under the commerce system next to `beo-rescue`). One reported change (a late speaker's availability) is checked against venue hours, the crew's departure time, same-room and same-speaker overlaps, and recorded availability.
+  - Candidate fixes are tested on the whole day: swaps of equal-length unfixed sessions, and "move after a fixed block and shift later sessions". A fixed session is never moved. The smallest valid fix is proposed; the rest are listed with the rule each one breaks.
+  - Affected owners (the speakers of moved sessions, plus the venue/AV lead) each answer their own blocking question, bound to the fix's hash. A decline needs a reason. Only the lead planner can approve publishing. The revision goes to the local outbox only.
+  - A speaker with no recorded availability is never assumed free; their approval of the new time is the confirmation.
+- **Roles and seed:** agents `ev_analyst` (read-only: can ask questions, cannot propose actions) and `ev_publisher`. Human roles map to seeded users: `ev_speaker_keynote` → Maya, `ev_venue_av` → Sam, `ev_lead_planner` → Alex Morgan (new user), `ev_panel_lead` → Jamie Okoro (new user). The users are demo stand-ins; a real event maps its own people.
+- **Engine:** unchanged. Catalog entry added in `capabilities/catalog.ts` (the dashboards test requires every registry pack to be mapped).
+- **Tests:** `tests/runofshow.test.ts` (15): deterministic checks, the keynote/panel swap as the chosen fix, the later-slot option rejected on the crew departure, unknown-person and fixed-session handling, mission-level question assignment (a non-affected user cannot answer), decline handling, publish approval by Alex only (not Maya), and verifier and completion checks.
+- **Verified (2026-11-07 runs):** `npm run typecheck` exit 0; `npm run lint` exit 0; `npx vitest run` **41 files, 325 tests passed** (was 40 / 310 before this session).
+- **Not done / do not claim:**
+  - No Switch or Mattermost run for this pack. Hard rule 1 applies: nothing about chat rooms is exercised.
+  - No browser e2e journey for this pack (no `scripts/e2e-packs.mjs` entry yet).
+  - The panel and the speakers are seeded users, not external people, and no real panelist availability exists.
+  - Local outbox only: nothing is sent to chat or email.
+
 ## Session 17: nine additional capabilities (built on the single engine)
 Discovery first (nine read-only agents, one per folder, ideas kept as text under the session scratchpad `ideas/`), then the owner chose these nine. Each is labelled by its source. Verified 2026-11-07: `npm run typecheck` 0, `npm run lint` 0, `npx vitest run` **40 files, 310 tests passed**; `scripts/e2e.mjs` and `scripts/e2e-crossdomain.mjs` both pass on a clean local-mode server (port 8791, Switch variables blank).
 - **Per-role tool scope**: `RoleDef.scope: 'read' | 'act'` (`engine/types.ts`). `validateRoleResult` refuses a read-only role's output that proposes actions. Sentinel's `telemetry_triager` and `commit_investigator` are read-only; `rollback_operator` keeps the default.
