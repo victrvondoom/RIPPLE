@@ -17,6 +17,7 @@ import { consumerPack } from './consumer/pack.js';
 import { billingPack } from './billing/pack.js';
 import { depgatePack } from './depgate/pack.js';
 import { flipsidePack } from './flipside/pack.js';
+import { runOfShowPack } from './runofshow/pack.js';
 import { fixlinePack } from './fixline/pack.js';
 import { recallPack } from './recall/pack.js';
 
@@ -56,6 +57,7 @@ export function extendedRegistry() {
     .register(consumerPack)
     .register(billingPack)
     .register(depgatePack)
+    .register(runOfShowPack)
     .register(flipsidePack)
     .register(fixlinePack)
     .register(recallPack);

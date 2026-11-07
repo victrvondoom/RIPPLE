@@ -7,7 +7,6 @@ const H = (n) => `${n}@harborvine.example`;
 const [sam, maya, ana] = await Promise.all([login(H('sam')), login(H('maya')), login(H('ana'))]);
 async function start(api, packId) { const d = await api('POST', `/packs/${packId}/demo`, { runAnalysis: false }); return d.j.mission.id; }
 const detail = async (api, id) => (await api('GET', `/missions/${id}`)).j;
-async function viaChange(api, packId) { const id = await start(api, packId); const pk = (await api('GET', `/packs/${packId}`)).j; const sample = pk.sample ?? pk.pack?.sample; return { id, sample }; }
 
 // ---- Fixline ----
 { const pk = (await sam('GET', '/packs/fixline-bugfix')).j; const s = pk.sample ?? pk.pack?.sample ?? pk.pack?.sampleChange;
