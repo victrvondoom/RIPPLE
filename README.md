@@ -1,4 +1,3 @@
-![RIPPLE sign-in page: a pixel meadow with the sign-in form and demo accounts](docs/evidence/landing-meadow-login.png)
 
 # RIPPLE
 
