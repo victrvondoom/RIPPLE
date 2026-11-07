@@ -23,6 +23,8 @@ export function evaluateCompletion(e: Engine, m: Row): { allPassed: boolean; che
   const reviews = db.all("SELECT * FROM work_items WHERE mission_id=? AND workspace_id=? AND analysis_rev=? AND kind='review' AND status!='done'", m.id, ws, m.analysis_rev);
   checks.push({ key: 'reviews', label: 'Qualified human reviews completed', passed: !reviews.length, detail: reviews.length ? reviews.map((r) => r.title).join(' | ') : 'All review items done.' });
   const pack = e.packs.get(m.pack_id);
+  // Session 21: a pack that declares an independent verifier completes only on a PASS receipt for the current revision.
+  if (pack?.independentVerifier) { const v = e.cases.verifierPassed(m); checks.push({ key: 'independent_verifier', label: 'Independent verifier issued a PASS receipt', passed: v.passed, detail: v.detail }); }
   const change = db.get("SELECT * FROM change_events WHERE mission_id=? AND workspace_id=? AND status IN ('open','applied') ORDER BY seq DESC", m.id, ws);
   if (pack?.completionChecks && change && m.current_baseline_version > 0) {
     const answers: Record<string, { text: string; value?: any }> = {};

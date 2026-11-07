@@ -61,6 +61,7 @@ export function validateRoleResult(pack: WorkflowPack, expectedRole: string, raw
     if (req.roleKey === expectedRole) return { ok: false, error: 'a role may not request its own re-analysis' };
   }
   for (const w of r.workItems) if (!roles.has(w.roleKey)) return { ok: false, error: `work item "${w.key}" assigned to unknown role "${w.roleKey}"` };
+  for (const h of r.handoffs ?? []) if (!roles.has(h.to) || h.to === expectedRole) return { ok: false, error: `handoff targets ${h.to === expectedRole ? 'its own role' : `unknown role "${h.to}"`}` };
   const kinds = new Set<string>();
   for (const d of r.drafts) { if (kinds.has(d.kind)) return { ok: false, error: `duplicate draft kind "${d.kind}"` }; kinds.add(d.kind); }
   // Per-role tool scope (session 16, from OpsRoom's read-only Sentinel vs the investigator that holds the fix): a read-only role

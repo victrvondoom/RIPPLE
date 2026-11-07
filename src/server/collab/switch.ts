@@ -69,7 +69,11 @@ export class SwitchCollab implements CollabPort {
   private closed = false;
   private seen = new Set<string>();
   private lastError: string | null = null;
+  private lastBeatOkAt: string | null = null;
+  private lastBeatFailAt: string | null = null;
   private connectedRooms = new Set<string>();
+  /** When the last event-stream frame (or a successful open) arrived; used for honest liveness. */
+  private lastStreamAt: string | null = null;
   /**
    * Switch 0.31 `post_message` / `send_targeted_message` take NO room id: they go to the room this connection last claimed
    * with `connect_to_room` (operations/definitions.py `require_connected_room`). One connection serves every mission room,
@@ -126,8 +130,11 @@ export class SwitchCollab implements CollabPort {
     const url = `${this.base()}/events?connection_id=${this.connId}&scope=single&filter=all&start_from=head&rooms=${roomId}&client=ripple&client_version=0.1.0`;
     const headers: Record<string, string> = { Authorization: `Bearer ${this.cfg.apiKey}`, Accept: 'text/event-stream' };
     if (this.cursor > 0) headers['Last-Event-ID'] = String(this.cursor);
-    const res = await this.f(url, { headers, signal: ac.signal });
+    let res: Response;
+    try { res = await this.f(url, { headers, signal: ac.signal }); }
+    catch (e) { if (this.streams.get(roomId) === ac) this.streams.delete(roomId); throw e; }
     if (!res.ok || !res.body) { this.streams.delete(roomId); throw new SwitchError(res.status, `Switch event stream refused: HTTP ${res.status}`); }
+    this.lastStreamAt = new Date().toISOString();
     const stillCurrent = () => !this.closed && this.streams.get(roomId) === ac;
     void this.pump(res.body, roomId).then(
       () => { if (stillCurrent()) { this.lastError = 'event stream closed by Switch; reconnecting'; void this.reopen(roomId); } },
@@ -156,9 +163,11 @@ export class SwitchCollab implements CollabPort {
       this.beatTimer = setTimeout(async () => {
         try {
           const r = await this.f(`${this.base()}/connection/beat`, { method: 'POST', headers: this.headers(), body: JSON.stringify({ connection_id: this.connId, cursor: this.cursor, ...(this.generation !== null ? { generation: this.generation } : {}) }) });
-          if (r.status === 404 || r.status === 409) { this.lastError = `heartbeat ${r.status}: connection reopened`; for (const id of this.connectedRooms) this.dropAndReopen(id); }
-          else if (r.status === 401 || r.status === 403) this.lastError = `heartbeat rejected (HTTP ${r.status}): check the agent API key`;
-        } catch (e) { this.lastError = `heartbeat: ${String(e)}`; }
+          if (!r.ok) this.lastBeatFailAt = new Date().toISOString();
+          if (r.status === 404 || r.status === 409) { this.lastBeatOkAt = null; this.lastError = `heartbeat ${r.status}: connection reopened`; for (const id of this.connectedRooms) this.dropAndReopen(id); }
+          else if (r.status === 401 || r.status === 403) { this.lastBeatOkAt = null; this.lastError = `heartbeat rejected (HTTP ${r.status}): check the agent API key`; }
+          else if (r.ok) { this.lastBeatOkAt = new Date().toISOString(); this.lastError = null; }
+        } catch (e) { this.lastBeatOkAt = null; this.lastBeatFailAt = new Date().toISOString(); this.lastError = `heartbeat: ${String(e)}`; }
         if (!this.closed) tick();
       }, this.beatEvery);
       this.beatTimer.unref?.();
@@ -207,7 +216,7 @@ export class SwitchCollab implements CollabPort {
     const name = String(p.sender_name ?? p.sender ?? '');
     if (this.cfg.selfName && name.toLowerCase() === this.cfg.selfName.toLowerCase()) return;   // never react to our own posts
     const attachments: InboundAttachment[] = Array.isArray(p.attachments) ? p.attachments.map((a: Partial<InboundAttachment>) => ({ filename: String(a?.filename ?? ''), mimetype: String(a?.mimetype ?? ''), size: Number(a?.size ?? 0), mxc: a?.mxc ? String(a.mxc) : undefined, caption: a?.caption ? String(a.caption) : undefined })) : undefined;
-    for (const h of this.handlers.get(roomId) ?? []) h({ senderId: String(p.sender ?? ''), senderName: name, body: String(p.body ?? ''), messageId: mid, addressed: !!p.addressed, timestamp: Number(p.timestamp ?? Date.now()), ...(attachments ? { attachments } : {}) });
+    for (const h of this.handlers.get(roomId) ?? []) h({ senderId: String(p.sender ?? ''), senderName: name, body: String(p.body ?? ''), messageId: mid, addressed: !!p.addressed, timestamp: Number(p.timestamp ?? Date.now()), ...(attachments ? { attachments } : {}), senderKind: p.sender_kind ? String(p.sender_kind) : null, onBehalfOf: p.on_behalf_of ? String(p.on_behalf_of) : null, roomId: String(d.room_id ?? ''), threadId: p.thread_id ? String(p.thread_id) : null, receivedBy: this.cfg.selfName });
   }
   subscribe(room: RoomInfo, handler: (m: InboundMessage) => void) {
     const id = room.externalId!; const set = this.handlers.get(id) ?? new Set(); set.add(handler); this.handlers.set(id, set);
@@ -233,15 +242,58 @@ export class SwitchCollab implements CollabPort {
    * and per-room membership. Verified against operations/definitions.py. (group_name is NOT used: switch-core
    * requires an existing group and creates none, the group is expressed in the version-2 room template/playbook instead.)
    */
-  async createCaseRoom(a: { name: string; description: string; agentNames: string[]; instructions: string; linkedRooms?: { target_room_id: string; label: string }[]; roles?: { name: string; instructions: string; exclusive: boolean }[] }): Promise<{ id: string; name: string; failedAttachments: unknown[] }> {
-    const room = await this.op<{ id: string; name: string; failed_attachments?: unknown[] }>('create_room', {
+  async createCaseRoom(a: { name: string; description: string; agentNames: string[]; instructions: string; linkedRooms?: { target_room_id: string; label: string }[]; roles?: { name: string; instructions: string; exclusive: boolean }[]; userNames?: string[]; restricted?: boolean; attach?: boolean }): Promise<{ id: string; name: string; failedAttachments: unknown[]; callerIsMember: boolean | null; raw: Record<string, unknown> }> {
+    const room = await this.op<{ id: string; name: string; failed_attachments?: unknown[]; caller_is_member?: boolean }>('create_room', {
       name: a.name.slice(0, 80), description: a.description, agent_names: [...new Set(a.agentNames)].filter(Boolean), instructions: a.instructions,
       ...(a.linkedRooms?.length ? { linked_rooms: a.linkedRooms } : {}),
       ...(a.roles?.length ? { roles: a.roles } : {}),
-      ...(this.cfg.internalOnly ? { internal_only: true } : {}),
+      // Bridged rooms take people by their messaging-app username (switch-core 0.31 create_room `user_names`).
+      ...(this.cfg.internalOnly ? { internal_only: true } : a.userNames?.length ? { user_names: [...new Set(a.userNames)] } : {}),
+      // Restricted rooms (raw ledger / logs): private read + write visibility, so only the owner/admin can widen them.
+      ...(a.restricted ? { read_visibility: 'private', write_visibility: 'private' } : {}),
     });
-    if (a.agentNames.includes(this.cfg.selfName ?? '\u0000') || a.agentNames.some((n) => n === this.cfg.selfName)) await this.attach(room.id);   // attach only rooms this agent is a member of
-    return { id: room.id, name: room.name, failedAttachments: room.failed_attachments ?? [] };
+    const member = a.agentNames.some((n) => n === this.cfg.selfName);
+    if (member && a.attach !== false) await this.attach(room.id);   // attach only rooms this agent is a member of
+    return { id: room.id, name: room.name, failedAttachments: room.failed_attachments ?? [], callerIsMember: typeof room.caller_is_member === 'boolean' ? room.caller_is_member : null, raw: room as unknown as Record<string, unknown> };
+  }
+
+  /** This identity's own name (as registered in Switch). */
+  get name(): string { return this.cfg.selfName ?? this.cfg.agentId; }
+  /** Rooms this identity has an open stream on and has claimed at least once. */
+  get roomIds(): string[] { return [...this.connectedRooms]; }
+  /** Stream + claim an existing room this identity is a member of. Throws when the server refuses (e.g. not a member). */
+  async attachRoom(roomId: string): Promise<void> { if (!this.connectedRooms.has(roomId)) await this.attach(roomId); }
+  /** `list_participants` (switch-core 0.31: {id, name, type, status, alias}) for a room this identity is a member of. */
+  async listRoomParticipants(roomId: string): Promise<{ id: string | null; name: string; type: string; status: string | null }[]> {
+    return this.serial(async () => {
+      if (this.currentRoom !== roomId) { await this.op('connect_to_room', { room_id: roomId, include_general_instructions: false }, true); this.currentRoom = roomId; }
+      const r = await this.op<any>('list_participants', {}, true);
+      const list = Array.isArray(r) ? r : Array.isArray(r?.participants) ? r.participants : [];
+      return list.map((p: any) => ({ id: p?.id ?? p?.agent_id ?? null, name: String(p?.name ?? ''), type: String(p?.type ?? ''), status: p?.status ?? null }));
+    });
+  }
+  /** `list_bridges`: {id, type, display_name, status, is_default, can_create_channels}[]. Used by the fail-closed preflight. */
+  async listBridges(): Promise<{ id: string; type: string; display_name?: string; status: string; is_default: boolean }[]> {
+    const r = await this.op<any>('list_bridges', {});
+    return Array.isArray(r) ? r : Array.isArray(r?.bridges) ? r.bridges : [];
+  }
+  /** Room history read-back (members only): GET /agents/{id}/rooms/{room}/history. */
+  async roomHistory(roomId: string, limit = 100): Promise<{ sender: string; senderName: string; body: string; messageId: string }[]> {
+    const r = await this.f(`${this.base()}/rooms/${roomId}/history?limit=${limit}`, { headers: this.headers() });
+    const text = await r.text();
+    if (!r.ok) throw new SwitchError(r.status, `room history refused: HTTP ${r.status} ${text.slice(0, 160)}`);
+    const d = JSON.parse(text); const events = Array.isArray(d?.events) ? d.events : Array.isArray(d?.result?.events) ? d.result.events : [];
+    return events.filter((e: any) => (e?.type ?? 'message') === 'message' || e?.body !== undefined).map((e: any) => { const p = e?.payload ?? e; return { sender: String(p.sender ?? ''), senderName: String(p.sender_name ?? ''), body: String(p.body ?? ''), messageId: String(p.message_id ?? e?.id ?? '') }; });
+  }
+  /** Honest liveness: connected only while a stream is open AND the most recent heartbeat succeeded (within 3 intervals). */
+  status(): { name: string; connected: boolean; rooms: number; lastError: string | null; lastBeatOkAt: string | null } {
+    const window = Math.max(3 * this.beatEvery, 10_000);
+    const fresh = !!this.lastBeatOkAt && Date.now() - Date.parse(this.lastBeatOkAt) < window;
+    const lastFailed = !!this.lastBeatFailAt && (!this.lastBeatOkAt || this.lastBeatFailAt > this.lastBeatOkAt);
+    const streamOpen = this.streams.size > 0;
+    // Before the first heartbeat answers, a stream that opened moments ago counts; after that only a successful latest beat does.
+    const warmingUp = !this.lastBeatOkAt && !this.lastBeatFailAt && !!this.lastStreamAt && Date.now() - Date.parse(this.lastStreamAt) < window;
+    return { name: this.name, connected: !this.closed && streamOpen && !lastFailed && (fresh || warmingUp), rooms: this.connectedRooms.size, lastError: this.lastError, lastBeatOkAt: this.lastBeatOkAt };
   }
 
   /** Join an existing room this agent is already a member of (no create): stream + claim, so ops and sends work. */

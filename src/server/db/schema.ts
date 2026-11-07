@@ -233,4 +233,38 @@ CREATE TABLE IF NOT EXISTS pkg_watch (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, room TEXT NOT NULL, ecosystem TEXT NOT NULL, name TEXT NOT NULL,
   status TEXT NOT NULL, observed_version TEXT, checked_at TEXT NOT NULL, registered_seen_at TEXT, last_mission_id TEXT,
   UNIQUE (workspace_id, room, ecosystem, name));
+-- Session 21 (flagship, Switch-native case operations). Every table is workspace-scoped.
+CREATE TABLE IF NOT EXISTS switch_people (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, user_id TEXT NOT NULL, switch_name TEXT NOT NULL, chat_username TEXT,
+  sender_id TEXT NOT NULL, source TEXT NOT NULL, pinned_by TEXT, pinned_at TEXT NOT NULL,
+  UNIQUE (workspace_id, sender_id));
+CREATE TABLE IF NOT EXISTS switch_observed_senders (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT, room_id TEXT, sender_id TEXT NOT NULL, sender_name TEXT NOT NULL,
+  roster_type TEXT, first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL, messages INTEGER NOT NULL DEFAULT 1,
+  UNIQUE (workspace_id, sender_id));
+CREATE TABLE IF NOT EXISTS switch_decisions (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, approval_id TEXT, message_id TEXT NOT NULL,
+  room_id TEXT, room_external_id TEXT, room_key TEXT, sender_id TEXT NOT NULL, sender_name TEXT NOT NULL, sender_kind TEXT,
+  on_behalf_of TEXT, received_by TEXT, verb TEXT NOT NULL, case_ref TEXT NOT NULL, approval_ref TEXT NOT NULL, quoted_hash TEXT,
+  outcome TEXT NOT NULL, reasons TEXT NOT NULL DEFAULT '[]', user_id TEXT, body_hash TEXT NOT NULL, created_at TEXT NOT NULL,
+  UNIQUE (workspace_id, message_id));
+CREATE TABLE IF NOT EXISTS room_documents (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, room_id TEXT NOT NULL, name TEXT NOT NULL,
+  kind TEXT NOT NULL, content TEXT NOT NULL, content_hash TEXT NOT NULL, author_role TEXT, external_doc_id TEXT,
+  read_back_hash TEXT, mode TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS handoffs (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, analysis_rev INTEGER NOT NULL,
+  from_role TEXT NOT NULL, to_role TEXT NOT NULL, from_room TEXT, to_room TEXT, digest TEXT NOT NULL, summary TEXT NOT NULL,
+  message_id TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS memory_items (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, pack_id TEXT NOT NULL, subject TEXT NOT NULL, kind TEXT NOT NULL,
+  fact TEXT NOT NULL, data TEXT NOT NULL DEFAULT '{}', status TEXT NOT NULL, confidence REAL NOT NULL, owner_role TEXT,
+  source_mission_id TEXT NOT NULL, source_ref TEXT NOT NULL, policy_version TEXT, recorded_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS case_receipts (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, kind TEXT NOT NULL, analysis_rev INTEGER NOT NULL,
+  result TEXT NOT NULL, body TEXT NOT NULL, body_hash TEXT NOT NULL, merkle_root TEXT NOT NULL, issued_by TEXT NOT NULL,
+  created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS impact_routes (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, analysis_rev INTEGER NOT NULL, body TEXT NOT NULL,
+  created_at TEXT NOT NULL);
 `;

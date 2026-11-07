@@ -9,7 +9,56 @@ export interface OutboundMessage {
 }
 /** An attachment as Switch delivers it (`AttachmentRef`, never the bytes); inspected by the RECLAIM guardrail before use. */
 export interface InboundAttachment { filename: string; mimetype: string; size: number; mxc?: string; caption?: string }
-export interface InboundMessage { senderName: string; senderId: string; body: string; messageId: string; addressed: boolean; timestamp: number; attachments?: InboundAttachment[] }
+/**
+ * A message as Switch delivers it on the event stream. Every field below is set by the Switch SERVER, never by the text:
+ * `senderId` is the opaque participant id (`@switch-<type>-<id>:<server>`; match it, never parse it), `senderKind` is
+ * 'platform' when the Switch app posted it, and `onBehalfOf` names the person a platform message speaks for.
+ * `roomId` is the room the server says the event belongs to (switch-core 0.31 agent-protocol event catalog).
+ */
+export interface InboundMessage {
+  senderName: string; senderId: string; body: string; messageId: string; addressed: boolean; timestamp: number; attachments?: InboundAttachment[];
+  senderKind?: string | null; onBehalfOf?: string | null; roomId?: string; threadId?: string | null;
+  /** Name of the RIPPLE agent identity whose connection received the event (the room member that heard it). */
+  receivedBy?: string;
+}
+
+/** A participant as `list_participants` reports it (switch-core 0.31: {id, name, type: 'agent' | 'user', status}). */
+export interface RoomParticipant { id: string | null; name: string; type: 'agent' | 'user' | string; status?: string | null }
+
+/**
+ * Case room topology (session 21, flagship). A pack DECLARES the rooms one case needs: their purpose, instructions,
+ * which agent identities and which human roles belong in each, how they link, and how sensitive their content is.
+ * The engine executes it generically: through Switch when collaboration is Switch (each room is a real `create_room`,
+ * each member identity connects with its own credentials), and as clearly labelled LOCAL rooms otherwise.
+ */
+export interface CaseRoomSpec {
+  key: string;
+  /** Room name prefix; the case reference is appended (e.g. `finance-approval` → `finance-approval-RPL-1A2B3C`). */
+  name: string;
+  purpose: string;
+  instructions: string;
+  /** Pack role keys of the AGENT identities that are members of this room (least privilege: nobody else is). */
+  agentRoles: string[];
+  /** Pack role keys of the HUMAN participants invited to this room (bridged rooms only). */
+  humanRoles: string[];
+  /** 'restricted' rooms hold raw records (ledger, logs) and are created private; only digests leave them. */
+  sensitivity: 'shared' | 'restricted';
+  /** Room keys this room links to (create_room linked_rooms). */
+  links?: string[];
+  /** Whether single records from this room may be disclosed (with a Merkle proof, audited) to another room. Default: true for shared rooms, false for restricted rooms unless set. */
+  discloseRecords?: boolean;
+}
+export interface CaseRoomsTopology {
+  rooms: CaseRoomSpec[];
+  /** Which room each role speaks in (agents post their findings and documents there). */
+  roleRoom: Record<string, string>;
+  /** Room for system/coordination messages. */
+  defaultRoom: string;
+  /** The coordinator role whose identity creates the rooms. */
+  coordinatorRole: string;
+}
+export interface OpenedCaseRoom { key: string; externalId: string | null; name: string; note: string; members: string[]; humans: string[]; linkedTo: string[]; mode: 'local' | 'switch' }
+export interface IdentityStatus { name: string; roleKeys: string[]; connected: boolean; rooms: number; lastError: string | null; lastBeatOkAt: string | null }
 
 /**
  * Level 3 case topology (session 15). A pack may DECLARE this shape; the engine executes it generically
@@ -74,5 +123,18 @@ export interface CollabPort {
    * otherwise a clearly-labelled local fallback composed from what the adapter recorded.
    */
   captureResolvedPlaybook?(args: { caseId: string; missionId: string; title: string; rooms: CaseRoomRecord[]; intakeRoom: RoomInfo; telemetry?: Record<string, unknown> }): Promise<{ path: string; source: 'gateway' | 'local_fallback'; yaml: string } | null>;
+  /**
+   * Session 21: provision a pack-declared case topology (several rooms, each with its own member identities, linked).
+   * Implementations THROW when a room cannot be created: the engine must never record a room that does not exist.
+   */
+  openCaseRooms?(args: { missionId: string; caseRef: string; title: string; topology: CaseRoomsTopology; humans: Record<string, string[]> }): Promise<{ rooms: OpenedCaseRoom[]; labels: string[] }>;
+  /** Server-side roster of a room, read through a member identity. */
+  listParticipants?(room: RoomInfo): Promise<RoomParticipant[]>;
+  /** Write a room-scoped document as the given role's identity; returns the server document id and a read-back hash. */
+  writeDocument?(room: RoomInfo, doc: { name: string; description: string; instructions: string; content: string }, asRoleKey?: string): Promise<{ documentId: string | null; readBackHash: string | null; note: string }>;
+  /** Room history read-back through a member identity. */
+  history?(room: RoomInfo, limit?: number): Promise<{ sender: string; senderName: string; body: string; messageId: string }[]>;
+  /** Honest per-identity connection status (never claims an identity is active unless its stream and heartbeat are). */
+  identities?(): IdentityStatus[];
   close(): Promise<void>;
 }

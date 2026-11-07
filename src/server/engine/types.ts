@@ -66,6 +66,34 @@ export interface ActionSpec {
    * requested. An expired approval cannot be decided, and the sweep moves its action back to stale.
    */
   approvalTtlMinutes?: number;
+  /**
+   * Session 21: the case room (topology key) in which this approval must be decided. With competition mode on
+   * (RIPPLE_SWITCH_REQUIRED=1) a decision is accepted ONLY from an authenticated person in that Switch room.
+   */
+  decisionRoom?: string;
+  /** Session 21 two-person control: a SECOND, distinct person (mapped to this role) must also approve the exact payload. */
+  coApprover?: { role: string };
+  /** Session 21 separation of duties: the person who executes may not be one of the people who approved. */
+  separateExecutor?: boolean;
+  /** Session 21: refuse execution until the independent verifier issued a PASS receipt for the current revision. */
+  requiresVerifierPass?: boolean;
+}
+/** A record that enters a case's evidence manifest (Merkle-committed, selectively disclosable). */
+export interface EvidenceRecord { id: string; kind: string; source: string; room: string; content: string }
+/** A fact an earlier case left behind (session 21 evidence-based memory). */
+export interface MemoryItem {
+  id: string; subject: string; kind: string; fact: string; data: Record<string, unknown>;
+  status: 'recorded' | 'hypothesis' | 'superseded'; confidence: number; ownerRole: string | null;
+  sourceMissionId: string; sourceRef: string; policyVersion: string | null; recordedAt: string;
+}
+export interface MemorySpec { subject: string; kind: string; fact: string; data?: Record<string, unknown>; ownerRole?: string; confidence?: number; policyVersion?: string; sourceRef: string }
+/** What the independent verifier may read: approved payloads, approvals and connector READ-BACKS. Never an executor's report. */
+export interface VerifierInput {
+  baselinePlan: any; change: any; answers: AnalysisContext['answers'];
+  actions: { key: string; type: string; status: string; payload: any; payloadHash: string; recomputedPayloadHash: string; idempotencyKey: string; recomputedIdempotencyKey: string; observed: { found: boolean; count: number; content: string } | null; executedBy: string | null }[];
+  approvals: { actionKey: string; slot: number; status: string; decidedBy: string | null; decidedVia: string | null; approverUserId: string | null; payloadHash: string | null; decisionAccepted: boolean | null }[];
+  requesterUserId: string | null;
+  switchRequired: boolean;
 }
 export interface Finding { severity: 'info' | 'warning' | 'risk'; text: string; needsHumanReview?: boolean }
 /** An agent asking the orchestrator to re-analyse another role. Honoured only if that role's inputs actually changed. */
@@ -76,6 +104,10 @@ export interface RoleResult {
   data?: Record<string, unknown>;
   /** Optional agent-to-agent request channel (orchestrator routes it; see engine/orchestrator.ts). */
   requests?: RoleRequest[];
+  /** Session 21: room-scoped documents this role writes in ITS room (e.g. the evidence manifest). */
+  documents?: { name: string; description: string; content: string }[];
+  /** Session 21: cross-room handoffs carrying only claims + evidence references (never raw records) to another role's room. */
+  handoffs?: { to: string; summary: string; claims: string[]; evidenceRefs?: string[] }[];
 }
 export interface AnalysisContext {
   today: string;
@@ -86,6 +118,10 @@ export interface AnalysisContext {
   revisedPlan: any;                // plan with change (+answers) applied, NOT yet baseline
   results: Record<string, RoleResult>; // results of roles earlier in roleOrder
   impacted: { artifacts: string[]; departments: string[] };
+  /** Session 21: facts earlier completed cases left behind for the same subject (with status and source). */
+  memory?: MemoryItem[];
+  /** Session 21: the human-typeable case reference (RPL-XXXXXX). */
+  caseRef?: string;
 }
 export interface CompletionCheck { key: string; label: string; passed: boolean; detail: string }
 
@@ -130,6 +166,22 @@ export interface WorkflowPack {
    * adapter can run it); packs never run Switch protocol calls themselves. See collab/port.ts.
    */
   switchCaseTopology?: import('../collab/port.js').SwitchCaseTopology;
+  /**
+   * Session 21 (flagship): the case room topology. Declaring it makes the pack SWITCH-NATIVE: in competition mode
+   * (RIPPLE_SWITCH_REQUIRED=1) its missions run only on a verified Switch fabric and its approvals are decided only in
+   * the declared Switch decision rooms by authenticated people.
+   */
+  caseRooms?: import('../collab/port.js').CaseRoomsTopology;
+  /** Session 21: records that enter the case evidence manifest (Merkle-committed; disclosed selectively). */
+  evidenceRecords?(plan: any, change: any): EvidenceRecord[];
+  /**
+   * Session 21: an INDEPENDENT verifier, separate from the proposing roles. It receives only approved payloads, approval
+   * rows and connector read-backs (VerifierInput), recomputes its own checks, and its verdict gates completion.
+   * Each failed check names the role that owns the fix (the work order).
+   */
+  independentVerifier?: { roleKey: string; verify(input: VerifierInput): { name: string; passed: boolean; detail: string; ownerRole?: string; fix?: string }[] };
+  /** Session 21: facts a COMPLETED case leaves for later cases (only completed, verified cases write memory). */
+  memoryFacts?(ctx: CompletionContext): MemorySpec[];
 }
 
 export interface CompletionContext { baselinePlan: any; revisedPlan: any; change: any; answers: AnalysisContext['answers']; today: string }

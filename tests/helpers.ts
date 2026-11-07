@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Db } from '../src/server/db/db.js';
-import { Engine, type Actor } from '../src/server/engine/engine.js';
+import { Engine, type Actor, type EngineDeps } from '../src/server/engine/engine.js';
 import { defaultRegistry, type PackRegistry } from '../src/server/packs/registry.js';
 import { LocalCollab } from '../src/server/collab/local.js';
 import { buildConnectors } from '../src/server/connectors/index.js';
@@ -10,10 +10,10 @@ import { DeterministicProvider } from '../src/server/agents/provider.js';
 import { seedWorkspace } from '../src/server/seed.js';
 import type { CollabPort } from '../src/server/collab/port.js';
 
-export function makeEnv(collab: CollabPort = new LocalCollab(), packs: PackRegistry = defaultRegistry(), chatIdentities?: Record<string, string>) {
+export function makeEnv(collab: CollabPort = new LocalCollab(), packs: PackRegistry = defaultRegistry(), chatIdentities?: Record<string, string>, extra: Partial<EngineDeps> = {}) {
   const db = new Db(':memory:');
   const outbox = mkdtempSync(join(tmpdir(), 'ripple-'));
-  const engine = new Engine({ db, packs, collab, connectors: buildConnectors(outbox), provider: new DeterministicProvider(), today: () => '2026-11-09', chatIdentities });
+  const engine = new Engine({ db, packs, collab, connectors: buildConnectors(outbox), provider: new DeterministicProvider(), today: () => '2026-11-09', chatIdentities, ...extra });
   const seeded = seedWorkspace(db, packs, { name: 'Test Catering', password: 'pw-test-123' });
   const actor = (email: string): Actor => {
     const u = db.get('SELECT * FROM users WHERE email=?', email)!;
