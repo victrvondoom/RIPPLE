@@ -14,6 +14,7 @@ import { getCausalGraph } from '../engine/causal.js';
 import { registerRealityRoutes, REALITY_TABLES } from './reality.js';
 import { registerCrossDomainRoutes } from './crossdomain.js';
 import { registerDashboardRoutes, DASH_TABLES } from './dashboards.js';
+import { registerFlipsideRoutes } from './flipside.js';
 import { issueReceipt, verifyReceipt, type LedgerReceipt } from './receipt.js';
 import { SwitchConsole, registerConsoleRoutes } from '../console/console.js';
 
@@ -186,6 +187,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   registerCrossDomainRoutes(app, engine);
   // Four dashboards (Mission Control, Operations Workbench, Trust & Evidence, Knowledge & Decisions) + capability catalog (session 10)
   registerDashboardRoutes(app, engine);
+  registerFlipsideRoutes(app, engine);
   // Portable signed ledger receipts (session 16; inherited from switch-notary/Shipyard). Issue: manager/owner. Verify: any member.
   app.post('/api/dash/trust/receipt', (c) => c.json(issueReceipt(engine, A(c))));
   app.post('/api/dash/trust/receipt/verify', async (c) => {

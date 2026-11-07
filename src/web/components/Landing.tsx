@@ -1,3 +1,4 @@
+import { FlipsideShowcase } from './FlipsideShowcase';
 /**
  * Pre-login front door in the "Flip the Switch" poster style (peach canvas, heavy black type, dark terminal card).
  * The child is the real login form, kept intact so flows and e2e selectors are unchanged.
@@ -31,6 +32,7 @@ export function Landing({ children }: { children: React.ReactNode }) {
         </section>
         <section className="poster-login">{children}</section>
       </main>
+      <FlipsideShowcase />
       <p className="poster-foot">Demo workspace · deterministic analyzers · dry-run connectors: nothing is emailed, paid or submitted · Switch: local mode</p>
     </div>
   );
