@@ -6,6 +6,7 @@ import { recordCausalEvent } from './causal.js';
 import type { PackRegistry } from '../packs/registry.js';
 import type { CollabPort, OutboundMessage, RoomInfo, CaseRoomRecord, InboundMessage } from '../collab/port.js';
 import { chatRef, parseChatCommand } from '../collab/chat.js';
+import { parseStrictDecision } from '../collab/authority.js';
 import type { Connector, Observation } from '../connectors/index.js';
 import type { TextProvider } from '../agents/provider.js';
 import { sanitizeAttachments } from '../capabilities/reclaim/attachments.js';
@@ -14,9 +15,19 @@ import { RepeatGuard } from './repeat.js';
 import { inQuietWindow, validQuietWindow } from './quiet.js';
 import { evaluateCompletion } from './completion.js';
 import { MAX_PASSES, ORCHESTRATOR, TASK_TIMEOUT_MS, depsOf, roleFingerprint, validateRoleResult } from './orchestrator.js';
+import { CaseOps, type PreflightFn } from './caseops.js';
 
 export interface Actor { id: string; name: string; role: 'owner' | 'manager' | 'member' | 'viewer'; workspaceId: string }
-export interface EngineDeps { db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider; today?: () => string; /** Switch sender name (lower-case) -> RIPPLE user email. See collab/chat.ts. */ chatIdentities?: Record<string, string> }
+export interface EngineDeps {
+  db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider; today?: () => string;
+  /** Switch sender name (lower-case) -> RIPPLE user email. See collab/chat.ts. */ chatIdentities?: Record<string, string>;
+  /** Session 21 competition mode (RIPPLE_SWITCH_REQUIRED=1): Switch-native packs run only on a verified Switch fabric (fail-closed). */
+  switchRequired?: boolean;
+  /** Session 21: the real-server preflight (collab/preflight.ts) used by competition mode. */
+  preflight?: PreflightFn;
+}
+/** How an approval decision arrived. Only CaseOps (after authenticating the Switch event) passes channel 'switch'. */
+export interface DecisionVia { channel: 'switch'; decisionId: string; senderId: string; roomId: string | null; messageId: string }
 
 const isManager = (a: Actor) => a.role === 'owner' || a.role === 'manager';
 const AGENT_SENDER = 'ripple';
@@ -27,8 +38,11 @@ export class Engine {
   private repeats = new RepeatGuard();
   db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider;
   private chatIdentities: Record<string, string> = {};
+  /** Session 21: Switch-native case operations (rooms, authenticated decisions, verifier, receipts, memory, routing). */
+  cases: CaseOps;
   constructor(public deps: EngineDeps) {
     this.db = deps.db; this.packs = deps.packs; this.collab = deps.collab; this.connectors = deps.connectors; this.provider = deps.provider;
+    this.cases = new CaseOps(this, !!deps.switchRequired, deps.preflight);
     this.chatIdentities = Object.fromEntries(Object.entries(deps.chatIdentities ?? {}).map(([k, v]) => [k.trim().toLowerCase(), v.trim().toLowerCase()]));
   }
 
@@ -73,10 +87,18 @@ export class Engine {
   }
 
   // ---------- room / messages ----------
-  async ensureRoom(m: Row): Promise<{ row: Row; info: RoomInfo }> {
+  async ensureRoom(m: Row, roomKey?: string): Promise<{ row: Row; info: RoomInfo }> {
+    const pack = this.pack(m);
+    if (pack.caseRooms) {
+      // Session 21: a Switch-native pack opens its whole declared topology once; every message goes to its role's room.
+      const key = roomKey ?? pack.caseRooms.defaultRoom;
+      let row = this.cases.roomByKey(m, key);
+      if (!row) { await this.cases.openCaseRooms(m, pack); row = this.cases.roomByKey(m, key) ?? this.cases.roomByKey(m, pack.caseRooms.defaultRoom); }
+      if (!row) throw new EngineError(500, 'room_missing', `Case room ${key} was not opened.`);
+      return { row, info: this.cases.info(row) };
+    }
     const existing = this.db.get('SELECT * FROM rooms WHERE mission_id=? AND workspace_id=? ORDER BY created_at DESC', m.id, m.workspace_id);
     if (existing) return { row: existing, info: { mode: existing.mode, externalId: existing.external_id, name: existing.name, note: existing.note } };
-    const pack = this.pack(m);
     let info: RoomInfo; let status = 'open';
     try {
       info = await this.collab.openRoom({ missionId: m.id, title: m.title, topic: `RIPPLE mission ${m.id} (${pack.name})`, agentRoles: pack.roles.filter((r) => r.kind === 'agent').map((r) => ({ key: r.key, name: r.name })) });
@@ -88,26 +110,9 @@ export class Engine {
     }
     const row = { id: uid('room'), workspace_id: m.workspace_id, mission_id: m.id, mode: info.mode, external_id: info.externalId, name: info.name, status, note: info.note, created_at: nowIso() };
     this.db.insert('rooms', row);
-    if (info.externalId && this.collab.subscribe) {
-      // Inbound Switch activity is recorded as ADVISORY, clearly external messages. It never changes mission state by itself:
-      // answers and approvals must come through authenticated RIPPLE users.
-      // Attachments bypass text guardrails (Switch issue #908), so every one is inspected by RECLAIM's deterministic
-      // sanitizer BEFORE any parsing; the sanitized, labelled form is the only thing downstream analysis may read.
-      const seen = new Set<string>();
-      this.collab.subscribe(info, (im) => {
-        if (im.messageId && seen.has(im.messageId)) return; if (im.messageId) seen.add(im.messageId);
-        const guard = sanitizeAttachments(im.attachments ?? []);
-        this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'external', sender_key: im.senderId, sender_name: im.senderName || im.senderId, to_key: null, body: im.body, data: JSON.stringify({ addressed: im.addressed, messageId: im.messageId, ...(guard.length ? { attachments: guard.map((g) => ({ safeLabel: g.safeLabel, guard: g.guard, quarantined: g.quarantined, findings: g.findings.map((f) => `${f.code}: ${f.detail}`) })) } : {}) }), ref_id: null, source: 'switch', created_at: nowIso() });
-        // Session 16: the same untrusted-text scan used by packs. Flags are advisory: recorded for a human, never acted on.
-        // Session 19: a decision typed in the room counts only through the same authority checks as the RIPPLE UI (see chatDecision).
-        void this.chatDecision(m, im).catch(() => undefined);
-        const flags = untrustedFindings(im.body ?? '');
-        // Repeat suppression (session 16): the same flag from the same sender is not re-recorded within 5 minutes.
-        if (flags.length && this.repeats.admit(`${m.id}|${im.senderId}|${flags.join('|')}`)) this.audit(m.workspace_id, m.id, 'system', 'switch', 'untrusted_content_flagged', `Inbound Switch message from ${im.senderName || im.senderId} flagged for human review (not acted on): ${flags.join('; ')}`, { messageId: im.messageId, flags });
-        this.audit(m.workspace_id, m.id, 'system', 'switch', 'switch_inbound', `Message from ${im.senderName || im.senderId} received via Switch (advisory)${guard.some((g) => g.quarantined) ? `; ${guard.filter((g) => g.quarantined).length} attachment(s) quarantined by the RECLAIM guardrail` : guard.length ? `; ${guard.length} attachment(s) passed the guardrail` : ''}`, { messageId: im.messageId });
-      });
-    }
+    if (info.externalId && this.collab.subscribe) this.subscribeRoom(m, row, info);
     this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'room_opened', `Collaboration room opened in ${info.mode.toUpperCase()} mode`, { name: info.name });
+
     // Level 3 (session 15): a pack-declared case topology is bootstrapped generically when the room is a real Switch room.
     if (pack.switchCaseTopology && info.mode === 'switch' && this.collab.openCaseTopology) {
       try {
@@ -122,6 +127,36 @@ export class Engine {
       }
     }
     return { row, info };
+  }
+  /** Records inbound Switch activity for one room (attachments guarded, untrusted text flagged, decisions authenticated). */
+  subscribeRoom(m: Row, row: Row, info: RoomInfo) {
+    if (!this.collab.subscribe) return;
+    // Inbound Switch activity is recorded as ADVISORY, clearly external messages. It never changes mission state by itself:
+    // answers and approvals must come through authenticated RIPPLE users.
+    // Attachments bypass text guardrails (Switch issue #908), so every one is inspected by RECLAIM's deterministic
+    // sanitizer BEFORE any parsing; the sanitized, labelled form is the only thing downstream analysis may read.
+    const seen = new Set<string>();
+    this.collab.subscribe(info, (im) => {
+      if (im.messageId && seen.has(im.messageId)) return; if (im.messageId) seen.add(im.messageId);
+      // Session 21: another RIPPLE identity's post heard by this room's listener is our own echo (already recorded by say()),
+      // EXCEPT a decision command: an agent "APPROVE" must reach the authority check so it is refused and recorded.
+      const ours = (this.collab.identities?.() ?? []).some((x) => x.name.toLowerCase() === (im.senderName ?? '').toLowerCase());
+      if (ours && !parseStrictDecision(im.body)) return;
+      const guard = sanitizeAttachments(im.attachments ?? []);
+      this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'external', sender_key: im.senderId, sender_name: im.senderName || im.senderId, to_key: null, body: im.body, data: JSON.stringify({ addressed: im.addressed, messageId: im.messageId, ...(guard.length ? { attachments: guard.map((g) => ({ safeLabel: g.safeLabel, guard: g.guard, quarantined: g.quarantined, findings: g.findings.map((f) => `${f.code}: ${f.detail}`) })) } : {}) }), ref_id: null, source: 'switch', created_at: nowIso() });
+      // Session 16: the same untrusted-text scan used by packs. Flags are advisory: recorded for a human, never acted on.
+      // Session 19: a decision typed in the room counts only through the same authority checks as the RIPPLE UI (see chatDecision).
+      // Session 21: the strict, hash-bound grammar (APPROVE <case> <A-ref> <sha256>) is authenticated by CaseOps; the legacy
+      // short grammar stays available for packs that are not Switch-native, and never in competition mode.
+      void (async () => {
+        if (await this.cases.onInbound(m, row, im)) return;   // room id comes ONLY from the server event (fail-closed)
+        if (!this.pack(m).caseRooms && !this.cases.switchRequired) await this.chatDecision(m, im);
+      })().catch((err) => this.audit(m.workspace_id, m.id, 'system', 'switch', 'switch_error', `Inbound decision handling failed: ${String((err as Error).message).slice(0, 200)}`));
+      const flags = untrustedFindings(im.body ?? '');
+      // Repeat suppression (session 16): the same flag from the same sender is not re-recorded within 5 minutes.
+      if (flags.length && this.repeats.admit(`${m.id}|${im.senderId}|${flags.join('|')}`)) this.audit(m.workspace_id, m.id, 'system', 'switch', 'untrusted_content_flagged', `Inbound Switch message from ${im.senderName || im.senderId} flagged for human review (not acted on): ${flags.join('; ')}`, { messageId: im.messageId, flags });
+      this.audit(m.workspace_id, m.id, 'system', 'switch', 'switch_inbound', `Message from ${im.senderName || im.senderId} received via Switch (advisory)${guard.some((g) => g.quarantined) ? `; ${guard.filter((g) => g.quarantined).length} attachment(s) quarantined by the RECLAIM guardrail` : guard.length ? `; ${guard.length} attachment(s) passed the guardrail` : ''}`, { messageId: im.messageId });
+    });
   }
   /**
    * Session 19: a decision typed in a bridged Switch room. Identity is the Switch sender name, mapped by the operator
@@ -157,11 +192,17 @@ export class Engine {
     } catch (e) { refuse(String((e as Error).message).slice(0, 200)); }
   }
 
-  async say(m: Row, msg: OutboundMessage & { senderKind: 'agent' | 'human' | 'system'; data?: unknown; refId?: string }) {
-    const { row, info } = await this.ensureRoom(m);
+  async say(m: Row, msg: OutboundMessage & { senderKind: 'agent' | 'human' | 'system'; data?: unknown; refId?: string; roomKey?: string }) {
+    const pack = this.pack(m);
+    const { row, info } = await this.ensureRoom(m, pack.caseRooms ? this.cases.roomKeyFor(pack, msg) : undefined);
     this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: msg.kind, sender_kind: msg.senderKind, sender_key: msg.senderKey, sender_name: msg.senderName, to_key: msg.toKey ?? null, body: msg.body, data: JSON.stringify(msg.data ?? {}), ref_id: msg.refId ?? null, source: 'ripple', created_at: nowIso() });
     try { await this.collab.send(info, msg); }
-    catch (e) { this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'switch_error', `Message not delivered to Switch: ${String((e as Error).message).slice(0, 200)}`); }
+    catch (e) {
+      // Recorded, never hidden. Critical operations are gated BEFORE they run (CaseOps.assertReady); a post that fails after an
+      // effect already happened is marked undelivered instead of aborting halfway through a state change.
+      this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'switch_error', `Message not delivered to Switch room #${row.name}: ${String((e as Error).message).slice(0, 200)}`, { undelivered: true, kind: msg.kind });
+      this.db.exec("UPDATE messages SET data=json_set(data, '$.undelivered', json('true')) WHERE id=(SELECT id FROM messages WHERE mission_id=? AND workspace_id=? ORDER BY rowid DESC LIMIT 1)", m.id, m.workspace_id);
+    }
   }
 
   // ---------- missions & baseline ----------
@@ -169,6 +210,7 @@ export class Engine {
     this.require(a, 'owner', 'manager');
     const pack = this.packs.get(input.packId);
     if (!pack) throw new EngineError(404, 'pack_not_found', `Unknown workflow pack "${input.packId}".`);
+    await this.cases.assertReady(a.workspaceId, null, pack, 'Opening a case');
     const title = input.title.trim();
     if (!title || title.length > 160) throw new EngineError(422, 'invalid_title', 'Title is required (max 160 chars).');
     const parsed = pack.planSchema.safeParse(input.plan);
@@ -210,6 +252,7 @@ export class Engine {
     if (m.paused) throw new EngineError(409, 'paused', 'Mission is paused. Resume it before submitting a change.');
     if (['draft', 'cancelled'].includes(m.state)) throw new EngineError(409, 'no_baseline', `Cannot submit a change while mission is ${m.state}; approve a baseline first.`);
     const pack = this.pack(m);
+    await this.cases.assertReady(a.workspaceId, m.id, pack, 'Submitting a change');
     const parsed = pack.changeSchema.safeParse(input);
     if (!parsed.success) throw new EngineError(422, 'invalid_change', 'Change failed validation: ' + parsed.error.issues.slice(0, 5).map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
     const bl = this.baseline(m);
@@ -260,6 +303,9 @@ export class Engine {
     const ws = m.workspace_id;
     const change = this.db.get("SELECT * FROM change_events WHERE mission_id=? AND workspace_id=? AND status='open' ORDER BY seq DESC", m.id, ws);
     if (!change) throw new EngineError(409, 'no_open_change', 'There is no open change to analyze.');
+    await this.cases.assertReady(ws, m.id, pack, 'Running analysis');
+    // Switch-native packs open their rooms BEFORE any state changes: if Switch refuses a room, the case stays where it was.
+    if (pack.caseRooms) await this.ensureRoom(m);
     this.transition(m, 'analyzing', `Analyzing: ${trigger}`, a.name);
     const rev = m.analysis_rev + 1;
     this.db.update('missions', m.id, ws, { analysis_rev: rev }); m.analysis_rev = rev;
@@ -291,7 +337,7 @@ export class Engine {
       for (const e of graph.edges) addEdge(e.from, e.to, e.relation);
     });
 
-    const ctx: AnalysisContext = { today: this.deps.today?.() ?? change.created_at.slice(0, 10), plan, change: input, items, answers, revisedPlan, results: {}, impacted };
+    const ctx: AnalysisContext = { today: this.deps.today?.() ?? change.created_at.slice(0, 10), plan, change: input, items, answers, revisedPlan, results: {}, impacted, ...(pack.memoryFacts ? { memory: this.cases.memoryFor(ws, pack) } : {}), caseRef: this.cases.caseRef(m) };
     const room = await this.ensureRoom(m);
     await this.say(m, { kind: 'status', senderKey: AGENT_SENDER, senderName: 'RIPPLE', senderKind: 'system', body: `Analysis rev ${rev} started (${trigger}). Change #${change.seq} vs baseline v${change.baseline_version}. Impacted: ${graph.impactedArtifacts.length} artifacts across ${graph.departments.join(', ')}. ${staleCount ? `${staleCount} earlier action(s) marked stale.` : ''}` });
 
@@ -321,6 +367,16 @@ export class Engine {
       for (const act of result.actions) { const dr = draftIndex.get(act.draftKind); if (dr) collected.push({ spec: act, content: dr.content, artifactId: dr.artifactId, draftKind: act.draftKind }); }
     }
 
+    // Session 21: room documents each role writes in ITS room, and cross-room handoffs carrying only claims + references.
+    for (const roleKey of order) {
+      const r = ctx.results[roleKey];
+      if (pack.caseRooms) for (const d of r.documents ?? []) await this.cases.writeDocument(m, pack.caseRooms.roleRoom[roleKey] ?? pack.caseRooms.defaultRoom, { ...d, kind: 'role_document' }, roleKey);
+      for (const h of r.handoffs ?? []) {
+        const digest = this.cases.recordHandoff(m, rev, roleKey, h.to, h.summary, h.claims, h.evidenceRefs ?? []);
+        await this.say(m, { kind: 'handoff', senderKey: roleKey, senderName: pack.roles.find((x) => x.key === roleKey)?.name ?? roleKey, senderKind: 'agent', toKey: h.to, toName: pack.roles.find((x) => x.key === h.to)?.name ?? h.to, body: `${h.summary}\nClaims: ${h.claims.map((c) => `• ${c}`).join(' ')}${h.evidenceRefs?.length ? `\nEvidence references (manifest ids): ${h.evidenceRefs.join(', ')}` : ''}\nHandoff digest SHA-256 ${digest}`, data: { type: 'cross_room_handoff', digest } });
+      }
+    }
+
     // work items + task nodes
     this.db.tx(() => {
       for (const r of Object.values(ctx.results)) for (const w of r.workItems) {
@@ -341,7 +397,7 @@ export class Engine {
       const prior = this.db.get("SELECT * FROM actions WHERE mission_id=? AND idempotency_key=? AND status='verified' ORDER BY executed_at DESC", m.id, idem);
       const aid = uid('act');
       const owner = this.roleUser(ws, pack.id, spec.ownerRole);
-      const base = { id: aid, workspace_id: ws, mission_id: m.id, key: spec.key, type: spec.type, title: spec.title, connector: spec.connector, owner_role: spec.ownerRole, owner_user_id: owner?.id ?? null, consequential: spec.consequential, artifact_id: c.artifactId, payload: JSON.stringify(payload), payload_hash: payloadHash, idempotency_key: idem, baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso() };
+      const base = { id: aid, workspace_id: ws, mission_id: m.id, key: spec.key, type: spec.type, title: spec.title, connector: spec.connector, owner_role: spec.ownerRole, owner_user_id: owner?.id ?? null, consequential: spec.consequential, artifact_id: c.artifactId, payload: JSON.stringify(payload), payload_hash: payloadHash, idempotency_key: idem, baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), effect_key: spec.effectKey, spec: JSON.stringify({ approver: spec.approver ?? null, coApprover: spec.coApprover ?? null, decisionRoom: spec.decisionRoom ?? null, separateExecutor: !!spec.separateExecutor, requiresVerifierPass: !!spec.requiresVerifierPass }) };
       if (prior) {
         // Identical content was already executed AND verified: do not repeat the effect, carry the proof over.
         this.db.insert('actions', { ...base, status: 'verified', attempts: 0, result: prior.result, executed_at: prior.executed_at });
@@ -353,7 +409,26 @@ export class Engine {
       this.db.insert('actions', { ...base, status: 'proposed', attempts: 0, quiet_hours: spec.quietHours && validQuietWindow(spec.quietHours) ? JSON.stringify(spec.quietHours) : null });
       const gate = this.resolveApprover(ws, pack.id, pack, spec);
       const aprId = uid('apr');
-      this.db.insert('approvals', { id: aprId, workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: `Approve: ${spec.title}`, rationale: spec.rationale, required_role: spec.approvalRole, status: 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: gate?.userId ?? null, approver_label: gate?.label ?? null, separate_from_requester: spec.separateFromRequester ? 1 : 0, expires_at: spec.approvalTtlMinutes ? new Date(Date.now() + spec.approvalTtlMinutes * 60_000).toISOString() : null });
+      // Session 21: an approval is bound to the exact payload hash, to its decision room, and (for Switch-native packs in
+      // competition mode) to the Switch channel. Two-person control adds a second slot bound to a different person.
+      const channel = this.cases.switchRequired && pack.caseRooms && spec.decisionRoom ? 'switch' : 'any';
+      const slots: { slot: number; gate: { userId: string | null; label: string } | null; title: string }[] = [{ slot: 1, gate, title: `Approve: ${spec.title}` }];
+      if (spec.coApprover) slots.push({ slot: 2, gate: this.resolveApprover(ws, pack.id, pack, { ...spec, approver: { role: spec.coApprover.role } }), title: `Second approval (two-person control): ${spec.title}` });
+      // Previous revision's GRANTED approvals of the same action key (markStale turned approved → stale; rejected/expired keep their status).
+      const prev = this.db.all("SELECT a.* FROM approvals a JOIN actions x ON x.id=a.subject_id WHERE a.mission_id=? AND a.workspace_id=? AND x.key=? AND x.analysis_rev=? AND a.status='stale' AND a.decided_by IS NOT NULL", m.id, ws, spec.key, rev - 1);
+      const prevAct = this.db.get('SELECT payload_hash FROM actions WHERE mission_id=? AND workspace_id=? AND key=? AND analysis_rev=?', m.id, ws, spec.key, rev - 1);
+      const carried: string[] = [];
+      for (const sl of slots) {
+        const id = sl.slot === 1 ? aprId : uid('apr');
+        // Carry a GRANTED approval over only when the payload hash is byte-identical and the same person holds the slot.
+        const old = prevAct?.payload_hash === payloadHash ? prev.find((p) => (p.slot ?? 1) === sl.slot && p.decided_by === sl.gate?.userId && p.payload_hash === payloadHash) : undefined;
+        this.db.insert('approvals', { id, workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: sl.title, rationale: spec.rationale, required_role: spec.approvalRole, status: old ? 'approved' : 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: sl.gate?.userId ?? null, approver_label: sl.gate?.label ?? null, separate_from_requester: spec.separateFromRequester ? 1 : 0, expires_at: spec.approvalTtlMinutes ? new Date(Date.now() + spec.approvalTtlMinutes * 60_000).toISOString() : null, channel_required: channel, decision_room_key: spec.decisionRoom ?? null, payload_hash: payloadHash, slot: sl.slot, ...(old ? { decided_by: old.decided_by, decided_at: old.decided_at, decision_note: `Carried over from ${old.id}: identical payload hash ${payloadHash.slice(0, 12)}…`, decided_via: old.decided_via, decision_ref: old.decision_ref, carried_from: old.id } : {}) });
+        if (old) carried.push(id);
+      }
+      if (carried.length) {
+        this.audit(ws, m.id, 'system', AGENT_SENDER, 'approval_carried_over', `"${spec.title}": ${carried.length} granted approval(s) carried over (identical payload hash, same approver); nobody is re-asked.`, { actionId: aid, approvals: carried });
+        if (carried.length === slots.length) this.db.update('actions', aid, ws, { status: 'approved' });
+      }
       for (const rk of spec.ackRoles) {
         const u = this.roleUser(ws, pack.id, rk);
         if (u) this.db.insert('acknowledgements', { id: uid('ack'), workspace_id: ws, mission_id: m.id, action_id: aid, user_id: u.id, status: 'pending' });
@@ -362,6 +437,15 @@ export class Engine {
       const ak = Object.values(ctx.results).flatMap((r) => r.drafts).find((d) => d.kind === c.draftKind)?.artifactKey;
       if (ak && nodeIds.has(`artifact:${ak}`)) addEdge(`artifact:${ak}`, `action:${spec.key}`, 'produces');
       for (const d of pack.decisions) if (nodeIds.has(`decision:${d.key}`) && ak && d.gates.includes(ak)) addEdge(`decision:${d.key}`, `action:${spec.key}`, 'authorizes');
+      if (pack.caseRooms) {
+        // Session 21: only the room where the decision is owned is asked, with the exact hash-bound command.
+        for (const sl of slots) {
+          const ap = this.db.get('SELECT * FROM approvals WHERE subject_id=? AND slot=? AND workspace_id=?', aid, sl.slot, ws)!;
+          if (ap.status !== 'pending') continue;
+          const sender = pack.roles.find((r) => r.key === spec.ownerRole && r.kind === 'agent')?.key ?? Object.entries(pack.caseRooms.roleRoom).find(([k, room]) => room === spec.decisionRoom && pack.roles.find((r) => r.key === k)?.kind === 'agent')?.[0] ?? pack.caseRooms.coordinatorRole;
+          await this.say(m, { kind: 'approval_request', senderKey: sender, senderName: pack.roles.find((r) => r.key === sender)?.name ?? sender, senderKind: 'agent', roomKey: spec.decisionRoom ?? pack.caseRooms.roleRoom[sender], toKey: spec.approver?.role, toName: sl.gate?.label ?? 'approver', body: `Decision needed from ${sl.gate?.label ?? 'the bound approver'} (${sl.slot === 2 ? 'second person, two-person control' : 'first approval'}): ${spec.title}. ${spec.rationale}\nPayload SHA-256: ${payloadHash}\nApprove exactly this payload with:\nAPPROVE ${this.cases.caseRef(m)} ${chatRef('A', ap.id)} ${payloadHash}\nor reject with: REJECT ${this.cases.caseRef(m)} ${chatRef('A', ap.id)} <reason>\nOnly the authenticated person bound to this approval can decide it${channel === 'switch' ? ', and only here in Switch' : ''}. Agents cannot approve. Nothing executes until every required person approves.`, refId: aid });
+        }
+      } else
       await this.say(m, { kind: 'approval_request', senderKey: 'coordinator', senderName: pack.roles.find((r) => r.key === 'coordinator')?.name ?? 'Coordinator', senderKind: 'agent', toKey: 'human_manager', toName: this.roleUser(ws, pack.id, 'human_manager')?.name ?? 'Event Manager', body: `Approval requested: ${spec.title}. ${spec.rationale} Nothing is sent until you approve. Reply in this thread: approve ${chatRef('A', aprId)}, or decline ${chatRef('A', aprId)} <reason>.`, refId: aid });
     }
 
@@ -374,6 +458,7 @@ export class Engine {
       this.transition(m, 'awaiting_approval', pend ? `${pend} approval(s) required before anything is executed.` : 'No approvals pending.', AGENT_SENDER);
     }
     this.audit(ws, m.id, 'system', AGENT_SENDER, 'analysis_complete', `Analysis rev ${rev} complete (${room.info.mode} collaboration; ${run.passes} pass(es))`, { rev, roles: pack.roleOrder, passes: run.passes, escalated: run.escalated });
+    if (pack.caseRooms) this.cases.route(this.mission(ws, m.id), rev);
     this.reconcile(this.mission(ws, m.id), AGENT_SENDER);
     return this.mission(ws, m.id);
   }
@@ -624,10 +709,16 @@ export class Engine {
     this.audit(ws, missionId, 'system', AGENT_SENDER, 'approval_expired', `Approval expired (not decided in time): ${ap.title}`, { approvalId: ap.id, actionId: ap.subject_id });
   }
 
-  async decideApproval(a: Actor, missionId: string, approvalId: string, decision: 'approved' | 'rejected', note: string) {
+  async decideApproval(a: Actor, missionId: string, approvalId: string, decision: 'approved' | 'rejected', note: string, via?: DecisionVia) {
     const m = this.mission(a.workspaceId, missionId);
     const ap = this.db.get('SELECT * FROM approvals WHERE id=? AND mission_id=? AND workspace_id=?', approvalId, m.id, a.workspaceId);
     if (!ap) throw new EngineError(404, 'not_found', 'Approval not found.');
+    // Session 21: a Switch-bound approval (competition mode) is decided ONLY by an authenticated Switch event, never a UI click.
+    if (ap.channel_required === 'switch' && via?.channel !== 'switch') {
+      const room = ap.decision_room_key ? this.cases.roomByKey(m, ap.decision_room_key) : undefined;
+      this.audit(a.workspaceId, m.id, 'user', a.name, 'local_decision_refused', `Local decision on "${ap.title}" refused: competition mode requires the decision in Switch room #${room?.name ?? ap.decision_room_key}`, { approvalId: ap.id });
+      throw new EngineError(409, 'switch_approval_required', `This approval must be decided by its bound person in Switch room #${room?.name ?? ap.decision_room_key}, quoting the payload hash. A RIPPLE UI or console decision does not count in competition mode.`);
+    }
     if (ap.required_role === 'manager' && !isManagerRole(a)) throw new EngineError(403, 'forbidden', 'Only a manager/owner can decide this approval.');
     if (ap.required_role === 'owner' && a.role !== 'owner') throw new EngineError(403, 'forbidden', 'Only the workspace owner can decide this approval.');
     // who-specific gate (optional, fail-closed): approver_label is set whenever the action declared an `approver`
@@ -645,11 +736,19 @@ export class Engine {
     if (ap.status !== 'pending') throw new EngineError(409, 'already_decided', `Approval already ${ap.status}.`);
     if (ap.change_seq !== m.change_seq || ap.analysis_rev !== m.analysis_rev) throw new EngineError(409, 'stale', 'Approval does not match the current change/analysis version.');
     if (decision === 'rejected' && !note.trim()) throw new EngineError(422, 'note_required', 'A reason is required when rejecting.');
+    // Session 21 two-person control: the same person may not fill two approval slots of one action.
+    const siblings = this.db.all('SELECT * FROM approvals WHERE subject_id=? AND workspace_id=? AND analysis_rev=? AND id!=?', ap.subject_id, a.workspaceId, ap.analysis_rev, ap.id);
+    if (decision === 'approved' && siblings.some((x) => x.decided_by === a.id && x.status === 'approved')) {
+      this.audit(a.workspaceId, m.id, 'user', a.name, 'two_person_refused', `Two-person control: ${a.name} already approved another slot of "${ap.title}"`, { approvalId: ap.id });
+      throw new EngineError(403, 'two_person', 'Two-person control: you already approved this action; a second, different person must give the other approval.');
+    }
     if (m.state !== 'awaiting_approval' && m.state !== 'executing' && m.state !== 'verifying') throw new EngineError(409, 'bad_state', `Approvals cannot be decided while mission is ${m.state}.`);
     const act = this.db.get('SELECT * FROM actions WHERE id=? AND workspace_id=?', ap.subject_id, a.workspaceId)!;
-    this.db.exec('UPDATE approvals SET status=?, decided_by=?, decision_note=?, decided_at=? WHERE id=?', decision, a.id, note.trim(), nowIso(), ap.id);
-    this.db.update('actions', act.id, a.workspaceId, { status: decision === 'approved' ? 'approved' : 'rejected' });
-    this.audit(a.workspaceId, m.id, 'user', a.name, `approval_${decision}`, `${decision === 'approved' ? 'Approved' : 'Rejected'}: ${act.title}${note ? ` — ${note}` : ''}`, { approvalId: ap.id, actionId: act.id, baseline: ap.baseline_version, change: ap.change_seq });
+    this.db.exec('UPDATE approvals SET status=?, decided_by=?, decision_note=?, decided_at=?, decided_via=?, decision_ref=? WHERE id=?', decision, a.id, note.trim(), nowIso(), via?.channel ?? 'ripple-ui', via?.decisionId ?? null, ap.id);
+    // The action is approved only when EVERY slot is approved; any rejection rejects it.
+    const allApproved = decision === 'approved' && siblings.every((x) => x.status === 'approved');
+    this.db.update('actions', act.id, a.workspaceId, { status: decision === 'rejected' ? 'rejected' : allApproved ? 'approved' : act.status });
+    this.audit(a.workspaceId, m.id, 'user', a.name, `approval_${decision}`, `${decision === 'approved' ? 'Approved' : 'Rejected'}: ${act.title}${note ? ` — ${note}` : ''}${via ? ` (via Switch, sender ${via.senderId})` : ''}${decision === 'approved' && !allApproved ? ' — waiting for the second person' : ''}`, { approvalId: ap.id, actionId: act.id, baseline: ap.baseline_version, change: ap.change_seq, via: via ?? null });
     recordCausalEvent(this.db, {
       workspaceId: a.workspaceId,
       missionId: m.id,
@@ -659,15 +758,17 @@ export class Engine {
       actor: a.name,
       observedState: { approvalId: ap.id, decisionNote: note.trim() },
     });
-    await this.say(m, { kind: 'decision', senderKey: 'human', senderName: a.name, senderKind: 'human', toKey: 'coordinator', body: `${decision.toUpperCase()}: ${act.title}${note ? ` — ${note}` : ''}`, refId: act.id });
+    const pk = this.pack(m);
+    await this.say(m, { kind: 'decision', senderKey: pk.caseRooms ? pk.caseRooms.coordinatorRole : 'human', senderName: pk.caseRooms ? 'RIPPLE decision record' : a.name, senderKind: pk.caseRooms ? 'system' : 'human', toKey: 'coordinator', roomKey: ap.decision_room_key ?? undefined, body: `${decision.toUpperCase()} by ${a.name}${via ? ` (authenticated Switch sender ${via.senderId})` : ' (RIPPLE UI, LOCAL decision)'}: ${act.title}${note ? ` — ${note}` : ''}${decision === 'approved' && !allApproved ? '. Waiting for the second person (two-person control).' : ''}`, refId: act.id });
     this.reconcile(m, a.name);
     return this.mission(a.workspaceId, m.id);
   }
 
   // ---------- execution & verification ----------
-  async executeAction(a: Actor, missionId: string, actionId: string) {
+  async executeAction(a: Actor, missionId: string, actionId: string, opts: { recoveryPlanHash?: string } = {}) {
     this.require(a, 'owner', 'manager');
     const m = this.mission(a.workspaceId, missionId);
+    await this.cases.assertReady(a.workspaceId, m.id, this.pack(m), 'Executing an action');
     if (m.paused) throw new EngineError(409, 'paused', 'Mission is paused. Executions are refused until it is resumed.');
     const act = this.db.get('SELECT * FROM actions WHERE id=? AND mission_id=? AND workspace_id=?', actionId, m.id, a.workspaceId);
     if (!act) throw new EngineError(404, 'not_found', 'Action not found.');
@@ -676,8 +777,18 @@ export class Engine {
     if (act.change_seq !== m.change_seq || act.analysis_rev !== m.analysis_rev) throw new EngineError(409, 'stale', 'Action was built from an older version of the plan.');
     if (!['awaiting_approval', 'executing', 'recovery_required', 'verifying'].includes(m.state)) throw new EngineError(409, 'bad_state', `Cannot execute while mission is ${m.state}.`);
     if (act.consequential) {
-      const ap = this.db.get("SELECT * FROM approvals WHERE subject_id=? AND workspace_id=? ORDER BY created_at DESC", act.id, a.workspaceId);
-      if (!ap || ap.status !== 'approved') throw new EngineError(409, 'no_approval', 'Consequential action has no granted human approval.');
+      // Every approval slot of THIS action (two-person control adds a second one) must be granted.
+      const aps = this.db.all('SELECT * FROM approvals WHERE subject_id=? AND workspace_id=?', act.id, a.workspaceId);
+      if (!aps.length || aps.some((x) => x.status !== 'approved')) throw new EngineError(409, 'no_approval', `Consequential action has no granted human approval${aps.length > 1 ? ` from every required person (${aps.filter((x) => x.status === 'approved').length}/${aps.length})` : ''}.`);
+      const spec = j<any>(act.spec, {});
+      if (spec.separateExecutor && aps.some((x) => x.decided_by === a.id)) {
+        this.audit(a.workspaceId, m.id, 'user', a.name, 'separation_refused', `${a.name} may not execute "${act.title}": they approved it (separation of duties)`, { actionId: act.id });
+        throw new EngineError(403, 'separation_of_duties', 'Separation of duties: a person who approved this action cannot also execute it.');
+      }
+      if (spec.requiresVerifierPass) {
+        const v = this.cases.verifierPassed(m);
+        if (!v.passed) throw new EngineError(409, 'verifier_required', `"${act.title}" waits for the independent verifier: ${v.detail}`);
+      }
     }
     const openDeps = this.openDependencies(a.workspaceId, act);
     if (openDeps.length) {
@@ -692,6 +803,14 @@ export class Engine {
     }
     if (act.status === 'execution_unknown') {
       // An unknown outcome is never repeated blindly. Read back first: if the effect exists, verify it instead of executing again.
+      if (opts.recoveryPlanHash) {
+        // Session 21: a simulated recovery plan is bound to the basis it observed; re-read it immediately before acting.
+        const sim = this.cases.simulateRecovery(a, m.id, act.id);
+        if (sim.planHash !== opts.recoveryPlanHash) {
+          this.audit(a.workspaceId, m.id, 'user', a.name, 'recovery_basis_changed', `Recovery of "${act.title}" refused: the observed basis changed since the plan was simulated.`, { actionId: act.id });
+          throw new EngineError(409, 'recovery_basis_changed', 'The ledger state changed since this recovery plan was simulated. Simulate again and review the new plan.');
+        }
+      }
       const probe = this.connectors[act.connector];
       let obs: Observation;
       try {
@@ -701,12 +820,13 @@ export class Engine {
         throw new EngineError(409, 'still_unknown', `Outcome of "${act.title}" is still unknown: the read-back failed (${String((oe as Error).message)}). Nothing was repeated.`);
       }
       if (obs.found) {
-        this.db.update('actions', act.id, a.workspaceId, { status: 'executed', result: JSON.stringify({ location: obs.location, contentHash: obs.contentHash, mode: probe.mode, recoveredBy: 'read-back', deduped: true }), executed_at: nowIso(), last_error: null });
+        this.db.update('actions', act.id, a.workspaceId, { status: 'executed', result: JSON.stringify({ location: obs.location, contentHash: obs.contentHash, mode: probe.mode, recoveredBy: 'read-back', deduped: true }), executed_at: nowIso(), last_error: null, executed_by: act.executed_by ?? a.id });
         this.audit(a.workspaceId, m.id, 'system', 'ripple-verifier', 'action_effect_observed', `Read-back found the effect of "${act.title}" already in place. It was NOT repeated; verifying it now.`, { actionId: act.id, location: obs.location });
         recordCausalEvent(this.db, { workspaceId: a.workspaceId, missionId: m.id, causeType: 'verification_probe', lifecycleState: 'OBSERVED', summary: `Read-back observed the effect of an unknown-outcome action: ${act.title}`, actor: 'ripple-verifier', idempotencyKey: act.idempotency_key, observedState: { location: obs.location, count: obs.count } });
         this.verifyAction(a, m, act.id);
-        await this.say(m, { kind: 'status', senderKey: AGENT_SENDER, senderName: 'RIPPLE', senderKind: 'system', body: `Read-back found "${act.title}" already executed; verification: ${this.db.get('SELECT status FROM actions WHERE id=?', act.id)!.status}` });
+        await this.say(m, { kind: 'status', senderKey: AGENT_SENDER, senderName: 'RIPPLE', senderKind: 'system', body: `Read-back found "${act.title}" already executed; verification: ${this.db.get('SELECT status FROM actions WHERE id=?', act.id)!.status}. The write was NOT repeated.` });
         this.reconcile(m, a.name);
+        await this.maybeRunVerifier(m);
         return this.mission(a.workspaceId, m.id);
       }
       this.audit(a.workspaceId, m.id, 'system', 'ripple-verifier', 'unknown_resolved_absent', `Read-back confirmed "${act.title}" has no effect. Retrying with the same idempotency key.`, { actionId: act.id });
@@ -718,11 +838,11 @@ export class Engine {
     if (!conn) throw new EngineError(500, 'no_connector', `Connector ${act.connector} not installed.`);
     const cfg = this.db.get('SELECT * FROM connectors WHERE workspace_id=? AND key=?', a.workspaceId, act.connector);
     const payload = JSON.parse(act.payload);
-    this.db.update('actions', act.id, a.workspaceId, { attempts: act.attempts + 1 });
+    this.db.update('actions', act.id, a.workspaceId, { attempts: act.attempts + 1, executed_by: a.id });
     try {
       if (cfg?.fail_next) { this.db.exec('UPDATE connectors SET fail_next=0 WHERE id=?', cfg.id); throw new Error('Injected connector fault (development fault-injection switch in Settings)'); }
       const res = conn.execute({ workspaceId: a.workspaceId, missionId: m.id, idempotencyKey: act.idempotency_key, subject: payload.subject, target: payload.target, body: payload.body });
-      this.db.update('actions', act.id, a.workspaceId, { status: 'executed', result: JSON.stringify({ ...res, mode: conn.mode }), executed_at: nowIso(), last_error: null });
+      this.db.update('actions', act.id, a.workspaceId, { status: 'executed', result: JSON.stringify({ ...res, mode: conn.mode }), executed_at: nowIso(), last_error: null, executed_by: a.id });
       this.audit(a.workspaceId, m.id, 'user', a.name, 'action_executed', `Executed "${act.title}" via ${conn.name}${res.deduped ? ' (idempotent: effect already existed, not repeated)' : ''}`, { actionId: act.id, location: res.location });
       recordCausalEvent(this.db, {
         workspaceId: a.workspaceId,
@@ -752,7 +872,17 @@ export class Engine {
     this.verifyAction(a, m, act.id);
     await this.say(m, { kind: 'status', senderKey: AGENT_SENDER, senderName: 'RIPPLE', senderKind: 'system', body: `Verification for "${act.title}": ${this.db.get('SELECT status FROM actions WHERE id=?', act.id)!.status}` });
     this.reconcile(m, a.name);
+    await this.maybeRunVerifier(m);
     return this.mission(a.workspaceId, m.id);
+  }
+
+  /** Session 21: once every action the verifier covers is verified, the independent verifier runs (as its own identity). */
+  private async maybeRunVerifier(m: Row) {
+    const pack = this.pack(m); if (!pack.independentVerifier) return;
+    const acts = this.db.all("SELECT status, spec, payload_hash FROM actions WHERE mission_id=? AND workspace_id=? AND analysis_rev=? AND status NOT IN ('superseded','stale','rejected')", m.id, m.workspace_id, m.analysis_rev).filter((x) => !j<any>(x.spec, {}).requiresVerifierPass);
+    if (!acts.length || acts.some((x) => x.status !== 'verified')) return;
+    if (this.cases.verifierPassed(this.mission(m.workspace_id, m.id)).passed) return;
+    await this.cases.runVerifier(null, m.id, m.workspace_id);
   }
 
   /**
@@ -907,6 +1037,7 @@ export class Engine {
   async completeMission(a: Actor, missionId: string) {
     this.require(a, 'owner', 'manager');
     const m = this.mission(a.workspaceId, missionId);
+    await this.cases.assertReady(a.workspaceId, m.id, this.pack(m), 'Completing the case');
     const res = evaluateCompletion(this, m);
     if (!res.allPassed) {
       this.audit(a.workspaceId, m.id, 'user', a.name, 'completion_refused', `Completion refused: ${res.checks.filter((c) => !c.passed).map((c) => c.label).join('; ')}`);
@@ -935,6 +1066,9 @@ export class Engine {
       this.transition(m, 'completed', `All completion criteria satisfied. Baseline v${newV} saved.`, a.name);
     });
     this.audit(a.workspaceId, m.id, 'user', a.name, 'mission_completed', `Mission completed; baseline v${newV}`, { unresolved });
+    // Session 21: only a completed, verified case leaves facts for later cases; Switch-native cases get a final sealed receipt.
+    this.cases.writeMemory(m, pack, { baselinePlan: JSON.parse(this.baseline(m, change.baseline_version).plan), revisedPlan: revised, change: JSON.parse(change.input), answers, today: this.deps.today?.() ?? nowIso().slice(0, 10) });
+    if (pack.caseRooms) await this.cases.issueResolutionReceipt(m, 'final', a.name);
     await this.captureResolvedPlaybook(a, m);
     return this.mission(a.workspaceId, m.id);
   }

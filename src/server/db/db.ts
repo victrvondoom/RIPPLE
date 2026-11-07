@@ -30,8 +30,24 @@ export class Db {
     if (!apCols.includes('approver_label')) this.raw.exec('ALTER TABLE approvals ADD COLUMN approver_label TEXT');
     if (!apCols.includes('separate_from_requester')) this.raw.exec('ALTER TABLE approvals ADD COLUMN separate_from_requester INTEGER NOT NULL DEFAULT 0');
     if (!apCols.includes('expires_at')) this.raw.exec('ALTER TABLE approvals ADD COLUMN expires_at TEXT');
+    // Session 21: decision channel binding, two-person control, decision provenance.
+    if (!apCols.includes('channel_required')) this.raw.exec("ALTER TABLE approvals ADD COLUMN channel_required TEXT NOT NULL DEFAULT 'any'");
+    if (!apCols.includes('decision_room_key')) this.raw.exec('ALTER TABLE approvals ADD COLUMN decision_room_key TEXT');
+    if (!apCols.includes('payload_hash')) this.raw.exec('ALTER TABLE approvals ADD COLUMN payload_hash TEXT');
+    if (!apCols.includes('slot')) this.raw.exec('ALTER TABLE approvals ADD COLUMN slot INTEGER NOT NULL DEFAULT 1');
+    if (!apCols.includes('decided_via')) this.raw.exec("ALTER TABLE approvals ADD COLUMN decided_via TEXT");
+    if (!apCols.includes('decision_ref')) this.raw.exec('ALTER TABLE approvals ADD COLUMN decision_ref TEXT');
+    if (!apCols.includes('carried_from')) this.raw.exec('ALTER TABLE approvals ADD COLUMN carried_from TEXT');
+    const roomCols = (this.raw.prepare('PRAGMA table_info(rooms)').all() as any[]).map((c) => c.name);
+    if (!roomCols.includes('room_key')) this.raw.exec('ALTER TABLE rooms ADD COLUMN room_key TEXT');
+    if (!roomCols.includes('members')) this.raw.exec("ALTER TABLE rooms ADD COLUMN members TEXT NOT NULL DEFAULT '[]'");
+    if (!roomCols.includes('links')) this.raw.exec("ALTER TABLE rooms ADD COLUMN links TEXT NOT NULL DEFAULT '[]'");
+    if (!roomCols.includes('sensitivity')) this.raw.exec("ALTER TABLE rooms ADD COLUMN sensitivity TEXT NOT NULL DEFAULT 'shared'");
     const actCols = (this.raw.prepare('PRAGMA table_info(actions)').all() as any[]).map((c) => c.name);
     if (!actCols.includes('quiet_hours')) this.raw.exec('ALTER TABLE actions ADD COLUMN quiet_hours TEXT');
+    if (!actCols.includes('executed_by')) this.raw.exec('ALTER TABLE actions ADD COLUMN executed_by TEXT');
+    if (!actCols.includes('effect_key')) this.raw.exec('ALTER TABLE actions ADD COLUMN effect_key TEXT');
+    if (!actCols.includes('spec')) this.raw.exec("ALTER TABLE actions ADD COLUMN spec TEXT NOT NULL DEFAULT '{}'");
     const sealCols = (this.raw.prepare('PRAGMA table_info(ledger_seals)').all() as any[]).map((c) => c.name);
     if (!sealCols.includes('last_rowid')) this.raw.exec('ALTER TABLE ledger_seals ADD COLUMN last_rowid INTEGER');
     const qCols = (this.raw.prepare('PRAGMA table_info(questions)').all() as any[]).map((c) => c.name);

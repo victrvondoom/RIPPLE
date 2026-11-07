@@ -11,7 +11,7 @@ export function verifyPassword(pw: string, stored: string) {
 
 export const DEMO_USERS = [
   { email: 'sam@harborvine.example', name: 'Sam Rivera', role: 'owner', department: 'Operations', title: 'Owner & Escrow Controller', map: ['escrow_controller', 'depgate_owner', 'ev_venue_av', 'rc_qa_head'] as string[] },
-  { email: 'maya@harborvine.example', name: 'Maya Chen', role: 'manager', department: 'Event Management', title: 'Operations Lead & Commander', map: ['human_manager', 'human_pm', 'human_owner', 'sre_lead', 'data_steward', 'incident_commander', 'ev_speaker_keynote', 'fx_lead'] },
+  { email: 'maya@harborvine.example', name: 'Maya Chen', role: 'manager', department: 'Event Management', title: 'Operations Lead & Commander', map: ['human_manager', 'human_pm', 'human_owner', 'sre_lead', 'data_steward', 'incident_commander', 'ev_speaker_keynote', 'fx_lead', 'ir_commander'] },
   { email: 'luis@harborvine.example', name: 'Luis Ortega', role: 'member', department: 'Kitchen', title: 'Head Chef', map: ['human_chef'] },
   { email: 'priya@harborvine.example', name: 'Priya Nair', role: 'member', department: 'Procurement', title: 'Procurement & Escrow Lead', map: ['human_buyer'] },
   { email: 'dan@harborvine.example', name: 'Dan Okafor', role: 'member', department: 'Service', title: 'Service & Engineering Lead', map: ['human_service', 'lead_engineer'] },
@@ -36,9 +36,12 @@ export const DEMO_USERS = [
   { email: 'asha@harborvine.example', name: 'Asha Rao', role: 'manager', department: 'Consumer Desk', title: 'Consumer (case owner)', map: ['cr_consumer'] },
   { email: 'kai@harborvine.example', name: 'Kai Mendes', role: 'member', department: 'Consumer Advocacy', title: 'Case Reviewer (consumer advocate)', map: ['cr_case_reviewer'] },
   // --- billing-dispute pack: one company, internal departments (customers stay outside, via email) ---
-  { email: 'nora@harborvine.example', name: 'Nora Fischer', role: 'manager', department: 'Finance', title: 'Finance Lead (refunds & credits)', map: ['bd_finance_lead'] },
-  { email: 'eli@harborvine.example', name: 'Eli Brooks', role: 'member', department: 'Engineering', title: 'Engineering Lead (on-call)', map: ['bd_eng_lead'] },
-  { email: 'sofia@harborvine.example', name: 'Sofia Lind', role: 'manager', department: 'Support', title: 'Support Lead (customer replies)', map: ['bd_support_lead'] },
+  { email: 'nora@harborvine.example', name: 'Nora Fischer', role: 'manager', department: 'Finance', title: 'Finance Lead (refunds & credits)', map: ['bd_finance_lead', 'ir_finance_approver'] },
+  { email: 'eli@harborvine.example', name: 'Eli Brooks', role: 'member', department: 'Engineering', title: 'Engineering Lead (on-call)', map: ['bd_eng_lead', 'ir_eng_lead'] },
+  { email: 'sofia@harborvine.example', name: 'Sofia Lind', role: 'manager', department: 'Support', title: 'Support Lead (customer replies)', map: ['bd_support_lead', 'ir_cs_lead'] },
+  // Session 21 flagship: a second, independent finance approver (two-person control) and Legal & Compliance.
+  { email: 'iris@harborvine.example', name: 'Iris Calder', role: 'manager', department: 'Finance', title: 'Finance Controller (second approver)', map: ['ir_controller'] },
+  { email: 'lena@harborvine.example', name: 'Lena Park', role: 'member', department: 'Legal & Policy', title: 'Legal & Compliance', map: ['ir_legal'] },
 ] as const;
 
 /** Creates a workspace with users, agent-role directory (from every installed pack) and connector config. */
