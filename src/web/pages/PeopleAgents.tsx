@@ -172,11 +172,8 @@ export function PeopleAgents() {
                       <span className="badge b-ok">Document Store</span>
                     </td>
                     <td className="small" style={{ color: 'var(--warn)' }}>
-                      {a.pack_id === 'beo' && 'Flags allergen risks; strictly forbidden from certifying food safety'}
-                      {a.pack_id === 'scopeguard' && 'Estimates indicative hours; strictly forbidden from promising prices or deadlines'}
-                      {a.pack_id === 'invoiceguard' && 'Reconciles lines; strictly forbidden from initiating payment or accusatory wording'}
-                      {a.pack_id === 'podflow' && 'Analyzes text transcripts; never claims media/video was processed'}
-                      {!['beo', 'scopeguard', 'invoiceguard', 'podflow'].includes(a.pack_id) && 'Proposes draft changes; requires fiduciary sign-off'}
+                      {/* Session 18: the pack declares its agents' limits (labels.agentLimit); the UI no longer switches on pack id. */}
+                      {a.limit ?? 'Proposes draft changes; requires fiduciary sign-off'}
                     </td>
                   </tr>
                 ))}

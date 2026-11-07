@@ -144,6 +144,7 @@ export const scopeGuardPack: WorkflowPack = {
   id: 'scopeguard', name: 'ScopeGuard', domain: 'Agency Operations', version: '1.0.0',
   description: 'Compare a client request with the approved scope, classify included / out-of-scope / uncertain work, estimate effort, and draft a change order without promising price or dates.',
   labels: { baseline: 'Approved scope', change: 'Client request', changeVerb: 'Submit client request', plan: 'proposal / scope', mission: 'Scope request', blurb: 'Included vs out-of-scope vs uncertain' },
+  agentLimit: 'Estimates indicative hours; strictly forbidden from promising prices or deadlines',
   roles: [
     { key: 'classifier', name: 'Scope Analyst Agent', kind: 'agent', responsibility: 'Compares each requested item with the approved scope and allowances.', department: 'Account Management' },
     { key: 'estimator', name: 'Estimation Agent', kind: 'agent', responsibility: 'Estimates hours and an internal cost range from the rate card.', department: 'Delivery' },

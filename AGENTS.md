@@ -7,7 +7,7 @@ RIPPLE is one centralized workflow & intervention platform: *one change → ever
 
 ## Architecture (one line each — details in docs/ARCHITECTURE.md)
 - `src/server/engine/` mission engine (state machine, baselines, changes, analysis orchestration, approvals, actions, verification, completion). **Pack-agnostic.**
-- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry) + `depgate` (id `deploy-gate`) and `flipside` (id `flipside-review`) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
+- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry) + `depgate` (id `deploy-gate`), `flipside` (id `flipside-review`), `runofshow` (id `run-of-show`) and `pkggate` (id `package-gate`) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
 - `src/server/collab/` `CollabPort` boundary; `local.ts` (labelled local mode), `switch.ts` (Switch agent-protocol adapter).
 - `src/server/connectors/` file-backed local connectors (document store, internal outbox, email dry-run) with idempotency + read-back `observe()`.
 - `src/server/agents/provider.ts` model-provider abstraction (deterministic default; optional Anthropic wording-only).
@@ -31,7 +31,13 @@ scripts/fresh-server.sh && node scripts/e2e.mjs            # BEO + SceneShift br
 node scripts/e2e-packs.mjs <scopeguard|invoiceguard|shiftrelay|movemate|podflow|submitready>   # one pack's browser journey
 node scripts/e2e-crossdomain.mjs                           # all packs in one Control Center
 BASE_URL=http://localhost:8791 node scripts/e2e-flipside.mjs   # Flipside review journey (author answers, approves, proof OK / PROOF_FAIL)
+npx tsx bench/pkgguard/05-evaluate.ts heldout                  # package-risk benchmark, offline from committed data
 ```
+
+## Package Gate and the package-risk benchmark (session 18)
+- `capabilities/pkgguard` is pure; `observe.ts` is the only code that touches registries, and it reads archives in memory only. Never install, extract to disk, import or run a package, in code or in the benchmark.
+- Detection numbers may only come from `bench/pkgguard/results/metrics-heldout.json`. Change code rules only on the tuning split, bump `INSPECT_RULES_VERSION`, commit, then re-run held-out; disclose any change made after a held-out run.
+- "clean" means no rule matched, never safe. A flagged package without a code reading is "not inspected". Package decisions bind to ecosystem + name + exact version.
 Dev users (password `RIPPLE_SEED_PASSWORD`, default `ripple-demo`): maya@ (manager), luis@ (chef), priya@, dan@, sam@ (owner), vera@ (viewer) `@harborvine.example`.
 
 ## Adding or changing a pack (read before touching `packs/`)

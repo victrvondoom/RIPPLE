@@ -18,7 +18,7 @@ const PER_YEAR = 600; // npm metadata replay sample per report year
 
 export interface MalRecord {
   id: string; eco: 'npm' | 'pypi'; name: string; published: string; reportedAt: string;
-  versions: string[]; allVersions: boolean; sources: string[]; split: 'tune' | 'heldout';
+  versions: string[]; ranges: { introduced: string; fixed?: string; lastAffected?: string }[]; allVersions: boolean; sources: string[]; split: 'tune' | 'heldout';
 }
 
 async function load(eco: 'npm' | 'PyPI') {
@@ -45,10 +45,14 @@ async function load(eco: 'npm' | 'PyPI') {
     const origins: any[] = d.database_specific?.['malicious-packages-origins'] ?? [];
     const times = [d.published, ...origins.map((o) => o.modified_time)].filter(Boolean).map((t: string) => Date.parse(t)).filter((t) => !Number.isNaN(t) && t > Date.parse('2010-01-01'));
     const versions: string[] = aff.versions ?? [];
-    const allVersions = (aff.ranges ?? []).some((r: any) => (r.events ?? []).some((ev: any) => ev.introduced === '0')) && !(aff.ranges ?? []).some((r: any) => (r.events ?? []).some((ev: any) => ev.fixed || ev.last_affected));
+    // OSV ranges: [introduced, fixed) or [introduced, last_affected]. "All versions" only when every range starts at 0 and
+    // never ends (session-18 fix: a bounded range with no explicit version list used to be read as "all versions").
+    const ranges: { introduced: string; fixed?: string; lastAffected?: string }[] = [];
+    for (const rg of aff.ranges ?? []) { let cur: { introduced: string; fixed?: string; lastAffected?: string } | null = null; for (const ev of rg.events ?? []) { if (ev.introduced !== undefined) { cur = { introduced: String(ev.introduced) }; ranges.push(cur); } else if (cur && ev.fixed) cur.fixed = String(ev.fixed); else if (cur && ev.last_affected) cur.lastAffected = String(ev.last_affected); } }
+    const allVersions = ranges.length > 0 && ranges.every((x) => x.introduced === '0' && !x.fixed && !x.lastAffected);
     const ecoKey = eco === 'npm' ? 'npm' : 'pypi';
     const name = eco === 'npm' ? String(aff.package.name).toLowerCase() : String(aff.package.name).toLowerCase().replace(/[-_.]+/g, '-');
-    recs.push({ id: d.id, eco: ecoKey, name, published: d.published, reportedAt: new Date(Math.min(...times)).toISOString(), versions, allVersions: allVersions || versions.length === 0, sources: [...new Set(origins.map((o) => String(o.source)))], split: split(ecoKey, name) });
+    recs.push({ id: d.id, eco: ecoKey, name, published: d.published, reportedAt: new Date(Math.min(...times)).toISOString(), versions, ranges, allVersions: allVersions || (versions.length === 0 && ranges.length === 0), sources: [...new Set(origins.map((o) => String(o.source)))], split: split(ecoKey, name) });
   }
   return { recs, provenance: { ...meta, sha256: sha256(buf), bytes: buf.length, malRecords: total, withdrawn, kept: recs.length } };
 }

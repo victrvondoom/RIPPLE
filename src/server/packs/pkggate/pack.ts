@@ -121,6 +121,7 @@ export const pkggatePack: WorkflowPack = {
   version: '1.0.0',
   description: 'Checks every npm/PyPI package an install line in the room would fetch, using recorded registry metadata and an in-memory static code reading. Invented names are removed, lookalikes replaced, risky packages wait for the security lead\'s decision on the exact version. Never installs or certifies anything.',
   labels: { baseline: 'Room Package Policy', change: 'Install Request', changeVerb: 'Check Install Line', plan: 'Room Policy & Ledger', mission: 'Install Check', blurb: 'Reads an install line, checks each package against recorded registry data and code findings, and proposes a safe install line for the security lead to approve.' },
+  agentLimit: 'Reads registry data and archives in memory; never installs, runs or certifies a package',
   roles: [
     { key: 'pg_scout', name: 'Scout', kind: 'agent', responsibility: 'Finds every package in the install line and applies the metadata and lookalike-name rules to the recorded registry observation', department: 'Security', scope: 'read' },
     { key: 'pg_inspector', name: 'Inspector', kind: 'agent', responsibility: 'Reports the recorded static code reading; a flagged package without one is "not inspected"', department: 'Security', scope: 'read' },
@@ -176,7 +177,7 @@ export const pkggatePack: WorkflowPack = {
 
   detectChanges(plan: Plan, change: Change): ChangeItem[] {
     const as = assess(plan, change);
-    return as.map((a) => ({ field: `package.${a.ref.ecosystem}.${a.ref.name}`, label: `${a.ref.ecosystem}: ${a.ref.name}${a.obs?.resolvedVersion ? '@' + a.obs.resolvedVersion : ''}`, before: null, after: a.status, kind: 'added' as const, severity: a.status === 'clean' || a.status === 'approved' ? 'low' as const : a.status === 'invented' || a.status === 'replace' ? 'high' as const : 'medium' as const, note: a.reasons.join('; ') }));
+    return as.map((a) => ({ field: `package.${a.ref.ecosystem}.${a.ref.name}`, label: `${a.ref.ecosystem}: ${a.ref.name}${a.obs?.resolvedVersion ? '@' + a.obs.resolvedVersion : ''}`, before: 'requested', after: a.status, kind: 'added' as const, severity: a.status === 'clean' || a.status === 'approved' ? 'low' as const : a.status === 'invented' || a.status === 'replace' ? 'high' as const : 'medium' as const, note: a.reasons.join('; ') }));
   },
 
   applyChange(plan: Plan, change: Change, answers): Plan {

@@ -28,6 +28,20 @@
 ## Not covered
 Mattermost-bridged rooms with humans in chat (the `!` commands being typed by a human); the gateway export with a human session (sessions 13–15 cover agent-only rooms and the agent API); real model API; real email/chat; UI component unit tests; load/security testing; browser matrix (Chromium only); accessibility audit (labels/roles used, not audited).
 
+## Session 18 - results (real runs, 2026-11-07)
+```
+$ npm run typecheck        -> tsc --noEmit -p tsconfig.json   (exit 0)
+$ npm run lint             -> eslint src tests scripts bench   (exit 0)
+$ npx vitest run
+ Test Files  44 passed (44)
+      Tests  364 passed (364)
+$ bash scripts/fresh-server.sh 8791 && BASE_URL=http://localhost:8791 node scripts/e2e-crossdomain.mjs
+CROSS-DOMAIN JOURNEY PASSED
+$ python -m pytest tests_py -q
+27 passed, 2 skipped
+```
+Baseline before session 18, on a clean worktree of HEAD (111aefd): `npx vitest run` -> 43 files, 331 passed, 13 failed (flipside-review and run-of-show were unregistered by merge 67105a5). New: `tests/pkggate.test.ts` (20). Package-risk benchmark: `docs/benchmarks/PACKAGE_RISK_BENCHMARK.md`.
+
 ## Latest recorded results
 See `docs/evidence/test-output.txt` (vitest/tsc/eslint) and `docs/evidence/e2e-log.txt` (browser run). The e2e whitelists only two expected console errors: the pre-login 401 session probe and the one deliberate 422 refusal of early completion.
 

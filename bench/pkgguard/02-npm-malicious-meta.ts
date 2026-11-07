@@ -10,6 +10,14 @@ import { docStatus, metaAt, takedownTime, versionTimes, type NpmDoc } from './np
 import { getCached, npmDocUrl, pool, readJsonl, writeJsonl } from './lib.js';
 import type { MalRecord } from './01-malicious.js';
 
+/** Minimal semver ordering for OSV SEMVER ranges (pre-releases sort before their release). */
+export function semverCmp(a: string, b: string): number {
+  const p = (v: string) => { const [core, pre] = v.replace(/^v/, '').split('-', 2); return { n: core.split('.').map((x) => Number.parseInt(x, 10) || 0), pre: pre ?? null }; };
+  const x = p(a), y = p(b);
+  for (let i = 0; i < 3; i++) if ((x.n[i] ?? 0) !== (y.n[i] ?? 0)) return (x.n[i] ?? 0) - (y.n[i] ?? 0);
+  if (x.pre === y.pre) return 0; if (x.pre === null) return 1; if (y.pre === null) return -1; return x.pre < y.pre ? -1 : 1;
+}
+
 const recs = readJsonl<MalRecord>('malicious-npm-sample.jsonl');
 const rows = await pool(recs, 16, async (m) => {
   const f = await getCached(npmDocUrl(m.name), { maxBytes: 64 * 1024 * 1024 });
@@ -17,7 +25,8 @@ const rows = await pool(recs, 16, async (m) => {
   if (f.status !== 200 || !f.body) return { ...base, status: f.status === 404 ? 'gone' : 'error' };
   const doc = JSON.parse(f.body) as NpmDoc;
   const vt = versionTimes(doc);
-  const malVersions = m.allVersions ? vt.map(([v]) => v) : vt.map(([v]) => v).filter((v) => m.versions.includes(v));
+  const inRanges = (v: string) => m.ranges.some((r) => (r.introduced === '0' || semverCmp(v, r.introduced) >= 0) && (r.fixed ? semverCmp(v, r.fixed) < 0 : r.lastAffected ? semverCmp(v, r.lastAffected) <= 0 : true));
+  const malVersions = m.allVersions ? vt.map(([v]) => v) : vt.map(([v]) => v).filter((v) => m.versions.includes(v) || (m.versions.length === 0 && inRanges(v)));
   const malTimes = vt.filter(([v]) => malVersions.includes(v));
   if (malTimes.length === 0) return { ...base, status: docStatus(doc), placed: false, versionsInDoc: vt.length };
   const [firstMalVersion, tMal] = malTimes[0];

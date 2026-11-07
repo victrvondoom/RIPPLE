@@ -184,3 +184,18 @@ describe('package-gate mission (engine)', () => {
     expect(row(e, "SELECT content FROM artifacts WHERE mission_id=? AND kind='stop_receipt'", m.id).content).toMatch(/react-forms-validator-pro/);
   });
 });
+
+describe('People & Agents read model (agent limits come from the pack, not a UI switch)', () => {
+  it('returns each agent\'s pack-declared limit, including BEO (the old UI switch used a wrong id and never showed it)', async () => {
+    const { createApp } = await import('../src/server/api/app.js');
+    const e = makeEnv(new LocalCollab(), extendedRegistry());
+    const app = createApp(e.engine, { webRoot: '/nonexistent' });
+    const login = await app.request('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json', host: 'localhost' }, body: JSON.stringify({ email: 'maya@harborvine.example', password: 'pw-test-123' }) });
+    const cookie = login.headers.get('set-cookie')!.split(';')[0];
+    const people = await (await app.request('/api/people', { headers: { cookie, host: 'localhost' } })).json() as any;
+    const limitOf = (pack: string) => people.agents.find((a: any) => a.pack_id === pack)?.limit;
+    expect(limitOf('beo-rescue')).toMatch(/certifying food safety/);
+    expect(limitOf('package-gate')).toMatch(/never installs, runs or certifies/);
+    expect(people.agents.find((a: any) => a.pack_id === 'deploy-gate').limit).toBeNull();
+  });
+});

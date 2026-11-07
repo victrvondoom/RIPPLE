@@ -152,7 +152,7 @@ M.E2b_pypi_metadata = {
   note: 'PyPI deletes removed projects; registry metadata for removed malware is not recoverable. Only still-live reported projects can be replayed (at report time).',
   controls: Object.fromEntries(Object.entries(pyGroups).map(([g, rs]) => [g, signalTable(rs.map((r) => r.atSnapshot), 'pypi')])),
   maliciousStillLive: pyMalLive.length ? signalTable(pyMalLive.map((r) => r.atReport), 'pypi') : null,
-  confusion_liveMalicious_vs_allControls: pyMalLive.length ? confusion(pyMalLive.map((r) => V(r.atReport, 'pypi').flagged), Object.values(pyGroups).flat().map((r) => V(r.atSnapshot, 'pypi').flagged)) : null,
+  confusion_liveMalicious_vs_allControls: pyMalLive.length ? confusion(pyMalLive.map((r) => V(r.atReport, 'pypi').flagged), [...new Map(Object.values(pyGroups).flat().map((r) => [r.name, r])).values()].map((r) => V(r.atSnapshot, 'pypi').flagged)) : null, // deduplicated by name (fresh overlaps random)
 };
 
 // ---------- E3: code-only ----------
@@ -160,6 +160,7 @@ const codeS = code.filter(inSplit).filter((c) => c.scanned);
 const codeFlag = (c: any, level: 'review' | 'malicious') => (level === 'review' ? c.verdict !== 'clean' : c.verdict === 'malicious-looking');
 const codeGroups = (eco: string) => { const xs = codeS.filter((c) => c.eco === eco); return { malicious: xs.filter((c) => c.label === 'malicious'), ...Object.fromEntries([...new Set(xs.filter((c) => c.label === 'benign').map((c) => c.group))].map((g) => [g, xs.filter((c) => c.label === 'benign' && c.group === g)])) } as Record<string, any[]>; };
 const ruleFreq = (xs: any[]) => { const m = new Map<string, number>(); xs.forEach((x) => new Set((x.hits ?? []).map((h: any) => h.rule)).forEach((r: any) => m.set(r, (m.get(r) ?? 0) + 1))); return Object.fromEntries([...m.entries()].sort((a, b) => b[1] - a[1])); };
+const npmSrc = new Map(npmMal.map((r) => [r.name, r.sources as string[]])); const pySrc = new Map(malPy.map((r) => [r.name, r.sources as string[]]));
 M.E3_code = Object.fromEntries(['npm', 'pypi'].map((eco) => {
   const g = codeGroups(eco); const benign = Object.entries(g).filter(([k]) => k !== 'malicious');
   return [eco, {
@@ -170,7 +171,10 @@ M.E3_code = Object.fromEntries(['npm', 'pypi'].map((eco) => {
     maliciousRuleFrequency: ruleFreq(g.malicious), benignRuleFrequency: ruleFreq(benign.flatMap(([, v]) => v)),
     benignFlaggedExamples: benign.flatMap(([, v]) => v).filter((c) => c.verdict !== 'clean').slice(0, 25).map((c) => `${c.group}/${c.name}@${c.pkgVersion ?? c.version}: ${c.score} [${[...new Set(c.hits.map((h: any) => h.rule))].join(',')}]`),
     maliciousMissedExamples: g.malicious.filter((c) => c.verdict === 'clean').slice(0, 25).map((c) => `${c.name}@${c.pkgVersion ?? c.version}: score ${c.score}, files ${c.filesScanned} [${[...new Set((c.hits ?? []).map((h: any) => h.rule))].join(',')}]`),
-    maliciousManifestOnly: rate(g.malicious.map((c) => c.filesScanned <= 2)),
+    maliciousWithoutCodeFile: rate(g.malicious.map((c) => c.codeFiles === 0)),
+    // Recall split by who reported the package: the bulk Amazon Inspector feed vs every other source.
+    recallBySource: (() => { const src = (c: any) => (eco === 'npm' ? npmSrc.get(c.name) : pySrc.get(c.name)) ?? []; const only = (c: any) => src(c).length > 0 && src(c).every((x: string) => x === 'amazon-inspector');
+      return { amazonInspectorOnly: rate(g.malicious.filter(only).map((c) => codeFlag(c, 'review'))), otherSources: rate(g.malicious.filter((c) => !only(c)).map((c) => codeFlag(c, 'review'))) }; })(),
   }];
 }));
 

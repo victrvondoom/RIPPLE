@@ -1,0 +1,2290 @@
+{
+ "split": "all",
+ "generatedAt": "2026-11-07T09:40:41.332Z",
+ "rules": {
+  "META_RULES": {
+   "newDays": 7,
+   "youngDays": 30,
+   "fewVersions": 2,
+   "lowWeeklyDownloads": 50,
+   "confusionMajor": 90,
+   "confusionMaxVersions": 3,
+   "dormantDays": 365
+  },
+  "NAME_RULES": {
+   "minLenForDistance1": 4,
+   "minLenForDistance2": 9,
+   "suffixes": [
+    "-js",
+    "js",
+    ".js",
+    "-node",
+    "-dev",
+    "-sdk",
+    "-api",
+    "-cli",
+    "-utils",
+    "-lib",
+    "-py",
+    "py",
+    "-python",
+    "2",
+    "3",
+    "-2",
+    "-3"
+   ],
+   "prefixes": [
+    "node-",
+    "py-",
+    "py",
+    "python-"
+   ]
+  },
+  "INSPECT_RULES_VERSION": "inspect@2",
+  "INSPECT_THRESHOLDS": {
+   "review": 4,
+   "malicious": 7,
+   "hookBonus": 2,
+   "collectAndSendBonus": 3
+  },
+  "referenceSizes": {
+   "npm": 2000,
+   "pypi": 330
+  }
+ },
+ "E1_names": {
+  "npm": {
+   "malicious": 20000,
+   "controls": 120363,
+   "excludedBecauseInReference": 0,
+   "lookalike": {
+    "TP": 27,
+    "FN": 19973,
+    "FP": 781,
+    "TN": 119582,
+    "precision": 0.033,
+    "recall": 0.001,
+    "f1": 0.003,
+    "fpr": 0.006,
+    "fnr": 0.999,
+    "recallCI95": [
+     0.1,
+     0.2
+    ],
+    "fprCI95": [
+     0.6,
+     0.7
+    ]
+   },
+   "combosquat": {
+    "TP": 6,
+    "FN": 19994,
+    "FP": 94,
+    "TN": 120269,
+    "precision": 0.06,
+    "recall": 0,
+    "f1": 0.001,
+    "fpr": 0.001,
+    "fnr": 1,
+    "recallCI95": [
+     0,
+     0.1
+    ],
+    "fprCI95": [
+     0.1,
+     0.1
+    ]
+   },
+   "lookalikeOrCombo": {
+    "TP": 33,
+    "FN": 19967,
+    "FP": 875,
+    "TN": 119488,
+    "precision": 0.036,
+    "recall": 0.002,
+    "f1": 0.003,
+    "fpr": 0.007,
+    "fnr": 0.998,
+    "recallCI95": [
+     0.1,
+     0.2
+    ],
+    "fprCI95": [
+     0.7,
+     0.8
+    ]
+   },
+   "byKind": {
+    "typo-distance": {
+     "malicious": 27,
+     "control": 696
+    },
+    "combosquat": {
+     "malicious": 6,
+     "control": 94
+    },
+    "scope-confusion": {
+     "malicious": 0,
+     "control": 40
+    },
+    "separator-confusion": {
+     "malicious": 0,
+     "control": 44
+    },
+    "homoglyph": {
+     "malicious": 0,
+     "control": 2
+    }
+   },
+   "topTargets": [
+    [
+     "bs-logger",
+     2
+    ],
+    [
+     "socket.io",
+     2
+    ],
+    [
+     "fdir",
+     2
+    ],
+    [
+     "react-redux",
+     1
+    ],
+    [
+     "ansi-escapes",
+     1
+    ],
+    [
+     "reflect-metadata",
+     1
+    ],
+    [
+     "uuid",
+     1
+    ],
+    [
+     "callsites",
+     1
+    ],
+    [
+     "cose-base",
+     1
+    ],
+    [
+     "express",
+     1
+    ],
+    [
+     "typescript",
+     1
+    ],
+    [
+     "prettier",
+     1
+    ],
+    [
+     "postcss-import",
+     1
+    ],
+    [
+     "fs-constants",
+     1
+    ],
+    [
+     "http-errors",
+     1
+    ]
+   ],
+   "controlFalseAlarmExamples": [
+    "xpath ~ upath (typo-distance)",
+    "tsutils ~ esutils (typo-distance)",
+    "sass-loader ~ css-loader (typo-distance)",
+    "eventemitter2 ~ eventemitter3 (typo-distance)",
+    "wbuf ~ obuf (typo-distance)",
+    "ulid ~ uuid (typo-distance)",
+    "sockjs ~ socks (typo-distance)",
+    "arr-union ~ array-union (typo-distance)",
+    "touch ~ youch (typo-distance)",
+    "ts-loader ~ css-loader (typo-distance)",
+    "isomorphic.js ~ isomorphic-ws (typo-distance)",
+    "split ~ split2 (typo-distance)",
+    "simple-git ~ simple-get (typo-distance)",
+    "xmlbuilder2 ~ xmlbuilder (typo-distance)",
+    "stable-hash-x ~ stable-hash (typo-distance)",
+    "xml-js ~ xml2js (typo-distance)",
+    "neotraverse ~ estraverse (typo-distance)",
+    "date-fns-tz ~ @date-fns/tz (scope-confusion)",
+    "event-emitter ~ eventemitter3 (typo-distance)",
+    "dargs ~ yargs (typo-distance)"
+   ]
+  },
+  "pypi": {
+   "malicious": 11971,
+   "controls": 50000,
+   "excludedBecauseInReference": 0,
+   "lookalike": {
+    "TP": 782,
+    "FN": 11189,
+    "FP": 183,
+    "TN": 49817,
+    "precision": 0.81,
+    "recall": 0.065,
+    "f1": 0.121,
+    "fpr": 0.004,
+    "fnr": 0.935,
+    "recallCI95": [
+     6.1,
+     7
+    ],
+    "fprCI95": [
+     0.3,
+     0.4
+    ]
+   },
+   "combosquat": {
+    "TP": 17,
+    "FN": 11954,
+    "FP": 14,
+    "TN": 49986,
+    "precision": 0.548,
+    "recall": 0.001,
+    "f1": 0.003,
+    "fpr": 0,
+    "fnr": 0.999,
+    "recallCI95": [
+     0.1,
+     0.2
+    ],
+    "fprCI95": [
+     0,
+     0
+    ]
+   },
+   "lookalikeOrCombo": {
+    "TP": 799,
+    "FN": 11172,
+    "FP": 197,
+    "TN": 49803,
+    "precision": 0.802,
+    "recall": 0.067,
+    "f1": 0.123,
+    "fpr": 0.004,
+    "fnr": 0.933,
+    "recallCI95": [
+     6.2,
+     7.1
+    ],
+    "fprCI95": [
+     0.3,
+     0.5
+    ]
+   },
+   "byKind": {
+    "typo-distance": {
+     "malicious": 782,
+     "control": 181
+    },
+    "combosquat": {
+     "malicious": 17,
+     "control": 14
+    },
+    "separator-confusion": {
+     "malicious": 0,
+     "control": 1
+    },
+    "homoglyph": {
+     "malicious": 0,
+     "control": 1
+    }
+   },
+   "topTargets": [
+    [
+     "beautifulsoup4",
+     64
+    ],
+    [
+     "requests",
+     50
+    ],
+    [
+     "colorama",
+     42
+    ],
+    [
+     "websocket-client",
+     40
+    ],
+    [
+     "pycodestyle",
+     32
+    ],
+    [
+     "prompt-toolkit",
+     32
+    ],
+    [
+     "scikit-learn",
+     30
+    ],
+    [
+     "pillow",
+     29
+    ],
+    [
+     "tensorflow",
+     28
+    ],
+    [
+     "simplejson",
+     28
+    ],
+    [
+     "matplotlib",
+     26
+    ],
+    [
+     "bitcoinlib",
+     26
+    ],
+    [
+     "websockets",
+     26
+    ],
+    [
+     "xlsxwriter",
+     26
+    ],
+    [
+     "discord-py",
+     25
+    ]
+   ],
+   "controlFalseAlarmExamples": [
+    "clirk ~ click (typo-distance)",
+    "authlib ~ oauthlib (typo-distance)",
+    "kspython ~ dnspython (typo-distance)",
+    "swipy ~ scipy (typo-distance)",
+    "tmock ~ mock (typo-distance)",
+    "fake ~ faker (typo-distance)",
+    "zippy ~ zipp (typo-distance)",
+    "ynput ~ pynput (typo-distance)",
+    "fattools ~ fonttools (typo-distance)",
+    "pyjmt ~ pyjwt (typo-distance)",
+    "apiconfig ~ iniconfig (typo-distance)",
+    "eytest ~ pytest (typo-distance)",
+    "fakear ~ faker (typo-distance)",
+    "driconfig ~ iniconfig (typo-distance)",
+    "anvio ~ anyio (typo-distance)",
+    "doblib ~ joblib (typo-distance)",
+    "pytest-mcp ~ pytest-mock (typo-distance)",
+    "zscryptography ~ cryptography (typo-distance)",
+    "nqdm ~ tqdm (typo-distance)",
+    "zorch ~ torch (typo-distance)"
+   ]
+  }
+ },
+ "E2_npm_metadata": {
+  "sample": {
+   "malicious": 3000,
+   "placedWithTimestamps": 2797,
+   "statusCounts": {
+    "live": 359,
+    "placeholder": 1874,
+    "unpublished": 602,
+    "gone": 165,
+    "error": 0
+   },
+   "controls": {
+    "popular": 1000,
+    "longtail": 1200,
+    "fresh": 450
+   }
+  },
+  "signals": {
+   "maliciousAtPublish": {
+    "new_package": {
+     "known": 2797,
+     "hit": 2708,
+     "pct": 96.8
+    },
+    "young_package": {
+     "known": 2797,
+     "hit": 2715,
+     "pct": 97.1
+    },
+    "few_versions": {
+     "known": 2797,
+     "hit": 2623,
+     "pct": 93.8
+    },
+    "install_script": {
+     "known": 256,
+     "hit": 12,
+     "pct": 4.7
+    },
+    "low_downloads": {
+     "known": 0,
+     "hit": 0,
+     "pct": null
+    },
+    "dependency_confusion_version": {
+     "known": 2797,
+     "hit": 293,
+     "pct": 10.5
+    },
+    "dormant_revival": {
+     "known": 160,
+     "hit": 34,
+     "pct": 21.3
+    },
+    "lookalike_name": {
+     "known": 2797,
+     "hit": 26,
+     "pct": 0.9
+    },
+    "combosquat_name": {
+     "known": 2797,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 256,
+     "hit": 62,
+     "pct": 24.2
+    },
+    "young_and_few_versions": {
+     "known": 2797,
+     "hit": 2611,
+     "pct": 93.4
+    },
+    "young_and_install_script": {
+     "known": 333,
+     "hit": 11,
+     "pct": 3.3
+    },
+    "COMPOSITE": {
+     "known": 2797,
+     "hit": 2619,
+     "pct": 93.6
+    }
+   },
+   "maliciousAtReport": {
+    "new_package": {
+     "known": 2797,
+     "hit": 891,
+     "pct": 31.9
+    },
+    "young_package": {
+     "known": 2797,
+     "hit": 1156,
+     "pct": 41.3
+    },
+    "few_versions": {
+     "known": 2797,
+     "hit": 2279,
+     "pct": 81.5
+    },
+    "install_script": {
+     "known": 273,
+     "hit": 11,
+     "pct": 4
+    },
+    "low_downloads": {
+     "known": 0,
+     "hit": 0,
+     "pct": null
+    },
+    "dependency_confusion_version": {
+     "known": 2797,
+     "hit": 304,
+     "pct": 10.9
+    },
+    "dormant_revival": {
+     "known": 850,
+     "hit": 57,
+     "pct": 6.7
+    },
+    "lookalike_name": {
+     "known": 2797,
+     "hit": 26,
+     "pct": 0.9
+    },
+    "combosquat_name": {
+     "known": 2797,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 273,
+     "hit": 62,
+     "pct": 22.7
+    },
+    "young_and_few_versions": {
+     "known": 2797,
+     "hit": 959,
+     "pct": 34.3
+    },
+    "young_and_install_script": {
+     "known": 1670,
+     "hit": 9,
+     "pct": 0.5
+    },
+    "COMPOSITE": {
+     "known": 2797,
+     "hit": 1130,
+     "pct": 40.4
+    }
+   },
+   "control_popular": {
+    "new_package": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "young_package": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "few_versions": {
+     "known": 1000,
+     "hit": 29,
+     "pct": 2.9
+    },
+    "install_script": {
+     "known": 1000,
+     "hit": 3,
+     "pct": 0.3
+    },
+    "low_downloads": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "dependency_confusion_version": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "dormant_revival": {
+     "known": 990,
+     "hit": 210,
+     "pct": 21.2
+    },
+    "lookalike_name": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "combosquat_name": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 1000,
+     "hit": 2,
+     "pct": 0.2
+    },
+    "young_and_few_versions": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "young_and_install_script": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    },
+    "COMPOSITE": {
+     "known": 1000,
+     "hit": 0,
+     "pct": 0
+    }
+   },
+   "control_longtail": {
+    "new_package": {
+     "known": 1200,
+     "hit": 1,
+     "pct": 0.1
+    },
+    "young_package": {
+     "known": 1200,
+     "hit": 52,
+     "pct": 4.3
+    },
+    "few_versions": {
+     "known": 1200,
+     "hit": 120,
+     "pct": 10
+    },
+    "install_script": {
+     "known": 1200,
+     "hit": 18,
+     "pct": 1.5
+    },
+    "low_downloads": {
+     "known": 1200,
+     "hit": 164,
+     "pct": 13.7
+    },
+    "dependency_confusion_version": {
+     "known": 1200,
+     "hit": 0,
+     "pct": 0
+    },
+    "dormant_revival": {
+     "known": 1141,
+     "hit": 120,
+     "pct": 10.5
+    },
+    "lookalike_name": {
+     "known": 1200,
+     "hit": 11,
+     "pct": 0.9
+    },
+    "combosquat_name": {
+     "known": 1200,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 1200,
+     "hit": 120,
+     "pct": 10
+    },
+    "young_and_few_versions": {
+     "known": 1200,
+     "hit": 9,
+     "pct": 0.8
+    },
+    "young_and_install_script": {
+     "known": 1200,
+     "hit": 2,
+     "pct": 0.2
+    },
+    "COMPOSITE": {
+     "known": 1200,
+     "hit": 21,
+     "pct": 1.8
+    }
+   },
+   "control_fresh": {
+    "new_package": {
+     "known": 450,
+     "hit": 26,
+     "pct": 5.8
+    },
+    "young_package": {
+     "known": 450,
+     "hit": 450,
+     "pct": 100
+    },
+    "few_versions": {
+     "known": 450,
+     "hit": 56,
+     "pct": 12.4
+    },
+    "install_script": {
+     "known": 450,
+     "hit": 8,
+     "pct": 1.8
+    },
+    "low_downloads": {
+     "known": 450,
+     "hit": 80,
+     "pct": 17.8
+    },
+    "dependency_confusion_version": {
+     "known": 450,
+     "hit": 4,
+     "pct": 0.9
+    },
+    "dormant_revival": {
+     "known": 450,
+     "hit": 0,
+     "pct": 0
+    },
+    "lookalike_name": {
+     "known": 450,
+     "hit": 0,
+     "pct": 0
+    },
+    "combosquat_name": {
+     "known": 450,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 450,
+     "hit": 67,
+     "pct": 14.9
+    },
+    "young_and_few_versions": {
+     "known": 450,
+     "hit": 56,
+     "pct": 12.4
+    },
+    "young_and_install_script": {
+     "known": 450,
+     "hit": 8,
+     "pct": 1.8
+    },
+    "COMPOSITE": {
+     "known": 450,
+     "hit": 63,
+     "pct": 14
+    }
+   }
+  },
+  "confusion": {
+   "atPublish_vs_allControls": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 84,
+    "TN": 2566,
+    "precision": 0.969,
+    "recall": 0.936,
+    "f1": 0.952,
+    "fpr": 0.032,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     2.6,
+     3.9
+    ]
+   },
+   "atReport_vs_allControls": {
+    "TP": 1130,
+    "FN": 1667,
+    "FP": 84,
+    "TN": 2566,
+    "precision": 0.931,
+    "recall": 0.404,
+    "f1": 0.563,
+    "fpr": 0.032,
+    "fnr": 0.596,
+    "recallCI95": [
+     38.6,
+     42.2
+    ],
+    "fprCI95": [
+     2.6,
+     3.9
+    ]
+   },
+   "atPublish_vs_popular": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 0,
+    "TN": 1000,
+    "precision": 1,
+    "recall": 0.936,
+    "f1": 0.967,
+    "fpr": 0,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     0,
+     0.4
+    ]
+   },
+   "atPublish_vs_longtail": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 21,
+    "TN": 1179,
+    "precision": 0.992,
+    "recall": 0.936,
+    "f1": 0.963,
+    "fpr": 0.018,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     1.1,
+     2.7
+    ]
+   },
+   "atPublish_vs_fresh": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 63,
+    "TN": 387,
+    "precision": 0.977,
+    "recall": 0.936,
+    "f1": 0.956,
+    "fpr": 0.14,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     11.1,
+     17.5
+    ]
+   },
+   "atPublish_vs_popular_atLatestRelease": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 18,
+    "TN": 982,
+    "precision": 0.993,
+    "recall": 0.936,
+    "f1": 0.964,
+    "fpr": 0.018,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     1.1,
+     2.8
+    ]
+   },
+   "atPublish_vs_longtail_atLatestRelease": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 128,
+    "TN": 1072,
+    "precision": 0.953,
+    "recall": 0.936,
+    "f1": 0.945,
+    "fpr": 0.107,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     9,
+     12.5
+    ]
+   },
+   "atPublish_vs_fresh_atLatestRelease": {
+    "TP": 2619,
+    "FN": 178,
+    "FP": 78,
+    "TN": 372,
+    "precision": 0.971,
+    "recall": 0.936,
+    "f1": 0.953,
+    "fpr": 0.173,
+    "fnr": 0.064,
+    "recallCI95": [
+     92.7,
+     94.5
+    ],
+    "fprCI95": [
+     14.1,
+     21.1
+    ]
+   }
+  },
+  "liveWindow": {
+   "note": "Mean over 11 evenly spaced install moments from the first malicious publish to takedown (or the snapshot if still live).",
+   "meanDetection": 58.1,
+   "byMoment": [
+    {
+     "fraction": 0,
+     "n": 2797,
+     "hits": 2619,
+     "pct": 93.6,
+     "ci95": [
+      92.7,
+      94.5
+     ]
+    },
+    {
+     "fraction": 0.1,
+     "n": 2797,
+     "hits": 1794,
+     "pct": 64.1,
+     "ci95": [
+      62.3,
+      65.9
+     ]
+    },
+    {
+     "fraction": 0.2,
+     "n": 2797,
+     "hits": 1719,
+     "pct": 61.5,
+     "ci95": [
+      59.6,
+      63.2
+     ]
+    },
+    {
+     "fraction": 0.3,
+     "n": 2797,
+     "hits": 1648,
+     "pct": 58.9,
+     "ci95": [
+      57.1,
+      60.7
+     ]
+    },
+    {
+     "fraction": 0.4,
+     "n": 2797,
+     "hits": 1582,
+     "pct": 56.6,
+     "ci95": [
+      54.7,
+      58.4
+     ]
+    },
+    {
+     "fraction": 0.5,
+     "n": 2797,
+     "hits": 1560,
+     "pct": 55.8,
+     "ci95": [
+      53.9,
+      57.6
+     ]
+    },
+    {
+     "fraction": 0.6,
+     "n": 2797,
+     "hits": 1460,
+     "pct": 52.2,
+     "ci95": [
+      50.3,
+      54
+     ]
+    },
+    {
+     "fraction": 0.7,
+     "n": 2797,
+     "hits": 1433,
+     "pct": 51.2,
+     "ci95": [
+      49.4,
+      53.1
+     ]
+    },
+    {
+     "fraction": 0.8,
+     "n": 2797,
+     "hits": 1385,
+     "pct": 49.5,
+     "ci95": [
+      47.7,
+      51.4
+     ]
+    },
+    {
+     "fraction": 0.9,
+     "n": 2797,
+     "hits": 1348,
+     "pct": 48.2,
+     "ci95": [
+      46.3,
+      50
+     ]
+    },
+    {
+     "fraction": 1,
+     "n": 2797,
+     "hits": 1325,
+     "pct": 47.4,
+     "ci95": [
+      45.5,
+      49.2
+     ]
+    }
+   ],
+   "windowDays": {
+    "median": 11.4,
+    "p75": 172.3,
+    "p90": 747
+   },
+   "confusion_midWindow_vs_allControls": {
+    "TP": 1560,
+    "FN": 1237,
+    "FP": 84,
+    "TN": 2566,
+    "precision": 0.949,
+    "recall": 0.558,
+    "f1": 0.703,
+    "fpr": 0.032,
+    "fnr": 0.442,
+    "recallCI95": [
+     53.9,
+     57.6
+    ],
+    "fprCI95": [
+     2.6,
+     3.9
+    ]
+   }
+  },
+  "detectionByAgeAtPublish": {
+   "<1 day": {
+    "n": 2681,
+    "flagged": 2601,
+    "pct": 97
+   },
+   "30-365 days": {
+    "n": 27,
+    "flagged": 0,
+    "pct": 0
+   },
+   "1-7 days": {
+    "n": 27,
+    "flagged": 17,
+    "pct": 63
+   },
+   ">1 year": {
+    "n": 55,
+    "flagged": 0,
+    "pct": 0
+   },
+   "7-30 days": {
+    "n": 7,
+    "flagged": 1,
+    "pct": 14.3
+   }
+  },
+  "controlFlagRateByAge": {
+   ">1 year": {
+    "n": 1927,
+    "flagged": 11,
+    "pct": 0.6
+   },
+   "30-365 days": {
+    "n": 221,
+    "flagged": 0,
+    "pct": 0
+   },
+   "7-30 days": {
+    "n": 475,
+    "flagged": 72,
+    "pct": 15.2
+   },
+   "1-7 days": {
+    "n": 27,
+    "flagged": 1,
+    "pct": 3.7
+   }
+  },
+  "detectionByVersionsAtPublish": {
+   "1": {
+    "n": 2536,
+    "flagged": 2536,
+    "pct": 100
+   },
+   "2": {
+    "n": 87,
+    "flagged": 75,
+    "pct": 86.2
+   },
+   "3-5": {
+    "n": 79,
+    "flagged": 8,
+    "pct": 10.1
+   },
+   ">20": {
+    "n": 53,
+    "flagged": 0,
+    "pct": 0
+   },
+   "6-20": {
+    "n": 42,
+    "flagged": 0,
+    "pct": 0
+   }
+  },
+  "detectionByReportYear": {
+   "2022": {
+    "n": 555,
+    "hits": 496,
+    "pct": 89.4,
+    "ci95": [
+     86.5,
+     91.7
+    ]
+   },
+   "2023": {
+    "n": 560,
+    "hits": 539,
+    "pct": 96.3,
+    "ci95": [
+     94.3,
+     97.5
+    ]
+   },
+   "2024": {
+    "n": 537,
+    "hits": 519,
+    "pct": 96.6,
+    "ci95": [
+     94.8,
+     97.9
+    ]
+   },
+   "2025": {
+    "n": 591,
+    "hits": 584,
+    "pct": 98.8,
+    "ci95": [
+     97.6,
+     99.4
+    ]
+   },
+   "2026": {
+    "n": 554,
+    "hits": 481,
+    "pct": 86.8,
+    "ci95": [
+     83.8,
+     89.4
+    ]
+   }
+  },
+  "newlyRegistered": {
+   "brandNewAtPublish": {
+    "n": 2797,
+    "hits": 2637,
+    "pct": 94.3,
+    "ci95": [
+     93.4,
+     95.1
+    ]
+   },
+   "brandNewDetected": {
+    "n": 2637,
+    "hits": 2575,
+    "pct": 97.6,
+    "ci95": [
+     97,
+     98.2
+    ]
+   },
+   "existingPackageGotMaliciousVersion": {
+    "n": 2797,
+    "hits": 160,
+    "pct": 5.7,
+    "ci95": [
+     4.9,
+     6.6
+    ]
+   },
+   "existingDetected": {
+    "n": 160,
+    "hits": 44,
+    "pct": 27.5,
+    "ci95": [
+     21.2,
+     34.9
+    ]
+   },
+   "existingOlderThan1yWithPriorVersions": {
+    "n": 160,
+    "hits": 55,
+    "pct": 34.4,
+    "ci95": [
+     27.5,
+     42
+    ]
+   }
+  },
+  "timing": {
+   "daysPublishToReport": {
+    "n": 2797,
+    "median": 51,
+    "p25": 1.9,
+    "p75": 456.5,
+    "p90": 546
+   },
+   "daysPublishToTakedown": {
+    "n": 2475,
+    "median": 6.6,
+    "p25": 0.7,
+    "p75": 70.7,
+    "p90": 544.7
+   },
+   "reportedBefore7Days": {
+    "n": 2797,
+    "hits": 968,
+    "pct": 34.6,
+    "ci95": [
+     32.9,
+     36.4
+    ]
+   }
+  },
+  "downloads": {
+   "note": "Weekly downloads at the snapshot for malicious packages still live (search API). Removed packages: no recoverable history.",
+   "maliciousLive": {
+    "50-499": {
+     "n": 206,
+     "flagged": 185,
+     "pct": 89.8
+    },
+    "unknown": {
+     "n": 41,
+     "flagged": 37,
+     "pct": 90.2
+    },
+    "<10": {
+     "n": 53,
+     "flagged": 51,
+     "pct": 96.2
+    },
+    "10-49": {
+     "n": 20,
+     "flagged": 7,
+     "pct": 35
+    },
+    ">=5,000": {
+     "n": 22,
+     "flagged": 1,
+     "pct": 4.5
+    },
+    "500-4,999": {
+     "n": 17,
+     "flagged": 2,
+     "pct": 11.8
+    }
+   },
+   "maliciousLiveLowDownloads": {
+    "n": 318,
+    "hits": 73,
+    "pct": 23,
+    "ci95": [
+     18.7,
+     27.9
+    ]
+   },
+   "controls": {
+    "popular": {
+     ">=5,000": {
+      "n": 1000,
+      "flagged": 0,
+      "pct": 0
+     }
+    },
+    "longtail": {
+     ">=5,000": {
+      "n": 423,
+      "flagged": 4,
+      "pct": 0.9
+     },
+     "500-4,999": {
+      "n": 304,
+      "flagged": 2,
+      "pct": 0.7
+     },
+     "10-49": {
+      "n": 143,
+      "flagged": 5,
+      "pct": 3.5
+     },
+     "50-499": {
+      "n": 309,
+      "flagged": 9,
+      "pct": 2.9
+     },
+     "<10": {
+      "n": 21,
+      "flagged": 1,
+      "pct": 4.8
+     }
+    },
+    "fresh": {
+     "500-4,999": {
+      "n": 178,
+      "flagged": 9,
+      "pct": 5.1
+     },
+     "50-499": {
+      "n": 152,
+      "flagged": 24,
+      "pct": 15.8
+     },
+     "10-49": {
+      "n": 63,
+      "flagged": 17,
+      "pct": 27
+     },
+     ">=5,000": {
+      "n": 40,
+      "flagged": 3,
+      "pct": 7.5
+     },
+     "<10": {
+      "n": 17,
+      "flagged": 10,
+      "pct": 58.8
+     }
+    }
+   }
+  },
+  "falseAlarmExamples": {
+   "popular": [],
+   "longtail": [
+    "debounced: name edit distance 1 from debounce",
+    "cwm-assistant: 15 day(s) old and runs an install script",
+    "it-glob: name edit distance 1 from is-glob",
+    "cli-loader: name edit distance 2 from css-loader",
+    "prod-log: name edit distance 1 from proc-log",
+    "react-wow: name edit distance 2 from react-dom",
+    "babel-helper-annotate-as-pure: name unscoped copy of @babel/helper-annotate-as-pure",
+    "aruing-darwin-x64: 23 day(s) old with 2 release(s); 23 day(s) old and runs an install script",
+    "bower: name edit distance 1 from bowser",
+    "@turystack/nestjs-i18n: 12 day(s) old with 2 release(s)",
+    "@calca/format-html-tailwind: 14 day(s) old with 2 release(s)",
+    "dbml2drizzle: 13 day(s) old with 2 release(s)"
+   ],
+   "fresh": [
+    "@unabandoned/postcss-css-variables: 29 day(s) old with 2 release(s)",
+    "@app-vitals/agent-admin: 14 day(s) old and runs an install script",
+    "@blockcast/moq-media-sync: 17 day(s) old with 2 release(s)",
+    "@voila.dev/live: 21 day(s) old with 2 release(s)",
+    "dmk-queue: 10 day(s) old with 2 release(s)",
+    "@liusiqi-dev/dsh-util-crypto: 19 day(s) old with 2 release(s)",
+    "@ohos-ports-electron/fs-extra: 5 day(s) old with 2 release(s)",
+    "dolljs: 16 day(s) old with 2 release(s)",
+    "@tsc-rs/typescript: 16 day(s) old and runs an install script",
+    "@haybarn/ext-redis-h2-0-0: version 202610.x on a package with 2 release(s) (dependency-confusion pattern); 13 day(s) old with 2 release(s)",
+    "@ohos-ports/math: 8 day(s) old with 2 release(s)",
+    "store-review-check: 21 day(s) old with 2 release(s)"
+   ]
+  },
+  "missedExamples": [
+   "calc_x0wguvucl1 (MAL-2022-1806): age 0d, 5 versions, prior 0",
+   "tiny-range-binarysearch (MAL-2022-6583): age 0d, 100 versions, prior 0",
+   "cloudshell-session (MAL-2022-1942): age 0d, 6 versions, prior 0",
+   "request-progres (MAL-2022-5755): age 0d, 3 versions, prior 0",
+   "calc_wqq3wgo8y9 (MAL-2022-1804): age 0d, 3 versions, prior 0",
+   "asset-detect-filter (MAL-2022-1139): age 0d, 14 versions, prior 0",
+   "perf-benchmarks-components (MAL-2022-5278): age 0d, 3 versions, prior 0",
+   "fe-avaya-chat-client (MAL-2022-2987): age 0d, 9 versions, prior 0",
+   "tinkoff-offers (MAL-2022-6579): age 0d, 7 versions, prior 0",
+   "hs-lodash (MAL-2022-3687): age 0d, 22 versions, prior 0",
+   "amplify_default (MAL-2022-982): age 0d, 5 versions, prior 0",
+   "comments2 (MAL-2022-2119): age 0d, 19 versions, prior 0"
+  ]
+ },
+ "E2b_pypi_metadata": {
+  "note": "PyPI deletes removed projects; registry metadata for removed malware is not recoverable. Only still-live reported projects can be replayed (at report time).",
+  "controls": {
+   "popular": {
+    "new_package": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "young_package": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "few_versions": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "install_script": {
+     "known": 330,
+     "hit": 3,
+     "pct": 0.9
+    },
+    "low_downloads": {
+     "known": 0,
+     "hit": 0,
+     "pct": null
+    },
+    "dependency_confusion_version": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "dormant_revival": {
+     "known": 330,
+     "hit": 41,
+     "pct": 12.4
+    },
+    "lookalike_name": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "combosquat_name": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 330,
+     "hit": 16,
+     "pct": 4.8
+    },
+    "young_and_few_versions": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "young_and_install_script": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    },
+    "COMPOSITE": {
+     "known": 330,
+     "hit": 0,
+     "pct": 0
+    }
+   },
+   "random": {
+    "new_package": {
+     "known": 1445,
+     "hit": 10,
+     "pct": 0.7
+    },
+    "young_package": {
+     "known": 1445,
+     "hit": 43,
+     "pct": 3
+    },
+    "few_versions": {
+     "known": 1445,
+     "hit": 612,
+     "pct": 42.4
+    },
+    "install_script": {
+     "known": 1445,
+     "hit": 261,
+     "pct": 18.1
+    },
+    "low_downloads": {
+     "known": 0,
+     "hit": 0,
+     "pct": null
+    },
+    "dependency_confusion_version": {
+     "known": 1445,
+     "hit": 4,
+     "pct": 0.3
+    },
+    "dormant_revival": {
+     "known": 1040,
+     "hit": 82,
+     "pct": 7.9
+    },
+    "lookalike_name": {
+     "known": 1452,
+     "hit": 6,
+     "pct": 0.4
+    },
+    "combosquat_name": {
+     "known": 1452,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 1452,
+     "hit": 457,
+     "pct": 31.5
+    },
+    "young_and_few_versions": {
+     "known": 1445,
+     "hit": 26,
+     "pct": 1.8
+    },
+    "young_and_install_script": {
+     "known": 1445,
+     "hit": 0,
+     "pct": 0
+    },
+    "COMPOSITE": {
+     "known": 1452,
+     "hit": 36,
+     "pct": 2.5
+    }
+   },
+   "fresh": {
+    "new_package": {
+     "known": 500,
+     "hit": 285,
+     "pct": 57
+    },
+    "young_package": {
+     "known": 500,
+     "hit": 500,
+     "pct": 100
+    },
+    "few_versions": {
+     "known": 500,
+     "hit": 226,
+     "pct": 45.2
+    },
+    "install_script": {
+     "known": 500,
+     "hit": 2,
+     "pct": 0.4
+    },
+    "low_downloads": {
+     "known": 0,
+     "hit": 0,
+     "pct": null
+    },
+    "dependency_confusion_version": {
+     "known": 500,
+     "hit": 1,
+     "pct": 0.2
+    },
+    "dormant_revival": {
+     "known": 343,
+     "hit": 0,
+     "pct": 0
+    },
+    "lookalike_name": {
+     "known": 500,
+     "hit": 2,
+     "pct": 0.4
+    },
+    "combosquat_name": {
+     "known": 500,
+     "hit": 0,
+     "pct": 0
+    },
+    "no_repository": {
+     "known": 500,
+     "hit": 157,
+     "pct": 31.4
+    },
+    "young_and_few_versions": {
+     "known": 500,
+     "hit": 226,
+     "pct": 45.2
+    },
+    "young_and_install_script": {
+     "known": 500,
+     "hit": 2,
+     "pct": 0.4
+    },
+    "COMPOSITE": {
+     "known": 500,
+     "hit": 226,
+     "pct": 45.2
+    }
+   }
+  },
+  "maliciousStillLive": {
+   "new_package": {
+    "known": 62,
+    "hit": 21,
+    "pct": 33.9
+   },
+   "young_package": {
+    "known": 62,
+    "hit": 45,
+    "pct": 72.6
+   },
+   "few_versions": {
+    "known": 62,
+    "hit": 34,
+    "pct": 54.8
+   },
+   "install_script": {
+    "known": 62,
+    "hit": 6,
+    "pct": 9.7
+   },
+   "low_downloads": {
+    "known": 0,
+    "hit": 0,
+    "pct": null
+   },
+   "dependency_confusion_version": {
+    "known": 62,
+    "hit": 1,
+    "pct": 1.6
+   },
+   "dormant_revival": {
+    "known": 32,
+    "hit": 0,
+    "pct": 0
+   },
+   "lookalike_name": {
+    "known": 62,
+    "hit": 0,
+    "pct": 0
+   },
+   "combosquat_name": {
+    "known": 62,
+    "hit": 0,
+    "pct": 0
+   },
+   "no_repository": {
+    "known": 62,
+    "hit": 47,
+    "pct": 75.8
+   },
+   "young_and_few_versions": {
+    "known": 62,
+    "hit": 33,
+    "pct": 53.2
+   },
+   "young_and_install_script": {
+    "known": 62,
+    "hit": 3,
+    "pct": 4.8
+   },
+   "COMPOSITE": {
+    "known": 62,
+    "hit": 34,
+    "pct": 54.8
+   }
+  },
+  "confusion_liveMalicious_vs_allControls": {
+   "TP": 34,
+   "FN": 28,
+   "FP": 262,
+   "TN": 2020,
+   "precision": 0.115,
+   "recall": 0.548,
+   "f1": 0.19,
+   "fpr": 0.115,
+   "fnr": 0.452,
+   "recallCI95": [
+    42.5,
+    66.6
+   ],
+   "fprCI95": [
+    10.2,
+    12.9
+   ]
+  }
+ },
+ "E3_code": {
+  "npm": {
+   "attempted": 1630,
+   "scanned": 1615,
+   "sizes": {
+    "malicious": 271,
+    "popular": 500,
+    "longtail": 397,
+    "fresh": 447
+   },
+   "atReview": {
+    "vsAllBenign": {
+     "TP": 7,
+     "FN": 264,
+     "FP": 15,
+     "TN": 1329,
+     "precision": 0.318,
+     "recall": 0.026,
+     "f1": 0.048,
+     "fpr": 0.011,
+     "fnr": 0.974,
+     "recallCI95": [
+      1.3,
+      5.2
+     ],
+     "fprCI95": [
+      0.7,
+      1.8
+     ]
+    },
+    "fpr_popular": {
+     "n": 500,
+     "hits": 2,
+     "pct": 0.4,
+     "ci95": [
+      0.1,
+      1.4
+     ]
+    },
+    "fpr_longtail": {
+     "n": 397,
+     "hits": 4,
+     "pct": 1,
+     "ci95": [
+      0.4,
+      2.6
+     ]
+    },
+    "fpr_fresh": {
+     "n": 447,
+     "hits": 9,
+     "pct": 2,
+     "ci95": [
+      1.1,
+      3.8
+     ]
+    }
+   },
+   "atMalicious": {
+    "vsAllBenign": {
+     "TP": 3,
+     "FN": 268,
+     "FP": 4,
+     "TN": 1340,
+     "precision": 0.429,
+     "recall": 0.011,
+     "f1": 0.022,
+     "fpr": 0.003,
+     "fnr": 0.989,
+     "recallCI95": [
+      0.4,
+      3.2
+     ],
+     "fprCI95": [
+      0.1,
+      0.8
+     ]
+    },
+    "fpr_popular": {
+     "n": 500,
+     "hits": 2,
+     "pct": 0.4,
+     "ci95": [
+      0.1,
+      1.4
+     ]
+    },
+    "fpr_longtail": {
+     "n": 397,
+     "hits": 1,
+     "pct": 0.3,
+     "ci95": [
+      0,
+      1.4
+     ]
+    },
+    "fpr_fresh": {
+     "n": 447,
+     "hits": 1,
+     "pct": 0.2,
+     "ci95": [
+      0,
+      1.3
+     ]
+    }
+   },
+   "maliciousRuleFrequency": {
+    "js_network": 11,
+    "npm_install_hook": 7,
+    "messaging_api": 3,
+    "raw_ip_url": 2,
+    "js_fingerprint": 2,
+    "collect_and_send": 2,
+    "exfil_endpoint": 1,
+    "pip_install_url": 1,
+    "download_and_run": 1,
+    "js_shell_tools": 1,
+    "credential_paths": 1,
+    "browser_data": 1,
+    "runs_at_install": 1,
+    "npm_hook_runs_remote": 1
+   },
+   "benignRuleFrequency": {
+    "js_network": 130,
+    "credential_paths": 18,
+    "npm_install_hook": 12,
+    "js_shell_tools": 5,
+    "py_network": 5,
+    "js_fingerprint": 3,
+    "collect_and_send": 3,
+    "download_and_run": 3,
+    "powershell_hidden": 3,
+    "js_fetch_eval": 2,
+    "browser_data": 1,
+    "exfil_endpoint": 1,
+    "raw_ip_url": 1,
+    "npm_hook_inline_code": 1,
+    "persistence": 1,
+    "js_obfuscator": 1
+   },
+   "benignFlaggedExamples": [
+    "popular/vite@8.3.6: 12 [credential_paths,js_shell_tools,js_fingerprint,js_network,collect_and_send]",
+    "popular/playwright-core@1.65.0: 11 [js_network,browser_data,js_fetch_eval,collect_and_send]",
+    "longtail/momentic@3.72.0: 7 [exfil_endpoint,credential_paths,js_network]",
+    "longtail/@ohos-ports/canvas@3.2.3-beta.4: 5 [npm_install_hook,npm_hook_inline_code]",
+    "longtail/@namespacelabs/sdk@1.5.3: 4 [download_and_run]",
+    "longtail/@axway/api-builder-orm@3.0.0: 4 [js_fetch_eval]",
+    "fresh/capybara-devtools@0.8.0: 5 [js_network,js_shell_tools]",
+    "fresh/bansur-router@1.0.9: 19 [npm_install_hook,js_network,download_and_run,powershell_hidden,credential_paths,js_shell_tools,js_fingerprint]",
+    "fresh/dsh-session-navigator@1.1.3: 5 [js_network,js_shell_tools]",
+    "fresh/@majapisoftwares/router@0.2.1: 6 [js_fingerprint,js_network,collect_and_send]",
+    "fresh/@yhuangsh/adbmcp@0.7.0: 5 [download_and_run,js_network]",
+    "fresh/shot-canvas@0.2.1: 4 [js_network,persistence]",
+    "fresh/@ezychat/desktop@0.1.79: 5 [js_network,powershell_hidden]",
+    "fresh/@hypit/runtime-local@0.1.1: 4 [js_shell_tools]",
+    "fresh/dsh-biocore@0.5.1: 5 [py_network,powershell_hidden]"
+   ],
+   "maliciousMissedExamples": [
+    "index.marko@1.0.0: score 2, files 2 [npm_install_hook]",
+    "css-hell@1.0.0: score 0, files 2 []",
+    "misk-tailwind-css@1.0.3: score 0, files 2 []",
+    "xweb_3.0_util_lib@0.0.8: score 0, files 12 []",
+    "xweb_3.0_component_lib@1.3.22: score 0, files 61 []",
+    "fsevents@2.3.3: score 0, files 5 []",
+    "uitk-react-experimental-button-tabs@1.0.0: score 0, files 3 []",
+    "pewspwnrepo4@1.0.1: score 0, files 2 []",
+    "nf-cl-logger@30.0.0: score 0, files 2 []",
+    "@kp-admin/history@20.0.4: score 2, files 3 [npm_install_hook]",
+    "iva-react-web-ui@1.0.0: score 0, files 3 []",
+    "shmam-test-npm-test-5@2.0.0: score 0, files 1 []",
+    "mokok-lukni-huj@1.1.4: score 0, files 4 []",
+    "avminh-afagais-ifda@1.0.0: score 0, files 4 []",
+    "buta-fbobna-giodaif@1.0.0: score 0, files 3 []",
+    "abiba-avin-aumauna@1.0.0: score 0, files 4 []",
+    "butanaih-fafisa-dari@1.0.0: score 0, files 3 []",
+    "augis-pomdoi9r-roa1na@1.0.0: score 0, files 4 []",
+    "orchestrate-benchmark-spy-air-cat@1.2.4: score 0, files 3 []",
+    "tealove-boy4@1.0.0: score 0, files 2 []",
+    "manyeraruda-nutar-munst@1.0.0: score 0, files 3 []",
+    "abunawas@1.0.0: score 0, files 3 []",
+    "thambi-geunsme-vers@1.0.0: score 0, files 3 []",
+    "sunden-diak-nubolitres@1.1.10: score 0, files 4 []",
+    "alfiansyah-poke66@1.0.0: score 0, files 2 []"
+   ],
+   "maliciousManifestOnly": {
+    "n": 271,
+    "hits": 118,
+    "pct": 43.5,
+    "ci95": [
+     37.8,
+     49.5
+    ]
+   }
+  },
+  "pypi": {
+   "attempted": 792,
+   "scanned": 779,
+   "sizes": {
+    "malicious": 62,
+    "popular": 322,
+    "random": 395
+   },
+   "atReview": {
+    "vsAllBenign": {
+     "TP": 29,
+     "FN": 33,
+     "FP": 27,
+     "TN": 690,
+     "precision": 0.518,
+     "recall": 0.468,
+     "f1": 0.492,
+     "fpr": 0.038,
+     "fnr": 0.532,
+     "recallCI95": [
+      34.9,
+      59
+     ],
+     "fprCI95": [
+      2.6,
+      5.4
+     ]
+    },
+    "fpr_popular": {
+     "n": 322,
+     "hits": 18,
+     "pct": 5.6,
+     "ci95": [
+      3.6,
+      8.7
+     ]
+    },
+    "fpr_random": {
+     "n": 395,
+     "hits": 9,
+     "pct": 2.3,
+     "ci95": [
+      1.2,
+      4.3
+     ]
+    }
+   },
+   "atMalicious": {
+    "vsAllBenign": {
+     "TP": 4,
+     "FN": 58,
+     "FP": 6,
+     "TN": 711,
+     "precision": 0.4,
+     "recall": 0.065,
+     "f1": 0.111,
+     "fpr": 0.008,
+     "fnr": 0.935,
+     "recallCI95": [
+      2.5,
+      15.4
+     ],
+     "fprCI95": [
+      0.4,
+      1.8
+     ]
+    },
+    "fpr_popular": {
+     "n": 322,
+     "hits": 4,
+     "pct": 1.2,
+     "ci95": [
+      0.5,
+      3.2
+     ]
+    },
+    "fpr_random": {
+     "n": 395,
+     "hits": 2,
+     "pct": 0.5,
+     "ci95": [
+      0.1,
+      1.8
+     ]
+    }
+   },
+   "maliciousRuleFrequency": {
+    "py_network": 46,
+    "py_fetch_exec": 24,
+    "persistence": 4,
+    "browser_data": 3,
+    "messaging_api": 3,
+    "py_setup_override": 2,
+    "credential_paths": 2,
+    "powershell_hidden": 1,
+    "py_fingerprint": 1,
+    "collect_and_send": 1,
+    "py_startfile": 1,
+    "pip_install_url": 1,
+    "download_and_run": 1
+   },
+   "benignRuleFrequency": {
+    "py_network": 273,
+    "credential_paths": 24,
+    "py_setup_runs": 20,
+    "download_and_run": 8,
+    "py_startfile": 6,
+    "py_pth_import": 6,
+    "py_fingerprint": 5,
+    "messaging_api": 5,
+    "py_setup_override": 4,
+    "js_network": 4,
+    "raw_ip_url": 3,
+    "persistence": 3,
+    "py_fetch_exec": 2,
+    "collect_and_send": 2,
+    "exfil_endpoint": 1,
+    "js_fetch_eval": 1,
+    "wallet_files": 1,
+    "agent_directives": 1
+   },
+   "benignFlaggedExamples": [
+    "popular/pandas@3.1.1: 4 [py_startfile,py_network]",
+    "popular/psutil@7.2.2: 9 [download_and_run,py_network,py_fingerprint,py_setup_runs]",
+    "popular/werkzeug@3.1.9: 8 [py_fingerprint,py_fetch_exec,py_network]",
+    "popular/coverage@7.17.2: 4 [py_pth_import,py_network]",
+    "popular/paramiko@5.1.0: 6 [py_network,py_fingerprint,collect_and_send]",
+    "popular/sympy@1.14.0: 4 [py_network,py_startfile]",
+    "popular/huggingface-hub@2.4.0: 10 [download_and_run,credential_paths,exfil_endpoint]",
+    "popular/anthropic@2.6.0: 6 [py_network,py_fetch_exec]",
+    "popular/tiktoken@0.14.0: 5 [download_and_run,py_network]",
+    "popular/astroid@4.3.4: 4 [py_network,py_pth_import]",
+    "popular/notebook@7.6.5: 4 [js_fetch_eval]",
+    "popular/debugpy@1.8.22: 6 [py_setup_runs,py_network,persistence]",
+    "popular/pymongo@4.19.0: 5 [download_and_run,py_network]",
+    "popular/ansible-core@2.22.0: 10 [py_network,py_fingerprint,collect_and_send,raw_ip_url,credential_paths]",
+    "popular/spacy@3.8.18: 5 [download_and_run,py_network]",
+    "popular/pycryptodomex@3.24.2: 4 [credential_paths,py_setup_override]",
+    "popular/bitcoinlib@0.7.10: 4 [wallet_files,py_network]",
+    "popular/bokeh@3.10.2: 4 [py_setup_runs,py_network,js_network]",
+    "random/ign8vault@2.0.10: 4 [py_network,persistence]",
+    "random/sripluscalculator@0.0.1: 7 [py_network,raw_ip_url,credential_paths,messaging_api]",
+    "random/pymworks@2.0.1: 5 [credential_paths,py_network,py_setup_runs]",
+    "random/cheap-search@2026.5.17: 4 [download_and_run]",
+    "random/pyproject-pip@0.1.28: 6 [py_pth_import,py_network,credential_paths]",
+    "random/iso-freeze@0.0.14: 6 [py_pth_import,py_network,credential_paths]",
+    "random/marge-mri@1.0.0rc3: 4 [py_startfile,py_network]"
+   ],
+   "maliciousMissedExamples": [
+    "crunchie@205.0.0: score 2, files 8 [py_setup_override]",
+    "treeherder-submitter@0.0.1: score 2, files 10 [py_setup_override]",
+    "bioql@3.0.1: score 1, files 83 [py_network]",
+    "qwen-asr-pvt@0.0.6: score 1, files 21 [py_network]",
+    "a3s-code@5.3.3: score 1, files 11 [py_network]",
+    "xayoub-xctxteam@0.1.2: score 1, files 17 [py_network]",
+    "seapy-ops@1.2.2: score 1, files 13 [py_network]",
+    "fabdeploycheck@0.1.1: score 1, files 3 [py_network]",
+    "fabtoolkit@0.1.0: score 1, files 4 [py_network]",
+    "hijok-lampam@1.0.0: score 0, files 3 []",
+    "jiklpo-tsunari-kay@1.0.0: score 0, files 3 []",
+    "sitecard@0.1.14: score 3, files 22 [credential_paths,py_network]",
+    "fontus@0.0.3: score 1, files 12 [py_network]",
+    "wallet-tracking@1.0.3: score 3, files 12 [messaging_api,py_network]",
+    "tui-ascii-art@0.1.1: score 0, files 36 []",
+    "amino-fix@2.1.8: score 1, files 35 [py_network]",
+    "enhancer@0.2.3: score 0, files 11 []",
+    "guan@0.1.100: score 1, files 27 [py_network]",
+    "kaggle-runner@0.0.2: score 0, files 21 []",
+    "mymaldependency@2.1.1: score 0, files 8 []",
+    "projz-py@1.7.1: score 0, files 82 []",
+    "buddyme@0.2.3: score 1, files 147 [py_network]",
+    "fakehuop@3.1.0: score 0, files 26 []",
+    "glass-of-water@1.0.3: score 0, files 9 []",
+    "mathepy@1.0.0: score 0, files 26 []"
+   ],
+   "maliciousManifestOnly": {
+    "n": 62,
+    "hits": 0,
+    "pct": 0,
+    "ci95": [
+     0,
+     5.8
+    ]
+   }
+  }
+ },
+ "E4_npm_combined": {
+  "note": "Malicious = still-downloadable malicious versions (metadata at first malicious publish). Benign = controls with a scanned latest version (metadata at snapshot).",
+  "atReview": {
+   "malicious": {
+    "metadataOnly": 257,
+    "codeOnly": 4,
+    "both": 3,
+    "neither": 7,
+    "n": 271
+   },
+   "benign": {
+    "metadataOnly": 66,
+    "codeOnly": 14,
+    "both": 1,
+    "neither": 1263,
+    "n": 1344
+   },
+   "benignByGroup": {
+    "popular": {
+     "metadataOnly": 0,
+     "codeOnly": 2,
+     "both": 0,
+     "neither": 498,
+     "n": 500
+    },
+    "longtail": {
+     "metadataOnly": 5,
+     "codeOnly": 4,
+     "both": 0,
+     "neither": 388,
+     "n": 397
+    },
+    "fresh": {
+     "metadataOnly": 61,
+     "codeOnly": 8,
+     "both": 1,
+     "neither": 377,
+     "n": 447
+    }
+   },
+   "metadataOnly": {
+    "TP": 260,
+    "FN": 11,
+    "FP": 67,
+    "TN": 1277,
+    "precision": 0.795,
+    "recall": 0.959,
+    "f1": 0.87,
+    "fpr": 0.05,
+    "fnr": 0.041,
+    "recallCI95": [
+     92.9,
+     97.7
+    ],
+    "fprCI95": [
+     3.9,
+     6.3
+    ]
+   },
+   "codeOnly": {
+    "TP": 7,
+    "FN": 264,
+    "FP": 15,
+    "TN": 1329,
+    "precision": 0.318,
+    "recall": 0.026,
+    "f1": 0.048,
+    "fpr": 0.011,
+    "fnr": 0.974,
+    "recallCI95": [
+     1.3,
+     5.2
+    ],
+    "fprCI95": [
+     0.7,
+     1.8
+    ]
+   },
+   "either": {
+    "TP": 264,
+    "FN": 7,
+    "FP": 81,
+    "TN": 1263,
+    "precision": 0.765,
+    "recall": 0.974,
+    "f1": 0.857,
+    "fpr": 0.06,
+    "fnr": 0.026,
+    "recallCI95": [
+     94.8,
+     98.7
+    ],
+    "fprCI95": [
+     4.9,
+     7.4
+    ]
+   },
+   "both": {
+    "TP": 3,
+    "FN": 268,
+    "FP": 1,
+    "TN": 1343,
+    "precision": 0.75,
+    "recall": 0.011,
+    "f1": 0.022,
+    "fpr": 0.001,
+    "fnr": 0.989,
+    "recallCI95": [
+     0.4,
+     3.2
+    ],
+    "fprCI95": [
+     0,
+     0.4
+    ]
+   }
+  },
+  "atMalicious": {
+   "malicious": {
+    "metadataOnly": 258,
+    "codeOnly": 1,
+    "both": 2,
+    "neither": 10,
+    "n": 271
+   },
+   "benign": {
+    "metadataOnly": 66,
+    "codeOnly": 3,
+    "both": 1,
+    "neither": 1274,
+    "n": 1344
+   },
+   "benignByGroup": {
+    "popular": {
+     "metadataOnly": 0,
+     "codeOnly": 2,
+     "both": 0,
+     "neither": 498,
+     "n": 500
+    },
+    "longtail": {
+     "metadataOnly": 5,
+     "codeOnly": 1,
+     "both": 0,
+     "neither": 391,
+     "n": 397
+    },
+    "fresh": {
+     "metadataOnly": 61,
+     "codeOnly": 0,
+     "both": 1,
+     "neither": 385,
+     "n": 447
+    }
+   },
+   "metadataOnly": {
+    "TP": 260,
+    "FN": 11,
+    "FP": 67,
+    "TN": 1277,
+    "precision": 0.795,
+    "recall": 0.959,
+    "f1": 0.87,
+    "fpr": 0.05,
+    "fnr": 0.041,
+    "recallCI95": [
+     92.9,
+     97.7
+    ],
+    "fprCI95": [
+     3.9,
+     6.3
+    ]
+   },
+   "codeOnly": {
+    "TP": 3,
+    "FN": 268,
+    "FP": 4,
+    "TN": 1340,
+    "precision": 0.429,
+    "recall": 0.011,
+    "f1": 0.022,
+    "fpr": 0.003,
+    "fnr": 0.989,
+    "recallCI95": [
+     0.4,
+     3.2
+    ],
+    "fprCI95": [
+     0.1,
+     0.8
+    ]
+   },
+   "either": {
+    "TP": 261,
+    "FN": 10,
+    "FP": 70,
+    "TN": 1274,
+    "precision": 0.789,
+    "recall": 0.963,
+    "f1": 0.867,
+    "fpr": 0.052,
+    "fnr": 0.037,
+    "recallCI95": [
+     93.3,
+     98
+    ],
+    "fprCI95": [
+     4.1,
+     6.5
+    ]
+   },
+   "both": {
+    "TP": 2,
+    "FN": 269,
+    "FP": 1,
+    "TN": 1343,
+    "precision": 0.667,
+    "recall": 0.007,
+    "f1": 0.015,
+    "fpr": 0.001,
+    "fnr": 0.993,
+    "recallCI95": [
+     0.2,
+     2.7
+    ],
+    "fprCI95": [
+     0,
+     0.4
+    ]
+   }
+  }
+ }
+}
