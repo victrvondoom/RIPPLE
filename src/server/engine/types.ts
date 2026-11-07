@@ -107,6 +107,8 @@ export interface WorkflowPack {
   completionChecks?(ctx: CompletionContext): CompletionCheck[];
   /** Domain wording for generic UI labels. */
   labels?: PackLabels;
+  /** Session 18: what this pack's agents are forbidden to do, shown on the People & Agents page (replaces a pack-id switch in the UI). */
+  agentLimit?: string;
   /**
    * Orchestrator input declaration per role. A role is re-run only when its fingerprint (its declared inputs +
    * the outputs of `roleDeps`) differs from the last run; otherwise its previous result is reused.

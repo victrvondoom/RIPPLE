@@ -32,7 +32,7 @@ export const SYSTEMS: CapabilitySystem[] = [
 
 /** Implemented RIPPLE packs → the capability system whose workspace they appear in. */
 export const PACK_SYSTEM: Record<string, SystemId> = {
-  'crewpilot': 'engineering', 'deploy-gate': 'engineering', 'flipside-review': 'engineering',
+  'crewpilot': 'engineering', 'deploy-gate': 'engineering', 'flipside-review': 'engineering', 'package-gate': 'engineering',
   'incident-sentinel': 'incident', 'shiftrelay': 'incident',
   'beo-rescue': 'commerce', 'run-of-show': 'commerce', 'scopeguard': 'commerce', 'invoiceguard': 'commerce', 'clearsend': 'commerce',
   'movemate': 'personal', 'submitready': 'personal', 'offerroom': 'personal',
@@ -50,7 +50,7 @@ export const PROJECTS: SourceProject[] = [
   P('switch-notary', 'Switch Notary', 'engineering', ['Portable verification receipts'], { folder: 'switch-notary-main' }),
   P('unseen', 'UNSEEN', 'engineering', ['Independent reproduction of the reported failure'], { folder: 'unseen-main' }),
   P('preflight', 'Preflight', 'engineering', ['Preview / release-readiness checks']),
-  P('gatekeeper', 'Gatekeeper', 'engineering', ['Security and package screening'], { folder: 'gatekeeper-master' }),
+  P('gatekeeper', 'Gatekeeper', 'engineering', ['Security and package screening'], { folder: 'gatekeeper-master', integration: 'pack-backed', note: 'Concept re-implemented in RIPPLE (session 18): capabilities/pkgguard + the Package Gate pack; measured in docs/benchmarks/PACKAGE_RISK_BENCHMARK.md.' }),
   P('shipyard', 'Shipyard', 'engineering', ['Permission-gated deployment'], { folder: 'shipyard-main' }),
   P('release-desk', 'Release Desk', 'engineering', ['Release notes, commands and release plan'], { folder: 'CommunityAI-main', note: 'Same project as CommunityAI.' }),
   P('bug-to-pr', 'Bug to PR Room', 'engineering', ['Bug report → isolated fix proposal'], { folder: 'bug-to-pr-room-main', integration: 'pack-backed', note: 'Issue triage is exercised today by the CrewPilot pack.' }),
@@ -94,7 +94,7 @@ export const PROJECTS: SourceProject[] = [
 ];
 
 export const SCENARIOS: Scenario[] = [
-  { id: 'A', title: 'One change, independently verified, safely released', systems: ['engineering'], projects: ['countersign', 'switch-notary', 'gatekeeper', 'unseen', 'preflight', 'release-desk', 'bug-to-pr', 'agentqa', 'shipyard', 'switch-data-room'], packs: ['crewpilot'],
+  { id: 'A', title: 'One change, independently verified, safely released', systems: ['engineering'], projects: ['countersign', 'switch-notary', 'gatekeeper', 'unseen', 'preflight', 'release-desk', 'bug-to-pr', 'agentqa', 'shipyard', 'switch-data-room'], packs: ['crewpilot', 'package-gate'],
     steps: [{ label: 'Bug or change reported', stage: 'intake' }, { label: 'Components, dependencies and owners identified', stage: 'analysis' }, { label: 'Independent reproduction and checks', stage: 'verify' }, { label: 'Designated approver countersigns', stage: 'approval' }, { label: 'Permission-gated release', stage: 'execute' }, { label: 'Deployed version read back', stage: 'verify' }, { label: 'Closed on verified criteria', stage: 'complete' }] },
   { id: 'B', title: 'Customer request to verified business outcome', systems: ['commerce'], projects: ['deskpilot', 'orderroom', 'shopops', 'promise-to-proof', 'tableline', 'bizowl', 'bangsayur', 'reclaim', 'resolve', 'redeem'], packs: ['beo-rescue', 'scopeguard', 'invoiceguard', 'clearsend', 'consumer-resolution'],
     steps: [{ label: 'Request classified', stage: 'intake' }, { label: 'Policy, order and prior commitments checked', stage: 'analysis' }, { label: 'Manager authorises the proposed action', stage: 'approval' }, { label: 'Connector action executed', stage: 'execute' }, { label: 'Resulting status read back', stage: 'verify' }, { label: 'Commitment and audit updated', stage: 'complete' }] },

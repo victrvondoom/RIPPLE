@@ -112,6 +112,7 @@ export const invoiceGuardPack: WorkflowPack = {
   id: 'invoiceguard', name: 'InvoiceGuard', domain: 'Financial Reconciliation', version: '1.0.0',
   description: 'Reconcile an invoice against the approved quote, milestones, deliverable acceptance and worklog evidence; classify discrepancies and draft a neutral clarification. Never moves money.',
   labels: { baseline: 'Approved quote & records', change: 'Invoice', changeVerb: 'Submit invoice', plan: 'quote / contract', mission: 'Invoice reconciliation', blurb: 'Quote vs invoice vs evidence' },
+  agentLimit: 'Reconciles lines; strictly forbidden from initiating payment or accusatory wording',
   roles: [
     { key: 'intake', name: 'Invoice Intake Agent', kind: 'agent', responsibility: 'Normalizes the invoice; checks duplicates, arithmetic and currency.', department: 'Finance' },
     { key: 'matcher', name: 'Reconciliation Agent', kind: 'agent', responsibility: 'Line-item comparison against milestones, caps and approved amounts.', department: 'Finance' },

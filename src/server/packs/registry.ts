@@ -16,6 +16,9 @@ import { revenuePack } from './revenue/pack.js';
 import { consumerPack } from './consumer/pack.js';
 import { billingPack } from './billing/pack.js';
 import { depgatePack } from './depgate/pack.js';
+import { pkggatePack } from './pkggate/pack.js';
+import { flipsidePack } from './flipside/pack.js';
+import { runOfShowPack } from './runofshow/pack.js';
 
 export interface PackListing { id: string; name: string; domain: string; status: 'implemented' | 'planned'; tagline: string }
 const PLANNED: PackListing[] = [];
@@ -53,5 +56,9 @@ export function extendedRegistry() {
     .register(consumerPack)
     .register(billingPack)
     .register(depgatePack)
+    .register(pkggatePack)
+    // Restored in session 18: merge 67105a5 dropped both registrations while resolving a conflict on this line.
+    .register(flipsidePack)
+    .register(runOfShowPack);
 
 }

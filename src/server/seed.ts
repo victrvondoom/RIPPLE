@@ -23,7 +23,7 @@ export const DEMO_USERS = [
   { email: 'ana@harborvine.example', name: 'Ana Silva', role: 'member', department: 'Agency Delivery', title: 'Delivery Lead', map: ['human_lead'] },
   { email: 'ravi@harborvine.example', name: 'Ravi Menon', role: 'member', department: 'Finance', title: 'Finance Controller', map: ['human_finance', 'human_reviewer', 'revenue_controller'] },
   { email: 'tess@harborvine.example', name: 'Tess Kim', role: 'manager', department: 'Field Operations', title: 'Field Supervisor', map: ['human_supervisor'] },
-  { email: 'noor@harborvine.example', name: 'Noor Haddad', role: 'manager', department: 'Platform Engineering', title: 'PR Author (owns the sealed agent session)', map: ['flip_author'] },
+  { email: 'noor@harborvine.example', name: 'Noor Haddad', role: 'manager', department: 'Platform Engineering', title: 'PR Author (owns the sealed agent session)', map: ['flip_author', 'pg_security_lead'] },
   { email: 'omar@harborvine.example', name: 'Omar Reyes', role: 'member', department: 'Field Operations', title: 'Incoming Technician', map: ['human_incoming', 'flip_reviewer'] },
   { email: 'jo@harborvine.example', name: 'Jo Park', role: 'member', department: 'Field Operations', title: 'Outgoing Technician', map: ['human_outgoing'] },
   { email: 'nina@harborvine.example', name: 'Nina Patel', role: 'manager', department: 'Personal', title: 'Roommate A', map: ['human_roommate_a'] },

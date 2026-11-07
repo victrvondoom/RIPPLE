@@ -1,0 +1,24 @@
+{
+ "npm": {
+  "url": "https://storage.googleapis.com/osv-vulnerabilities/npm/all.zip",
+  "lastModified": "Fri, 06 Nov 2026 23:33:08 GMT",
+  "downloadedAt": "2026-11-07T09:01:30Z",
+  "sha256": "cc2efc57b8ca818e3a57a502d03991030a43b6aea0bf0a1035d973ae887028e6",
+  "bytes": 220051650,
+  "malRecords": 223206,
+  "withdrawn": 334,
+  "kept": 222872
+ },
+ "pypi": {
+  "url": "https://storage.googleapis.com/osv-vulnerabilities/PyPI/all.zip",
+  "lastModified": "Sat, 07 Nov 2026 08:47:50 GMT",
+  "downloadedAt": "2026-11-07T09:01:50Z",
+  "sha256": "c435a459ec86bb49aeac90face75d069337cf132bf41c7dd02e2c638a5959cd8",
+  "bytes": 37655226,
+  "malRecords": 11996,
+  "withdrawn": 25,
+  "kept": 11971
+ },
+ "seed": 20261107,
+ "perYear": 600
+}
