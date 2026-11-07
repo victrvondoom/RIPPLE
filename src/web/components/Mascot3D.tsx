@@ -42,7 +42,7 @@ export function Mascot3D({ mood = 'idle', variant = 'robot', size = 260, classNa
     return () => { io.disconnect(); removeEventListener('pointermove', onMove); document.removeEventListener('visibilitychange', start); if (raf) cancelAnimationFrame(raf); };
   }, []);
   return (
-    <div ref={root} className={`m3d m3d-${variant} mood-${mood} ${className}`} style={{ width: size, height: size * 1.15 }} role="img" aria-label={variant === 'badge' ? 'Verified badge' : 'Flipside agent mascot'}>
+    <div ref={root} className={`m3d m3d-${variant} mood-${mood} ${className}`} style={{ width: size, height: size * 1.15 }} role="img" aria-label={variant === 'badge' ? 'Verified badge' : 'RIPPLE agent mascot'}>
       <div className="m3d-stage">
         <div className="m3d-body">
           {Array.from({ length: LAYERS }, (_, i) => <i key={i} className="m3d-ext" style={{ transform: `translateZ(${-(i + 1) * 3}px)`, opacity: 1 - i * 0.04 }} />)}

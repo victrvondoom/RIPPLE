@@ -74,18 +74,16 @@ export function MissionControl({ me }: { me: Me }) {
     </div>
 
     {caps && <div className="card">
-      <div className="row between"><h2>Capability systems</h2><span className="small muted">{caps.totals.projects} source projects → {caps.totals.systems} systems → {caps.totals.dashboards} dashboards → 1 engine · {caps.totals.packs} implemented packs</span></div>
-      <p className="small muted" style={{ marginTop: 0 }}>“Pack-backed” means an implemented pack already exercises the capability. “Catalogued” means the idea is recorded but not yet ported. Nothing here is claimed as integrated beyond that.</p>
+      <div className="row between"><h2>Capability systems</h2><span className="small muted">{caps.totals.systems} systems → 1 engine · {caps.totals.packs} implemented workflows</span></div>
+      <p className="small muted" style={{ marginTop: 0 }}>“Running in a workflow” means an implemented workflow already exercises the capability; “planned” means it is recorded but not built.</p>
       <div className="dash-systems">{caps.systems.map((s: any) => <div key={s.id} className={`dash-system ${openSys === s.id ? 'open' : ''}`}>
         <button className="linkish dash-system-head" aria-expanded={openSys === s.id} onClick={() => setOpenSys(openSys === s.id ? null : s.id)}>
-          <span className="mono small muted">{s.no}</span><strong>{s.name}</strong><span className="badge">{s.projects.length}</span>
+          <span className="mono small muted">{s.no}</span><strong>{s.name}</strong><span className="badge">{new Set(s.projects.flatMap((p: any) => p.contributes)).size} capabilities</span>
         </button>
         <div className="small muted">{s.promise}</div>
         <div className="small" style={{ marginTop: 4 }}>{s.packs.length ? s.packs.map((p: any) => <span key={p.id} className="badge b-ok" style={{ marginRight: 4 }}>{p.name} · {p.missions}</span>) : <span className="badge">no pack yet</span>}</div>
-        {openSys === s.id && <ul className="list" style={{ marginTop: 8 }}>{s.projects.map((p: any) => <li key={p.id}>
-          <div className="row between"><strong>{p.name}</strong><span className={`badge ${p.integration === 'pack-backed' ? 'b-ok' : p.integration === 'pending' ? 'b-warn' : ''}`}>{p.integration}</span></div>
-          <div className="small">{p.contributes.join(' · ') || 'Capability not yet identified'}</div>
-          <div className="small muted">{p.folder ? <>Source: <span className="mono">{p.folder}/</span></> : 'Brief only (no source in this repo)'}{p.note ? ` · ${p.note}` : ''}</div></li>)}</ul>}
+        {openSys === s.id && <ul className="list" style={{ marginTop: 8 }}>{[...new Map(s.projects.flatMap((p: any) => p.contributes.map((c: string) => [c, p.integration]))).entries()].map(([c, integ]: any) => <li key={c} className="row between">
+          <span className="small">{c}</span><span className={`badge ${integ === 'pack-backed' ? 'b-ok' : integ === 'pending' ? 'b-warn' : ''}`}>{integ === 'pack-backed' ? 'running in a workflow' : integ === 'pending' ? 'pending' : 'planned'}</span></li>)}</ul>}
       </div>)}</div>
     </div>}
 

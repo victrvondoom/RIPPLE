@@ -11,7 +11,8 @@ const log = []; const step = (m) => { log.push(m); console.log('✔', m); }; con
 const browser = await launchBrowser(); const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 } }); const p = await ctx.newPage(); const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(BASE); await p.getByLabel('Email').fill('maya@harborvine.example'); await p.getByLabel('Password').fill(PW); await p.getByRole('button', { name: 'Sign in' }).click(); await p.getByRole('navigation').waitFor();
-const nav = (n) => p.getByRole('navigation').getByRole('link', { name: new RegExp('^' + n) });
+const ROUTES = { 'Control Center': '#/missions/control', 'Workflow Packs': '#/packs', Settings: '#/settings', 'Work Graph': '#/graph', Missions: '#/missions', Approvals: '#/approvals', 'People & Agents': '#/people', 'Evidence & Outcomes': '#/evidence' };
+const nav = (n) => ({ click: () => p.evaluate((h) => { location.hash = h; }, ROUTES[n]) });
 const PACKS = ['BEO Rescue', 'SceneShift', 'ScopeGuard', 'InvoiceGuard', 'ShiftRelay', 'MoveMate', 'PodFlow', 'SubmitReady'];
 await nav('Workflow Packs').click(); await p.getByText('SubmitReady').first().waitFor();
 assert(await p.getByText('planned').count() === 0, 'no pack is still listed as planned'); await p.screenshot({ path: `${OUT}/crossdomain-01-packs.png`, fullPage: true });

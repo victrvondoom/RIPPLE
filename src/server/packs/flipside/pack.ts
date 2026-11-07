@@ -65,11 +65,11 @@ export const proofResult = (plan: Plan, d: Disclosure) => { const r = verifyStep
 export const flipsidePack: WorkflowPack = {
   tier: 'extended', system: 'engineering',
   id: 'flipside-review',
-  name: 'Flipside Review',
+  name: 'Agent Review',
   domain: 'Code Review',
   version: '1.0.0',
   description: 'Ask the author\'s agent why. A reviewer\'s agent requests the one session step behind a change; the author approves sharing that single step; RIPPLE proves it appears in the session sealed before review. Whole-session requests are refused. Deterministic: no model decides anything.',
-  labels: { baseline: 'Sealed Session', change: 'Review Request', changeVerb: 'Ask the author', plan: 'PR & Seal', mission: 'Flipside Review', blurb: 'The reviewer gets the step behind the change, with proof it is in the sealed session. The author shares one step, not the session. Only the author answers and approves.' },
+  labels: { baseline: 'Sealed Session', change: 'Review Request', changeVerb: 'Ask the author', plan: 'PR & Seal', mission: 'Agent Review', blurb: 'The reviewer gets the step behind the change, with proof it is in the sealed session. The author shares one step, not the session. Only the author answers and approves.' },
   roles: [
     { key: 'flip_reviewer_agent', name: 'Reviewer Agent', kind: 'agent', responsibility: 'Reads the public PR, finds the change the description does not explain, and asks the author why', department: 'Code Review', scope: 'read' },
     { key: 'flip_author_agent', name: 'Author Agent', kind: 'agent', responsibility: 'Holds the private session; proposes disclosing exactly one step, never the session', department: 'Code Review' },

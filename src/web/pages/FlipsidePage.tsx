@@ -6,7 +6,7 @@ import { MerkleTree3D } from '../components/MerkleTree3D';
 import { Stepper } from '../components/Stepper';
 import type { Me } from '../App';
 
-/** Flipside review: ask the author's agent why. Renders /api/flipside/:id; every verdict was recomputed on the server. */
+/** Agent review: ask the author's agent why. Renders /api/flipside/:id; every verdict was recomputed on the server. */
 export function FlipsidePage({ me }: { me: Me }) {
   const list = useApi<{ missions: { id: string; title: string; state: string }[] }>('/flipside', 8000);
   const [sel, setSel] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export function FlipsidePage({ me }: { me: Me }) {
       <Mascot3D mood={mood} size={230} />
     </div>
     {list.loading && !list.data && <Loading />}
-    {list.data && list.data.missions.length === 0 && <Empty>No Flipside review yet. Start a sample review to see the seal, the question, the approval and the proof.</Empty>}
+    {list.data && list.data.missions.length === 0 && <Empty>No agent review yet. Start a sample review to see the seal, the question, the approval and the proof.</Empty>}
     {v && v.sealed && <>
       <Stepper stages={v.stages} />
       <div className="fs-grid">

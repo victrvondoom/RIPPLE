@@ -36,6 +36,35 @@ describe('HTTP API', () => {
     expect(inn.status).toBe(200); expect(inn.json.user.email).toBe('maya@harborvine.example');
     expect((await call('GET', '/api/auth/me')).json).toEqual(inn.json);
   });
+  it('sign-up creates the person\'s own workspace (owner of every role), signs them in, and refuses a taken email', async () => {
+    const { env, call } = client();
+    const r = await call('POST', '/api/auth/signup', { name: 'Ada Lovelace', email: 'ada@example.com', password: 'longenough1', workspace: 'Analytical Ops', demoData: false });
+    expect(r.status).toBe(201); expect(r.json.user.role).toBe('owner');
+    const me = await call('GET', '/api/auth/session');
+    expect(me.json.user.email).toBe('ada@example.com'); expect(me.json.workspace.name).toBe('Analytical Ops');
+    const ws = env.db.get('SELECT workspace_id w FROM users WHERE email=?', 'ada@example.com')!.w;
+    expect(env.db.get("SELECT count(*) n FROM agent_roles WHERE workspace_id=? AND kind='human' AND user_id IS NULL", ws)!.n).toBe(0);
+    expect((await call('GET', '/api/overview')).json.missions).toEqual([]); // nothing leaks from the demo workspace
+    expect((await call('POST', '/api/auth/signup', { name: 'Again', email: 'ADA@example.com', password: 'longenough1' })).status).toBe(409);
+    expect((await call('POST', '/api/auth/signup', { name: 'Short', email: 'short@example.com', password: 'short' })).status).toBe(422);
+  });
+  it('a signed-in person changes their password (current password required) and can sign in with the new one', async () => {
+    const { call, login } = client();
+    await login('dan@harborvine.example');
+    expect((await call('POST', '/api/auth/password', { current: 'wrong', next: 'newpassword1' })).status).toBe(403);
+    expect((await call('POST', '/api/auth/password', { current: 'pw-test-123', next: 'newpassword1' })).status).toBe(200);
+    expect((await login('dan@harborvine.example', 'pw-test-123')).status).toBe(401);
+    expect((await login('dan@harborvine.example', 'newpassword1')).status).toBe(200);
+  });
+  it('demo activity is manager/owner-only and fills the workspace through the engine', async () => {
+    const { call, login } = client();
+    await login('dan@harborvine.example');
+    expect((await call('POST', '/api/demo/activity', {})).status).toBe(403);
+    await login('maya@harborvine.example');
+    const r = await call('POST', '/api/demo/activity', {});
+    expect(r.status).toBe(200); expect(r.json.missions).toBeGreaterThan(0); expect(r.json.completed).toBeGreaterThan(0);
+    expect((await call('GET', '/api/overview')).json.missions.length).toBe(r.json.missions);
+  }, 60000);
   it('rejects cross-origin mutating requests (CSRF) and non-JSON bodies', async () => {
     const { call, login } = client(); await login('maya@harborvine.example');
     expect((await call('POST', '/api/missions', {}, { origin: 'https://evil.example' })).status).toBe(403);

@@ -452,3 +452,35 @@ tr.dash-row-sel td { background: rgba(233, 104, 63, .09); }
 @media (max-width: 1080px) { .dash-split, .dash-split3, .dash-hero { grid-template-columns: minmax(0, 1fr); } .dash-wb { grid-template-columns: minmax(0, 1fr); } .dash-pipe { grid-template-columns: repeat(3, minmax(0, 1fr)); } .dash-pipe-arrow { display: none; } }
 @media (max-width: 640px) { .dash-hero-num { font-size: 42px; } .sw-fab { right: 14px; bottom: 14px; } .sw-drawer { right: 8px; left: 8px; top: 8px; bottom: 8px; width: auto; } }
 @media (prefers-reduced-motion: reduce) { .sw-toggle span { transition: none; } }
+
+/* ---- session 20: single-screen landing (no scroll), mascot between the copy and the sign-in card ---- */
+html.no-scroll, html.no-scroll body { height: 100%; overflow: hidden; }
+.poster-fit { height: 100dvh; min-height: 0; overflow: hidden; padding-bottom: 10px; }
+.poster-3col { grid-template-columns: minmax(0, 1.15fr) minmax(200px, .7fr) minmax(320px, 400px); min-height: 0; padding: clamp(10px, 2.5vh, 32px) 0; }
+.poster-fit .poster-title { font-size: clamp(44px, min(7vw, 11vh), 112px); margin: 10px 0 12px; }
+.poster-fit .poster-sub { font-size: 15px; margin-bottom: 14px; }
+.poster-fit .poster-term { font-size: 12px; }
+.poster-mascot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; }
+.poster-mascot .m3d { transform: scale(min(1, calc(100vh / 900px))); }
+.poster-mascot-cap { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -.03em; color: #160f0c; }
+.poster-mascot-cap em { font-style: normal; color: #8a5a1c; }
+.poster-fit .poster-login .login { max-height: calc(100dvh - 130px); overflow: auto; padding: 18px 20px; }
+.poster-fit .login h1 { font-size: 28px; margin: 0 0 6px; }
+.poster-fit .login label { margin-top: 6px; }
+.poster-fit .divider { margin: 12px 0 8px; }
+.auth-tabs { display: flex; gap: 4px; background: rgba(28, 24, 23, .07); border-radius: 999px; padding: 4px; margin: 6px 0 8px; }
+.auth-tabs button { flex: 1; border-radius: 999px; background: transparent; border: 0; box-shadow: none; font-weight: 600; }
+.auth-tabs button.on { background: #1c1817; color: #fcd2b6; }
+@media (max-width: 1100px) { .poster-3col { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); } .poster-mascot { display: none; } }
+@media (max-width: 760px) { html.no-scroll, html.no-scroll body { overflow: auto; height: auto; } .poster-fit { height: auto; overflow: visible; } .poster-3col { grid-template-columns: minmax(0, 1fr); } }
+/* ---- session 20: hub tabs, nav "More", Switch Room steps ---- */
+.hub-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.hub-tabs a { padding: 7px 14px; border-radius: 999px; background: rgba(255, 255, 255, .6); border: 1px solid rgba(255, 255, 255, .8); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13.5px; }
+.hub-tabs a.on { background: #1c1817; color: #fcd2b6; border-color: #1c1817; }
+.nav-more { margin-top: 6px; } .nav-more summary { cursor: pointer; color: #a8948a; font-size: 12.5px; padding: 6px 12px; list-style: none; }
+.nav-more summary::before { content: "▸ "; } .nav-more[open] summary::before { content: "▾ "; }
+.nav-more a { font-size: 13px; opacity: .9; }
+.sr-step { position: relative; } .sr-step.ok { box-shadow: 0 0 0 2px var(--ok) inset; }
+.sr-n { position: absolute; top: 12px; right: 14px; font-family: var(--font-display); font-weight: 800; font-size: 28px; opacity: .18; }
+.sr-big { font-family: var(--font-display); font-weight: 800; font-size: 34px; margin: 2px 0 6px; }
+.sw-detail summary { cursor: pointer; font-size: 12px; opacity: .8; }

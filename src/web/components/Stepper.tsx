@@ -1,5 +1,5 @@
 export interface StageView { key: string; label: string; status: 'done' | 'current' | 'pending'; detail?: string }
-/** Segmented progress bar like the Flipside film's Seal · Ask · Refuse · Approve · Verify rail. Pure rendering. */
+/** Segmented progress bar like the review Seal · Ask · Refuse · Approve · Verify rail. Pure rendering. */
 export function Stepper({ stages, onPick, active }: { stages: StageView[]; onPick?: (i: number) => void; active?: number }) {
   return <ol className="fs-stepper" aria-label="Review progress">
     {stages.map((s, i) => <li key={s.key} className={`fs-seg ${s.status}${active === i ? ' active' : ''}`} title={s.detail}>

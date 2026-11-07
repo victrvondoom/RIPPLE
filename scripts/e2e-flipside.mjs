@@ -8,7 +8,8 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:8787'; const PW = process
 const must = (c, m) => { if (!c) { console.error('FAIL:', m); process.exit(1); } console.log('ok  -', m); };
 const b = await chromium.launch(); const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
 const errs = []; p.on('pageerror', (e) => errs.push(String(e)));
-await p.goto(BASE); await p.waitForSelector('.fs-show'); must(await p.locator('.fs-show').count() === 1, 'landing shows the scroll walkthrough (labelled illustration)');
+// Session 20: the landing page is one screen without the scroll walkthrough (component kept in components/FlipsideShowcase.tsx).
+await p.goto(BASE);
 await p.evaluate(async (pw) => { await fetch('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'noor@harborvine.example', password: pw }) }); }, PW);
 await p.goto(`${BASE}/#/flipside`); await p.reload(); await p.waitForSelector('.fs-hero');
 await p.getByRole('button', { name: 'Start a sample review' }).click(); await p.waitForSelector('.mt-svg');

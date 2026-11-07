@@ -25,11 +25,13 @@ async function session(email, viewport = { width: 1360, height: 900 }) {
   return page;
 }
 const shot = (p, n) => p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true });
-const nav = (p, n) => p.getByRole('navigation').getByRole('link', { name: new RegExp('^' + n) });
+const ROUTES = { 'Control Center': '#/missions/control', 'Workflow Packs': '#/packs', Settings: '#/settings', 'Work Graph': '#/graph', Missions: '#/missions', Approvals: '#/approvals', 'People & Agents': '#/people', 'Evidence & Outcomes': '#/evidence' };
+// Session 20: navigate by address (the menu groups some pages under "More" and inside tabs).
+const nav = (p, n) => ({ click: () => p.evaluate((h) => { location.hash = h; }, ROUTES[n]) });
 const tab = (p, name) => p.getByRole('tab', { name: new RegExp(name) }).click();
 
 const maya = await session('maya@harborvine.example');
-await maya.getByText('Control Center').first().waitFor();
+await nav(maya, 'Control Center').click(); await maya.getByText('All missions across domains').first().waitFor();
 // The label must state whichever collaboration mode the server is actually in (Switch or local), never a guess.
 const modeText = await maya.locator('p', { hasText: 'collaboration:' }).first().innerText();
 assert(/collaboration: (Switch|LOCAL mode \(not Switch\))/.test(modeText), 'control center states the collaboration mode honestly');

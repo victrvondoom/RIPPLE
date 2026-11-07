@@ -4,8 +4,8 @@ import { useToast } from './ui';
 import type { Me } from '../App';
 
 const DOT: Record<string, string> = { connected: 'on', off: 'off', not_configured: 'warn', unreachable: 'bad', disconnected: 'warn' };
-const STATUS_LABEL: Record<string, string> = { connected: 'Connected to Switch', off: 'Switch off · local console', not_configured: 'Switch not configured · local console', unreachable: 'Switch unreachable · local console', disconnected: 'Switch disconnected · local console' };
-const SUGGEST = ['status', 'what needs attention', 'start demo revenue-recovery', 'list questions', 'list approvals', 'list actions', 'brief me', 'verify the ledger', 'open mission control'];
+const STATUS_LABEL: Record<string, string> = { connected: 'Connected to Switch', off: 'Switch is off — chatting with RIPPLE here only', not_configured: 'Switch is not set up on this server — chatting here only', unreachable: 'Switch did not answer — chatting here only', disconnected: 'Switch was disconnected — chatting here only' };
+const SUGGEST = ['what needs attention', 'status', 'list approvals', 'list questions', 'brief me', 'verify the ledger'];
 
 /**
  * The Switch room: reachable from every page. Talk to RIPPLE in plain language; anything that changes state is proposed first
@@ -73,12 +73,11 @@ export function SwitchRoom({ me, mode = 'dock' }: { me: Me; mode?: 'dock' | 'pag
           {mode === 'dock' && <button className="sm sw-x" aria-label="Close Switch room" onClick={() => setOpen(false)}>✕</button>}
         </div>
       </div>
-      {st && <div className="sw-detail">{st.detail}</div>}
-      {st && <div className="sw-detail sw-mute">Interpreter: {st.interpreter}. Changes need your confirmation and your role.</div>}
+      {st && <details className="sw-detail"><summary>Technical details</summary><div>{st.detail}</div><div className="sw-mute">Interpreter: {st.interpreter}. Changes need your confirmation and your role.</div></details>}
     </header>
     <div className="sw-log" aria-live="polite">
       {!data && <div className="sw-mute">Loading…</div>}
-      {data && !data.messages.length && <div className="sw-hello"><strong>Ask RIPPLE anything about your missions, or tell it what to do.</strong><div>Try “what needs attention”, “approve 1” or “start demo invoiceguard”.</div></div>}
+      {data && !data.messages.length && <div className="sw-hello"><strong>Ask RIPPLE anything about your missions, or tell it what to do.</strong><div>Try “what needs attention”, “list approvals” or “approve 1”.</div></div>}
       {data?.messages.map((m: any) => <Msg key={m.id} m={m} onConfirm={confirm} onCancel={cancel} busy={busy} canAct={me.user.role !== 'viewer'} />)}
       <div ref={endRef} />
     </div>
@@ -103,11 +102,11 @@ function Msg({ m, onConfirm, onCancel, busy, canAct }: { m: any; onConfirm: (id:
   const d = m.data ?? {};
   const pending = d.pending && !d.resolved && Date.parse(d.pending.expiresAt) > Date.now();
   return <div className={`sw-msg sw-${m.author}`}>
-    <div className="sw-meta">{m.author_name}{m.author === 'switch' && <span className="badge b-warn" style={{ marginLeft: 6 }}>from Switch · advisory</span>}{d.interpreter && d.interpreter !== 'deterministic' && <span className="badge b-info" style={{ marginLeft: 6 }}>{d.interpreter}</span>} · {fmtTime(m.created_at)}</div>
+    <div className="sw-meta">{m.author_name}{m.author === 'switch' && <span className="badge b-warn" style={{ marginLeft: 6 }}>from the Switch room · advice only</span>}{d.interpreter && d.interpreter !== 'deterministic' && <span className="badge b-info" style={{ marginLeft: 6 }}>{d.interpreter}</span>} · {fmtTime(m.created_at)}</div>
     <div className="sw-body">{m.body}</div>
     {d.links?.length > 0 && <div className="sw-links">{d.links.map((l: any, i: number) => <a key={i} className="chip" href={l.href}>{l.label} →</a>)}</div>}
     {d.pending && <div className="sw-pending">
-      {pending ? (canAct ? <><button className="primary sm" disabled={busy} onClick={() => onConfirm(m.id)}>Confirm</button><button className="sm" disabled={busy} onClick={() => onCancel(m.id)}>Cancel</button></> : <span className="small">A manager must confirm this.</span>)
+      {pending ? (canAct ? <><span className="small" style={{ marginRight: 8 }}>Do this now, under your name?</span><button className="primary sm" disabled={busy} onClick={() => onConfirm(m.id)}>Yes, do it</button><button className="sm" disabled={busy} onClick={() => onCancel(m.id)}>No</button></> : <span className="small">A manager has to say yes to this.</span>)
         : <span className={`badge ${d.result === 'done' ? 'b-ok' : d.result === 'refused' ? 'b-bad' : ''}`}>{d.result === 'done' ? `confirmed by ${d.confirmedBy}` : d.result === 'refused' ? `refused: ${d.error}` : d.result === 'cancelled' ? `cancelled by ${d.cancelledBy}` : 'expired'}</span>}
     </div>}
   </div>;

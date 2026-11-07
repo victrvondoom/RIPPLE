@@ -30,7 +30,8 @@ async function session(who, viewport = { width: 1360, height: 900 }) {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(`${who}: ${m.text()}`); }); page.on('pageerror', (e) => consoleErrors.push(`${who}: ${e.message}`));
   await page.goto(BASE); await page.getByLabel('Email').fill(who + D); await page.getByLabel('Password').fill(PW); await page.getByRole('button', { name: 'Sign in' }).click(); await page.getByRole('navigation').waitFor(); return page;
 }
-const nav = (p, n) => p.getByRole('navigation').getByRole('link', { name: new RegExp('^' + n) });
+const ROUTES = { 'Control Center': '#/missions/control', 'Workflow Packs': '#/packs', Settings: '#/settings', 'Work Graph': '#/graph', Missions: '#/missions', Approvals: '#/approvals', 'People & Agents': '#/people', 'Evidence & Outcomes': '#/evidence' };
+const nav = (p, n) => ({ click: () => p.evaluate((h) => { location.hash = h; }, ROUTES[n]) });
 const tab = (p, n) => p.getByRole('tab', { name: new RegExp(n) }).click();
 const shot = (p, n) => p.screenshot({ path: `${OUT}/${pack}-${n}.png`, fullPage: true });
 const state = async (p, s, t = 20000) => p.locator('.badge', { hasText: new RegExp('^' + s + '$') }).first().waitFor({ timeout: t });

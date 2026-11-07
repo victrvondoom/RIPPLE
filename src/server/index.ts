@@ -10,6 +10,7 @@ import { providerFromEnv } from './agents/provider.js';
 import { createApp } from './api/app.js';
 import { PackageGateService, watchMinutes } from './api/pkgguard.js';
 import { seedWorkspace, syncDirectory } from './seed.js';
+import { seedDemoActivity } from './demo/activity.js';
 import { existsSync, readFileSync } from 'node:fs';
 
 if (existsSync('.env')) for (const l of readFileSync('.env', 'utf8').split('\n')) { const m = /^([A-Z_]+)=(.*)$/.exec(l.trim()); if (m && !(m[1] in process.env)) process.env[m[1]] = m[2]; }
@@ -22,7 +23,15 @@ const packs = extendedRegistry();
 const sw = switchConfigFromEnv(process.env);
 const collab = sw ? new SwitchCollab(sw) : new LocalCollab();
 const engine = new Engine({ db, packs, collab, connectors: buildConnectors(process.env.RIPPLE_OUTBOX ?? 'data/outbox'), provider: providerFromEnv(process.env), chatIdentities: parseChatIdentities(process.env.SWITCH_CHAT_IDENTITIES) });
-if (!db.get('SELECT 1 x FROM workspaces')) { seedWorkspace(db, packs, { name: 'Harbor & Vine Catering', password: pw ?? 'ripple-demo' }); console.log('Seeded development workspace "Harbor & Vine Catering".'); }
+if (!db.get('SELECT 1 x FROM workspaces')) {
+  const { workspaceId } = seedWorkspace(db, packs, { name: 'Harbor & Vine Catering', password: pw ?? 'ripple-demo' });
+  console.log('Seeded development workspace "Harbor & Vine Catering".');
+  // Session 20: a first boot also runs labelled demo activity through the engine so no page starts empty (RIPPLE_DEMO_ACTIVITY=0 skips it).
+  if (process.env.RIPPLE_DEMO_ACTIVITY !== '0') {
+    const logs = await seedDemoActivity(engine, workspaceId);
+    console.log(`Demo activity: ${logs.length} labelled missions, ${logs.filter((l) => l.state === 'completed').length} completed through the engine.`);
+  }
+}
 syncDirectory(db, packs);
 // Restart recovery: work that was running when the previous process stopped is marked interrupted and the mission is
 // blocked (resumable). Stale agent tasks are swept every 15 s so nothing hangs silently.

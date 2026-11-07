@@ -7,7 +7,8 @@ import { z, ZodError } from 'zod';
 import { Engine, type Actor } from '../engine/engine.js';
 import { EngineError } from '../engine/types.js';
 import { nowIso, uid } from '../db/db.js';
-import { verifyPassword } from '../seed.js';
+import { hashPassword, verifyPassword } from '../seed.js';
+import { seedDemoActivity } from '../demo/activity.js';
 import { missionDetail, overview } from './snapshot.js';
 import { registerStudioRoutes } from './studio.js';
 import { getCausalGraph } from '../engine/causal.js';
@@ -46,7 +47,8 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     await next();
   });
 
-  app.get('/api/health', (c) => c.json({ ok: true }));
+  // Public: the landing page reads the collaboration mode from here (no workspace data).
+  app.get('/api/health', (c) => { const d = engine.collab.describe(); return c.json({ ok: true, collab: { mode: d.mode, connected: d.connected, label: engine.collab.label } }); });
   app.post('/api/auth/login', async (c) => {
     const body = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200) }).parse(await c.req.json());
     const key = `${c.req.header('x-forwarded-for') ?? 'local'}|${body.email.toLowerCase()}`;
@@ -63,6 +65,34 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     engine.audit(u.workspace_id, null, 'user', u.name, 'login', `${u.name} signed in`);
     return c.json({ user: pub(u) });
   });
+  // Session 20: self-service sign-up. A new account gets its OWN workspace (it never joins the demo company), with the new
+  // person as owner and mapped to every human role of every pack, so one person can run any workflow end to end.
+  // Optionally the workspace is filled with labelled demo activity driven through the engine (see demo/activity.ts).
+  const signups = new Map<string, { n: number; t: number }>();
+  app.post('/api/auth/signup', async (c) => {
+    const body = z.object({
+      name: z.string().trim().min(2).max(80), email: z.string().trim().email().max(200),
+      password: z.string().min(8, 'Use at least 8 characters.').max(200), workspace: z.string().trim().min(2).max(80).optional(),
+      demoData: z.boolean().default(true),
+    }).parse(await c.req.json());
+    const ip = c.req.header('x-forwarded-for') ?? 'local'; const now = Date.now(); const s = signups.get(ip);
+    if (s && now - s.t < 3600_000 && s.n >= 20) throw new EngineError(429, 'rate_limited', 'Too many sign-ups from this address. Try again later.');
+    signups.set(ip, { n: (s && now - s.t < 3600_000 ? s.n : 0) + 1, t: s && now - s.t < 3600_000 ? s.t : now });
+    const email = body.email.toLowerCase();
+    if (db.get('SELECT 1 x FROM users WHERE lower(email)=?', email)) throw new EngineError(409, 'email_taken', 'An account with this email already exists. Sign in instead.');
+    const ws = uid('ws'); const uidv = uid('usr'); const at = nowIso();
+    db.insert('workspaces', { id: ws, name: body.workspace ?? `${body.name.split(' ')[0]}'s workspace`, created_at: at });
+    db.insert('users', { id: uidv, workspace_id: ws, email, name: body.name, role: 'owner', department: 'Operations', title: 'Workspace owner', password_hash: hashPassword(body.password), created_at: at });
+    for (const pack of engine.packs.all()) for (const r of pack.roles) db.insert('agent_roles', { id: uid('role'), workspace_id: ws, pack_id: pack.id, key: r.key, name: r.name, kind: r.kind, responsibility: r.responsibility, user_id: r.kind === 'human' ? uidv : null });
+    for (const [key, name, mode] of [['document_store', 'Document store', 'local-filesystem'], ['internal_notify', 'Internal notification', 'local-outbox'], ['email_outbox', 'Email outbox (dry-run)', 'dry-run'], ['warehouse_sandbox', 'Warehouse sandbox (Reality Lab)', 'sandbox'], ['billing_sandbox', 'Billing sandbox (test ledger)', 'sandbox']]) db.insert('connectors', { id: uid('con'), workspace_id: ws, key, name, mode, config: '{}', fail_next: 0 });
+    engine.audit(ws, null, 'user', body.name, 'signup', `${body.name} created the workspace`);
+    if (body.demoData) await seedDemoActivity(engine, ws);
+    const token = randomBytes(32).toString('hex');
+    db.insert('sessions', { token_hash: hashToken(token), user_id: uidv, expires_at: new Date(Date.now() + 12 * 3600_000).toISOString() });
+    setCookie(c, COOKIE, token, { httpOnly: true, sameSite: 'Lax', path: '/', secure: !!opts.production, maxAge: 12 * 3600 });
+    return c.json({ user: pub(db.get('SELECT * FROM users WHERE id=?', uidv)) }, 201);
+  });
+
   app.post('/api/auth/logout', (c) => {
     const t = getCookie(c, COOKIE); if (t) db.exec('DELETE FROM sessions WHERE token_hash=?', hashToken(t));
     deleteCookie(c, COOKIE, { path: '/' }); return c.json({ ok: true });
@@ -84,7 +114,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
 
   // ---- everything below requires a session ----
   app.use('/api/*', async (c, next) => {
-    if (c.req.path === '/api/health' || c.req.path.startsWith('/api/auth/login') || c.req.path === '/api/auth/logout' || c.req.path === '/api/auth/session') return next();
+    if (c.req.path === '/api/health' || c.req.path.startsWith('/api/auth/login') || c.req.path === '/api/auth/logout' || c.req.path === '/api/auth/session' || c.req.path === '/api/auth/signup') return next();
     const row = sessionUser(c);
     if (!row) return c.json({ error: { code: 'unauthenticated', message: 'Sign in required.' } }, 401);
     c.set('actor', { id: row.id, name: row.name, role: row.role, workspaceId: row.workspace_id });
@@ -94,6 +124,22 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   const json = async <T extends z.ZodTypeAny>(c: Context<Env>, s: T): Promise<z.infer<T>> => s.parse(await c.req.json());
 
   app.get('/api/auth/me', (c) => c.json(mePayload(A(c).id, A(c).workspaceId)));
+  app.post('/api/auth/password', async (c) => {
+    const a = A(c); const b = z.object({ current: z.string().min(1).max(200), next: z.string().min(8, 'Use at least 8 characters.').max(200) }).parse(await c.req.json());
+    const u = db.get('SELECT * FROM users WHERE id=? AND workspace_id=?', a.id, a.workspaceId)!;
+    if (!verifyPassword(b.current, u.password_hash)) throw new EngineError(403, 'bad_credentials', 'The current password is not correct.');
+    db.exec('UPDATE users SET password_hash=? WHERE id=? AND workspace_id=?', hashPassword(b.next), a.id, a.workspaceId);
+    // Every other session of this person ends; this one stays.
+    const t = getCookie(c, COOKIE); db.exec('DELETE FROM sessions WHERE user_id=? AND token_hash<>?', a.id, t ? hashToken(t) : '');
+    engine.audit(a.workspaceId, null, 'user', a.name, 'password_changed', `${a.name} changed their password`);
+    return c.json({ ok: true });
+  });
+  // Fill this workspace with labelled demo activity (manager/owner). Real engine calls only; safe to run more than once.
+  app.post('/api/demo/activity', async (c) => {
+    const a = A(c); if (a.role !== 'manager' && a.role !== 'owner') throw new EngineError(403, 'forbidden', 'Only a manager or owner can load demo activity.');
+    const logs = await seedDemoActivity(engine, a.workspaceId);
+    return c.json({ missions: logs.length, completed: logs.filter((l) => l.state === 'completed').length, logs });
+  });
   app.get('/api/overview', (c) => c.json(overview(engine, A(c).workspaceId)));
   app.get('/api/packs', (c) => c.json({ packs: engine.packs.listings() }));
   app.get('/api/packs/:id', (c) => {

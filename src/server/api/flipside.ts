@@ -14,7 +14,7 @@ const PACK = 'flipside-review';
  */
 export function flipsideView(e: Engine, ws: string, id: string, viewerId?: string) {
   const m = e.mission(ws, id);
-  if (m.pack_id !== PACK) throw new EngineError(404, 'not_found', 'Not a Flipside review mission.');
+  if (m.pack_id !== PACK) throw new EngineError(404, 'not_found', 'Not an agent review mission.');
   const db = e.db;
   const bl = db.get('SELECT * FROM baselines WHERE mission_id=? AND workspace_id=? ORDER BY version DESC', id, ws);
   if (!bl) return { missionId: id, title: m.title, state: m.state, sealed: false, stages: [], tree: null };
