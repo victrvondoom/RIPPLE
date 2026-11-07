@@ -1,0 +1,10 @@
+Landing: one screen, no scroll, 3D switch in the middle
+Signed up as visitor-1794055805084@example.com: own workspace, landed on /dashboard
+Command Center shows real numbers from demo activity
+How it works: one change stepped live through answer, approval, verified execution and completion
+Workflow Studio: area → workflow → people → change launched an analysed mission
+Memory Graph: typing a name moved the graph to the person and their connections
+Changed the password from Settings
+Sign out returns to "/", and /dashboard without a session returns to "/"
+Signed back in with the new password
+No browser console errors

@@ -262,7 +262,7 @@ capability system and whether it belongs to the core registry.
 
 | Capability system | Packs |
 |---|---|
-| Engineering Assurance & Release | PR-Pilot & Issue Triage (`crewpilot`), Deploy Gate (`deploy-gate`), Flipside Review (`flipside-review`), Package Gate (`package-gate`) |
+| Engineering Assurance & Release | PR-Pilot & Issue Triage (`crewpilot`), Deploy Gate (`deploy-gate`), Agent Review (`flipside-review`), Package Gate (`package-gate`) |
 | Incident & Critical Operations | ShiftRelay (`shiftrelay`, core), Incident Sentinel (`incident-sentinel`) |
 | Business, Customer & Commerce Operations | BEO Rescue (`beo-rescue`, core), InvoiceGuard (`invoiceguard`, core), ScopeGuard (`scopeguard`, core), Billing & SLA Dispute (`billing-dispute`), ClearSend Escrow Guard (`clearsend`), Consumer Resolution (`consumer-resolution`), Fixline (`fixline-bugfix`), Recall Desk (`recall-desk`), Run of Show (`run-of-show`) |
 | Personal Planning & Opportunity Operations | MoveMate (`movemate`, core), SubmitReady (`submitready`, core), OfferRoom (`offerroom`) |
@@ -319,7 +319,15 @@ npm install
 npm run start          # builds the web app, then serves http://localhost:8787
 ```
 
-Sign in as `maya@harborvine.example` with password `ripple-demo`. Other demo accounts are seeded in the same workspace (`luis@`, `priya@`, `dan@`, `sam@`, `vera@`, plus the people used by each pack).
+Open `http://localhost:8787/` (the landing page) and either sign in as `maya@harborvine.example` with password `ripple-demo`, or press **Create account**: a new account gets its own workspace, owns every role in it, and can start with labelled demo activity. The app itself lives at `/dashboard`; signing out returns to `/`. Other demo accounts are seeded in the demo workspace (`luis@`, `priya@`, `dan@`, `sam@`, `vera@`, plus the people used by each pack).
+
+On the first boot of an empty database RIPPLE runs every workflow's labelled sample through the engine (questions answered by the assignee, approvals decided by the bound approver, actions executed and independently verified), so no page starts empty. Set `RIPPLE_DEMO_ACTIVITY=0` to start empty.
+
+```bash
+docker build -t ripple . && docker run -p 8787:8787 -e RIPPLE_SEED_PASSWORD=change-me -v ripple-data:/app/data ripple
+```
+
+Database: SQLite today. The Postgres version of the schema for Supabase is generated in `db/postgres/schema.sql` (`npx tsx scripts/export-postgres-schema.ts`); the `DATABASE_URL` / `SUPABASE_*` variables in `.env.example` are reserved and read by nothing yet.
 
 | Setting | Default | Purpose |
 |---|---|---|
@@ -328,6 +336,8 @@ Sign in as `maya@harborvine.example` with password `ripple-demo`. Other demo acc
 | `RIPPLE_DB_PATH` | `data/ripple.db` | SQLite file |
 | `RIPPLE_OUTBOX` | `data/outbox` | Local outbox for dry-run connectors |
 | `SWITCH_*` | unset | Switch connection. Unset means LOCAL MODE. See `.env.example`. |
+| `RIPPLE_DEMO_ACTIVITY` | `1` | `0` = first boot starts with an empty workspace |
+| `PKGGUARD_WATCH_MINUTES` | `5` | Package Gate Squat Watch interval; `0` = off |
 
 ```bash
 npm test                        # vitest: engine, packs, API, Switch adapter against a mock

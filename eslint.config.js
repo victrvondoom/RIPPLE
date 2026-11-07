@@ -8,7 +8,7 @@ export default tseslint.config(js.configs.recommended, ...tseslint.configs.recom
   languageOptions: {
     globals: {
       console: 'readonly', process: 'readonly', fetch: 'readonly',
-      document: 'readonly', window: 'readonly', location: 'readonly',
+      document: 'readonly', window: 'readonly', location: 'readonly', innerHeight: 'readonly', innerWidth: 'readonly',
       setTimeout: 'readonly', clearTimeout: 'readonly', setInterval: 'readonly', clearInterval: 'readonly',
       URL: 'readonly', URLSearchParams: 'readonly', FormData: 'readonly',
     },

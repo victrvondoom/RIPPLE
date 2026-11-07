@@ -36,6 +36,7 @@ export function SettingsPage({ me, onWorkspaceDeleted }: { me: Me; onWorkspaceDe
           <p className="muted" style={{ margin: 0 }}>
             Workspace: <strong>{me.workspace.name}</strong> · Role: <span className="badge b-ok">{me.user.role}</span>
           </p>
+          <ChangePassword />
         </div>
         <div className="studio-nav-tabs">
           <button className={activeTab === 'system' ? 'active' : ''} onClick={() => setActiveTab('system')}>
@@ -252,4 +253,17 @@ export function SettingsPage({ me, onWorkspaceDeleted }: { me: Me; onWorkspaceDe
       )}
     </>
   );
+}
+
+/** Session 20: change your own password (current password required; your other sessions are signed out). */
+function ChangePassword() {
+  const [open, setOpen] = useState(false); const [cur, setCur] = useState(''); const [next, setNext] = useState('');
+  const { busy, run } = useAction();
+  if (!open) return <button className="sm" style={{ marginTop: 8 }} onClick={() => setOpen(true)}>Change password</button>;
+  return <form className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }} onSubmit={async (e) => { e.preventDefault(); const r = await run('pw', () => api('POST', '/auth/password', { current: cur, next }), 'Password changed; your other sessions were signed out'); if (r) { setOpen(false); setCur(''); setNext(''); } }}>
+    <input type="password" aria-label="Current password" placeholder="Current password" value={cur} onChange={(e) => setCur(e.target.value)} autoComplete="current-password" />
+    <input type="password" aria-label="New password" placeholder="New password (8+)" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" minLength={8} />
+    <button className="primary sm" type="submit" disabled={!cur || next.length < 8 || busy === 'pw'}>Save</button>
+    <button className="sm" type="button" onClick={() => setOpen(false)}>Cancel</button>
+  </form>;
 }

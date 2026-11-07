@@ -28,6 +28,22 @@
 ## Not covered
 Mattermost-bridged rooms with humans in chat (the `!` commands being typed by a human); the gateway export with a human session (sessions 13–15 cover agent-only rooms and the agent API); real model API; real email/chat; UI component unit tests; load/security testing; browser matrix (Chromium only); accessibility audit (labels/roles used, not audited).
 
+## Session 20 - results (real runs, 2026-11-07)
+```
+$ npm run typecheck (exit 0) ; npm run lint (exit 0)
+$ npx vitest run
+ Test Files  49 passed (49)
+      Tests  389 passed (389)
+$ bash scripts/fresh-server.sh 8791 && BASE_URL=http://localhost:8791 node scripts/<journey>.mjs
+e2e.mjs -> E2E PASSED                      e2e-crossdomain.mjs -> CROSS-DOMAIN JOURNEY PASSED
+e2e-flipside.mjs -> FLIPSIDE JOURNEY PASSED e2e-inherited.mjs -> ALL CHECKS PASSED
+e2e-sweep.mjs -> SWEEP PASSED               e2e-package-gate.mjs -> PACKAGE GATE LIVE JOURNEY PASSED
+e2e-experience.mjs -> EXPERIENCE JOURNEY PASSED
+e2e-packs.mjs scopeguard|invoiceguard|shiftrelay|movemate|podflow|submitready -> PACK JOURNEY PASSED (each)
+e2e-cdii.mjs 8791 -> passed (1 console 409 = its deliberate stale-approval step)
+$ python -m pytest tests_py -q -> 27 passed, 2 skipped
+```
+
 ## Session 19 - results (real runs, 2026-11-07)
 ```
 $ npm run typecheck   (exit 0)        $ npm run lint   (exit 0)

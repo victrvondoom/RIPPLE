@@ -69,7 +69,7 @@ export function missionControl(e: Engine, ws: string) {
     const sm = ms.filter((m) => m.system === s.id);
     const packs = Object.entries(PACK_SYSTEM).filter(([k, v]) => v === s.id && e.packs.get(k)).map(([k]) => k);
     const done = sm.filter((m) => m.state === 'completed').length;
-    return { id: s.id, no: s.no, name: s.name, short: s.short, missions: sm.length, active: sm.filter((m) => !ENDED.includes(m.state)).length, completed: done, coverage: sm.length ? Math.round((done / sm.length) * 100) : 0, packs, sources: PROJECTS.filter((p) => p.system === s.id).length };
+    return { id: s.id, no: s.no, name: s.name, short: s.short, missions: sm.length, active: sm.filter((m) => !ENDED.includes(m.state)).length, completed: done, coverage: sm.length ? Math.round((done / sm.length) * 100) : 0, packs, packNames: packs.map((id: string) => e.packs.get(id)?.name ?? id), sources: PROJECTS.filter((p) => p.system === s.id).length };
   });
   const pipeline = STAGES.map((st) => ({ stage: st, count: st === 'complete' ? ms.filter((m) => m.state === 'completed').length : live.filter((m) => m.stage === st).length }));
   const handoffs = db.all('SELECT x.id, x.mission_id, x.kind, x.sender_name, x.sender_kind, x.to_key, x.body, x.created_at, m.title AS mission_title FROM messages x JOIN missions m ON m.id=x.mission_id WHERE x.workspace_id=? ORDER BY x.created_at DESC, x.rowid DESC LIMIT 12', ws).map((x) => ({ ...x, body: String(x.body).slice(0, 220) }));
@@ -270,7 +270,7 @@ export function capabilities(e: Engine, ws: string) {
   return {
     totals: { projects: PROJECTS.length, systems: SYSTEMS.length, dashboards: 4, packs: e.packs.all().length, pending: PROJECTS.filter((p) => p.integration === 'pending').length, packBacked: PROJECTS.filter((p) => p.integration === 'pack-backed').length, withSource: PROJECTS.filter((p) => p.folder).length },
     systems: SYSTEMS.map((s) => ({ ...s, projects: PROJECTS.filter((p) => p.system === s.id), packs: e.packs.all().filter((p) => PACK_SYSTEM[p.id] === s.id).map((p) => ({ id: p.id, name: p.name, domain: p.domain, missions: ms.filter((m) => m.pack_id === p.id).length })) })),
-    scenarios: SCENARIOS.map((s) => ({ ...s, packs: s.packs.filter((p) => e.packs.get(p)), live: ms.filter((m) => s.packs.includes(m.pack_id)).map((m) => ({ id: m.id, title: m.title, stage: m.stage, state: m.state })) })),
+    scenarios: SCENARIOS.map((s) => ({ ...s, packs: s.packs.filter((p) => e.packs.get(p)), packNames: s.packs.filter((p) => e.packs.get(p)).map((p) => e.packs.get(p)!.name), live: ms.filter((m) => s.packs.includes(m.pack_id)).map((m) => ({ id: m.id, title: m.title, stage: m.stage, state: m.state })) })),
   };
 }
 

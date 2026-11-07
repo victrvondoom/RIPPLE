@@ -25,7 +25,7 @@ async function session(email, viewport = { width: 1360, height: 900 }) {
   return page;
 }
 const shot = (p, n) => p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true });
-const ROUTES = { 'Control Center': '#/missions/control', 'Workflow Packs': '#/packs', Settings: '#/settings', 'Work Graph': '#/graph', Missions: '#/missions', Approvals: '#/approvals', 'People & Agents': '#/people', 'Evidence & Outcomes': '#/evidence' };
+const ROUTES = { 'Control Center': '#/missions/control', 'Workflow Packs': '#/packs', Settings: '#/settings', 'Work Graph': '#/graph/mission', Missions: '#/missions', Approvals: '#/approvals', 'People & Agents': '#/people', 'Evidence & Outcomes': '#/evidence' };
 // Session 20: navigate by address (the menu groups some pages under "More" and inside tabs).
 const nav = (p, n) => ({ click: () => p.evaluate((h) => { location.hash = h; }, ROUTES[n]) });
 const tab = (p, name) => p.getByRole('tab', { name: new RegExp(name) }).click();

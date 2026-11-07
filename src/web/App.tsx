@@ -9,9 +9,9 @@ import { SwitchRoom } from './components/SwitchRoom';
 
 // Larger pages load on demand so the first paint ships a small bundle (one code-split chunk per page).
 const named = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, key: K) => lazy(() => load().then((m) => ({ default: m[key] })));
-const WorkflowStudio = named(() => import('./pages/WorkflowStudio'), 'WorkflowStudio');
+const StudioPage = named(() => import('./pages/GuidedStudio'), 'StudioPage');
 const MissionWorkspace = named(() => import('./pages/MissionWorkspace'), 'MissionWorkspace');
-const WorkGraphPage = named(() => import('./pages/WorkGraphPage'), 'WorkGraphPage');
+const MemoryGraphPage = named(() => import('./pages/MemoryGraphPage'), 'MemoryGraphPage');
 const PeopleAgents = named(() => import('./pages/PeopleAgents'), 'PeopleAgents');
 const EvidencePage = named(() => import('./pages/EvidencePage'), 'EvidencePage');
 const PacksPage = named(() => import('./pages/PacksPage'), 'PacksPage');
@@ -66,13 +66,13 @@ function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
       {page === 'home' && <CommandCenter me={me} tab={route[1] || 'overview'} />}
       {page === 'package-gate' && <PackageGatePage me={me} />}
       {page === 'switch' && <SwitchRoomPage me={me} />}
-      {page === 'studio' && <WorkflowStudio me={me} />}
+      {page === 'studio' && <StudioPage me={me} tab={route[1] ?? ''} />}
       {page === 'case' && <CaseReview />}
       {page === 'how' && <HowItWorks />}
       {page === 'reality' && <RealityPage me={me} />}
       {page === 'missions' && <MissionsHub me={me} tab={route[1] || 'list'} />}
       {page === 'mission' && route[1] && <MissionWorkspace id={route[1]} me={me} />}
-      {page === 'graph' && <WorkGraphPage />}
+      {page === 'graph' && <MemoryGraphPage tab={route[1] ?? ''} />}
       {page === 'people' && <PeopleAgents />}
       {page === 'approvals' && <ApprovalsPage me={me} />}
       {page === 'evidence' && <EvidencePage />}

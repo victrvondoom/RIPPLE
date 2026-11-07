@@ -8,7 +8,7 @@ import { Engine, type Actor } from '../engine/engine.js';
 import { EngineError } from '../engine/types.js';
 import { nowIso, uid } from '../db/db.js';
 import { hashPassword, verifyPassword } from '../seed.js';
-import { seedDemoActivity } from '../demo/activity.js';
+import { nextStep, seedDemoActivity } from '../demo/activity.js';
 import { missionDetail, overview } from './snapshot.js';
 import { registerStudioRoutes } from './studio.js';
 import { getCausalGraph } from '../engine/causal.js';
@@ -17,6 +17,7 @@ import { registerCrossDomainRoutes } from './crossdomain.js';
 import { registerDashboardRoutes, DASH_TABLES } from './dashboards.js';
 import { registerFlipsideRoutes } from './flipside.js';
 import { PackageGateService, PKG_TABLES, registerPkgGuardRoutes } from './pkgguard.js';
+import { registerMemoryRoutes } from './memory.js';
 import { issueReceipt, verifyReceipt, type LedgerReceipt } from './receipt.js';
 import { SwitchConsole, registerConsoleRoutes } from '../console/console.js';
 
@@ -133,6 +134,16 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     const t = getCookie(c, COOKIE); db.exec('DELETE FROM sessions WHERE user_id=? AND token_hash<>?', a.id, t ? hashToken(t) : '');
     engine.audit(a.workspaceId, null, 'user', a.name, 'password_changed', `${a.name} changed their password`);
     return c.json({ ok: true });
+  });
+  // "How it works" live sandbox: one press = one real engine step, performed as the person the rules name. Only on
+  // missions started from labelled sample data (plan_source demo-*), so it never acts for anyone on real work.
+  app.post('/api/demo/step/:id', async (c) => {
+    const a = A(c); if (a.role !== 'manager' && a.role !== 'owner') throw new EngineError(403, 'forbidden', 'Only a manager or owner can step a walkthrough.');
+    const m = db.get('SELECT * FROM missions WHERE id=? AND workspace_id=?', c.req.param('id'), a.workspaceId);
+    if (!m) throw new EngineError(404, 'not_found', 'Mission not found.');
+    if (!String(m.plan_source).startsWith('demo')) throw new EngineError(409, 'not_demo', 'The walkthrough only steps missions started from labelled sample data.');
+    const step = await nextStep(engine, m.id, a.workspaceId);
+    return c.json({ step, mission: engine.mission(a.workspaceId, m.id) });
   });
   // Fill this workspace with labelled demo activity (manager/owner). Real engine calls only; safe to run more than once.
   app.post('/api/demo/activity', async (c) => {
@@ -259,6 +270,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   registerDashboardRoutes(app, engine);
   registerFlipsideRoutes(app, engine);
   registerPkgGuardRoutes(app, engine, opts.packageGate ?? new PackageGateService(engine));
+  registerMemoryRoutes(app, engine);
   // Portable signed ledger receipts (session 16; inherited from switch-notary/Shipyard). Issue: manager/owner. Verify: any member.
   app.post('/api/dash/trust/receipt', (c) => c.json(issueReceipt(engine, A(c))));
   app.post('/api/dash/trust/receipt/verify', async (c) => {

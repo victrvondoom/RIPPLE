@@ -1,28 +1,28 @@
-2026-11-07T10:34:42.412Z ok: all three workflows are locally valid on their own evidence
-2026-11-07T10:34:42.650Z ok: gate refused the wedding: ""Wedding party booking" is locally valid but globally blocked: B · Constraint collision — …"
-2026-11-07T10:34:43.372Z screenshot 01-gate-refuses-locally-valid-workflow.png
-2026-11-07T10:34:47.937Z all three workflows: locally valid, globally blocked
-2026-11-07T10:34:51.280Z screenshot 02-constellation-3d-locally-valid-globally-blocked.png
-2026-11-07T10:34:59.435Z 3D node picked: true
-2026-11-07T10:35:00.777Z screenshot 03-constellation-node-provenance.png
-2026-11-07T10:35:02.390Z screenshot 04-intersection-inbox-evidence-chain.png
-2026-11-07T10:35:02.395Z inbox patterns: I · Contradictory declarations | F · Split authority | J · Temporal evidence invalidation | G · Cross-domain partial commit | B · Constraint collision | A · Resource collision | H · Hidden shared constraint
-2026-11-07T10:35:03.826Z screenshot 05-invariant-inspector-capacity.png
-2026-11-07T10:35:05.257Z screenshot 06-impact-explorer-suite-301.png
-2026-11-07T10:35:05.492Z ok: proceed-as-planned is rejected by hard constraints
-2026-11-07T10:35:06.102Z screenshot 07-plan-collision-matrix.png
-2026-11-07T10:35:07.286Z ok: resolution executed and verified (Outcome: verified)
-2026-11-07T10:35:07.838Z screenshot 08-resolution-verified.png
-2026-11-07T10:35:08.402Z screenshot 09-guarded-execution-readback.png
-2026-11-07T10:35:09.271Z ok: passport verdict CONSISTENT and body hash intact
-2026-11-07T10:35:09.836Z screenshot 10-consistency-passport-verified.png
-2026-11-07T10:35:17.178Z ok: concurrent change detected after approval: stale approval rejected, plan re-made (saw "Outcome: replanned"; toast: "Approval recorded, bound to 361130db28c6.")
-2026-11-07T10:35:17.776Z screenshot 11-stale-approval-rejected-replanned.png
-2026-11-07T10:35:19.185Z screenshot 12-replanned-collateral-rejected.png
-2026-11-07T10:35:20.243Z ok: second plan executed and both workflows verified
-2026-11-07T10:35:20.855Z screenshot 13-concurrent-recovery-verified.png
-2026-11-07T10:35:22.308Z screenshot 14-inbox-after-recovery.png
-2026-11-07T10:35:32.322Z screenshot 15-rigor-crossdomain-metrics.png
-2026-11-07T10:35:32.360Z phone width horizontal overflow: 0px
-2026-11-07T10:35:32.830Z screenshot 16-mobile-command-center.png
-2026-11-07T10:35:32.830Z console errors: 1 — Failed to load resource: the server responded with a status of 409 (Conflict)
+2026-11-07T12:50:19.709Z ok: all three workflows are locally valid on their own evidence
+2026-11-07T12:50:19.946Z ok: gate refused the wedding: ""Wedding party booking" is locally valid but globally blocked: B · Constraint collision — …"
+2026-11-07T12:50:20.678Z screenshot 01-gate-refuses-locally-valid-workflow.png
+2026-11-07T12:50:25.233Z all three workflows: locally valid, globally blocked
+2026-11-07T12:50:28.526Z screenshot 02-constellation-3d-locally-valid-globally-blocked.png
+2026-11-07T12:50:36.595Z 3D node picked: true
+2026-11-07T12:50:37.924Z screenshot 03-constellation-node-provenance.png
+2026-11-07T12:50:39.537Z screenshot 04-intersection-inbox-evidence-chain.png
+2026-11-07T12:50:39.541Z inbox patterns: I · Contradictory declarations | F · Split authority | J · Temporal evidence invalidation | G · Cross-domain partial commit | B · Constraint collision | A · Resource collision | H · Hidden shared constraint
+2026-11-07T12:50:40.964Z screenshot 05-invariant-inspector-capacity.png
+2026-11-07T12:50:42.390Z screenshot 06-impact-explorer-suite-301.png
+2026-11-07T12:50:42.599Z ok: proceed-as-planned is rejected by hard constraints
+2026-11-07T12:50:43.160Z screenshot 07-plan-collision-matrix.png
+2026-11-07T12:50:44.341Z ok: resolution executed and verified (Outcome: verified)
+2026-11-07T12:50:44.873Z screenshot 08-resolution-verified.png
+2026-11-07T12:50:45.423Z screenshot 09-guarded-execution-readback.png
+2026-11-07T12:50:46.291Z ok: passport verdict CONSISTENT and body hash intact
+2026-11-07T12:50:46.879Z screenshot 10-consistency-passport-verified.png
+2026-11-07T12:50:55.045Z ok: concurrent change detected after approval: stale approval rejected, plan re-made (saw "Outcome: replanned"; toast: "Approval recorded, bound to 361130db28c6.")
+2026-11-07T12:50:55.616Z screenshot 11-stale-approval-rejected-replanned.png
+2026-11-07T12:50:57.031Z screenshot 12-replanned-collateral-rejected.png
+2026-11-07T12:50:58.067Z ok: second plan executed and both workflows verified
+2026-11-07T12:50:58.634Z screenshot 13-concurrent-recovery-verified.png
+2026-11-07T12:51:00.003Z screenshot 14-inbox-after-recovery.png
+2026-11-07T12:51:10.089Z screenshot 15-rigor-crossdomain-metrics.png
+2026-11-07T12:51:10.256Z phone width horizontal overflow: 0px
+2026-11-07T12:51:10.713Z screenshot 16-mobile-command-center.png
+2026-11-07T12:51:10.713Z console errors: 1 — Failed to load resource: the server responded with a status of 409 (Conflict)

@@ -34,7 +34,7 @@ export function MissionControl({ me }: { me: Me }) {
 
     <div className="grid dash-split">
       <div className="card">
-        <div className="row between"><h2>Needs attention <span className="badge b-bad">{data.attention.filter((a: any) => a.priority === 'critical').length}</span></h2><a className="small" href="#/control">Control Center</a></div>
+        <div className="row between"><h2>Needs attention <span className="badge b-bad" title="critical">{data.attention.filter((a: any) => a.priority === 'critical').length} critical</span> <span className="badge b-warn" title="warnings">{data.attention.filter((a: any) => a.priority !== 'critical').length} other</span></h2><a className="small" href="#/missions/control">Control Center</a></div>
         {data.attention.length ? <div className="table-wrap"><table><thead><tr><th>Priority</th><th>Item</th><th>Owner</th><th>Waiting</th><th></th></tr></thead><tbody>
           {data.attention.slice(0, 10).map((a: any, i: number) => <tr key={i}>
             <td><Pri p={a.priority} /></td>
@@ -49,7 +49,7 @@ export function MissionControl({ me }: { me: Me }) {
         <ul className="list dash-cov">{data.coverage.map((c: any) => <li key={c.id}>
           <div className="row between"><span><span className="mono small muted">{c.no}</span> <strong>{c.short}</strong></span><span className="small">{c.completed}/{c.missions} complete · {c.active} active</span></div>
           <Meter value={c.coverage} label={`${c.short} completion`} />
-          <div className="small muted">{c.packs.length ? `Packs: ${c.packs.join(', ')}` : 'No pack yet; capability is catalogued'} · {c.sources} source project(s)</div>
+          <div className="small muted">{c.packs.length ? `Workflows: ${c.packNames?.join(', ') ?? c.packs.join(', ')}` : 'No workflow yet'}</div>
         </li>)}</ul>
       </div>
     </div>
@@ -92,7 +92,7 @@ export function MissionControl({ me }: { me: Me }) {
       <div className="grid g2">{caps.scenarios.map((s: any) => <div key={s.id} className="dash-scn">
         <div className="row between"><strong><span className="dash-scn-id">{s.id}</span> {s.title}</strong><span className="small muted">{s.live.length} mission(s)</span></div>
         <ol className="dash-steps">{s.steps.map((st: any, i: number) => <li key={i} className={s.live.some((m: any) => m.stage === st.stage && m.state !== 'completed') ? 'live' : ''}>{st.label}</li>)}</ol>
-        <div className="small muted">{s.packs.length ? `Runs today through: ${s.packs.join(', ')}` : 'No pack runs this scenario yet; decision memory is served by the Knowledge Center.'}</div>
+        <div className="small muted">{s.packs.length ? `Runs today through: ${(s.packNames ?? s.packs).join(', ')}` : 'No pack runs this scenario yet; decision memory is served by the Knowledge Center.'}</div>
       </div>)}</div>
     </div>}
   </>;
