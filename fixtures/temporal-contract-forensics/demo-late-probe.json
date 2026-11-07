@@ -1,0 +1,67 @@
+{
+  "receivedAt": "2026-11-04T15:12:00Z",
+  "records": [
+    {
+      "id": "ev-p1",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "regional-probe-eu",
+        "recordId": "rp-55-a",
+        "authority": "AUTHENTICATED_INFRASTRUCTURE",
+        "clockId": "probe-eu"
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "UNAVAILABLE",
+        "start": {
+          "earliest": "2026-11-04T14:29:55Z",
+          "latest": "2026-11-04T14:30:05Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T14:34:55Z",
+          "latest": "2026-11-04T14:35:05Z"
+        }
+      },
+      "observedAt": "2026-11-04T15:10:00Z",
+      "provenance": {
+        "reference": "regional-probe-eu://rp-55-a",
+        "contentHash": "sha256:1a19cb536fecc4b616aea3ffbc8393c205f76007ab5fd0b9ba62cface3f7d520"
+      }
+    },
+    {
+      "id": "ev-p2",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "regional-probe-eu",
+        "recordId": "rp-55-b",
+        "authority": "AUTHENTICATED_INFRASTRUCTURE",
+        "clockId": "probe-eu"
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "HEALTHY",
+        "start": {
+          "earliest": "2026-11-04T14:34:55Z",
+          "latest": "2026-11-04T14:35:05Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T15:10:00Z",
+          "latest": "2026-11-04T15:10:00Z"
+        }
+      },
+      "observedAt": "2026-11-04T15:10:00Z",
+      "provenance": {
+        "reference": "regional-probe-eu://rp-55-b",
+        "contentHash": "sha256:402ba802130acce0917640114e266c57237e7eb159a8d807feee4ba0f1eb244f"
+      }
+    }
+  ]
+}

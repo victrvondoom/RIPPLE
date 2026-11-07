@@ -1,0 +1,35 @@
+{
+  "CLASS_MISMATCH_VS_ORACLE": [
+    {
+      "id": "MAINTENANCE_EXCLUSIONS#27",
+      "engine": "BREACH_POSSIBLE",
+      "oracle": "NO_BREACH",
+      "bounds": [
+        1890000,
+        1900002
+      ],
+      "oracleBounds": [
+        1890000,
+        1900000
+      ],
+      "reasons": [
+        "a bound is sound but not tight (search budget exhausted); the classification is still safe"
+      ]
+    }
+  ],
+  "EXCESSIVE_ABSTENTION": [
+    {
+      "id": "MAINTENANCE_EXCLUSIONS#27",
+      "engine": "BREACH_POSSIBLE",
+      "oracle": "NO_BREACH",
+      "bounds": [
+        1890000,
+        1900002
+      ],
+      "oracleBounds": [
+        1890000,
+        1900000
+      ]
+    }
+  ]
+}

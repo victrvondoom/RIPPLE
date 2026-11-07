@@ -1,0 +1,388 @@
+{
+  "contracts": [
+    {
+      "contractId": "MSA-ACME-2025",
+      "version": "2",
+      "effectiveFrom": "2025-07-01T00:00:00Z",
+      "effectiveTo": "2026-07-01T00:00:00Z",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1",
+        "customer": "acme-logistics"
+      },
+      "measurement": {
+        "period": {
+          "type": "INCIDENT_WINDOW"
+        },
+        "metric": "CUMULATIVE_DOWNTIME",
+        "qualifyingStates": [
+          "UNAVAILABLE"
+        ]
+      },
+      "breach": {
+        "type": "DOWNTIME_EXCEEDS",
+        "thresholdMs": 2700000,
+        "inclusive": false
+      },
+      "credit": {
+        "monthlyFeeMinor": 420000,
+        "currency": "USD",
+        "tiers": [
+          {
+            "when": {
+              "type": "DOWNTIME_EXCEEDS",
+              "thresholdMs": 2700000,
+              "inclusive": false
+            },
+            "creditPercent": "10"
+          }
+        ],
+        "capPercent": "25"
+      },
+      "maintenance": {
+        "noticeRequiredMs": 259200000
+      }
+    },
+    {
+      "contractId": "MSA-ACME-2025",
+      "version": "3",
+      "effectiveFrom": "2026-07-01T00:00:00Z",
+      "effectiveTo": null,
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1",
+        "customer": "acme-logistics"
+      },
+      "measurement": {
+        "period": {
+          "type": "INCIDENT_WINDOW"
+        },
+        "metric": "CUMULATIVE_DOWNTIME",
+        "qualifyingStates": [
+          "UNAVAILABLE"
+        ]
+      },
+      "breach": {
+        "type": "DOWNTIME_EXCEEDS",
+        "thresholdMs": 1800000,
+        "inclusive": false
+      },
+      "credit": {
+        "monthlyFeeMinor": 420000,
+        "currency": "USD",
+        "tiers": [
+          {
+            "when": {
+              "type": "DOWNTIME_EXCEEDS",
+              "thresholdMs": 1800000,
+              "inclusive": false
+            },
+            "creditPercent": "10"
+          },
+          {
+            "when": {
+              "type": "DOWNTIME_EXCEEDS",
+              "thresholdMs": 3600000,
+              "inclusive": false
+            },
+            "creditPercent": "25"
+          }
+        ],
+        "capPercent": "25"
+      },
+      "maintenance": {
+        "noticeRequiredMs": 259200000
+      },
+      "clauses": [
+        {
+          "id": "7.1",
+          "type": "INFORMATIONAL",
+          "text": "Service credits are the customer's sole remedy for unavailability."
+        }
+      ]
+    }
+  ],
+  "measurementWindow": {
+    "start": "2026-11-04T13:30:00Z",
+    "end": "2026-11-04T15:30:00Z"
+  },
+  "incident": {
+    "incidentId": "INC-7731",
+    "scope": {
+      "service": "orders-api",
+      "region": "eu-west-1",
+      "customer": "acme-logistics"
+    }
+  },
+  "clocks": [
+    {
+      "clockId": "synthmon",
+      "knownOffsetMs": 0,
+      "uncertaintyMs": 500
+    },
+    {
+      "clockId": "lb-eu-1",
+      "knownOffsetMs": 90000,
+      "uncertaintyMs": 90000
+    },
+    {
+      "clockId": "incident-desk",
+      "knownOffsetMs": 0,
+      "uncertaintyMs": 1000
+    },
+    {
+      "clockId": "probe-eu",
+      "knownOffsetMs": 0,
+      "uncertaintyMs": 200
+    }
+  ],
+  "maintenance": [
+    {
+      "id": "MW-311",
+      "start": "2026-11-04T14:00:00Z",
+      "end": "2026-11-04T14:03:00Z",
+      "status": "UNCONFIRMED",
+      "reference": "change-calendar://CHG-311"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-a1",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "synthmon-eu",
+        "recordId": "chk-88120",
+        "authority": "SIGNED_MONITORING",
+        "clockId": "synthmon",
+        "signatureVerified": true
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "HEALTHY",
+        "start": {
+          "earliest": "2026-11-04T13:20:00Z",
+          "latest": "2026-11-04T13:20:00Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T14:01:30Z",
+          "latest": "2026-11-04T14:02:30Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:03:00Z",
+      "provenance": {
+        "reference": "synthmon-eu://chk-88120",
+        "contentHash": "sha256:0f8595f4d0adf2b4c619f20a207ce0085b29bd3942bfc5bc8227599e9f46189d"
+      }
+    },
+    {
+      "id": "ev-a2",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "synthmon-eu",
+        "recordId": "chk-88121",
+        "authority": "SIGNED_MONITORING",
+        "clockId": "synthmon",
+        "signatureVerified": true
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "UNAVAILABLE",
+        "start": {
+          "earliest": "2026-11-04T14:01:30Z",
+          "latest": "2026-11-04T14:02:30Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T14:29:30Z",
+          "latest": "2026-11-04T14:30:30Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:31:00Z",
+      "provenance": {
+        "reference": "synthmon-eu://chk-88121",
+        "contentHash": "sha256:f0b99c8b0686e7f078dec37d966a058873221c414be9ae300ab5847816ecd19a"
+      }
+    },
+    {
+      "id": "ev-a3",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "synthmon-eu",
+        "recordId": "chk-88122",
+        "authority": "SIGNED_MONITORING",
+        "clockId": "synthmon",
+        "signatureVerified": true
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "UNKNOWN",
+        "start": {
+          "earliest": "2026-11-04T14:29:30Z",
+          "latest": "2026-11-04T14:30:30Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T14:41:00Z",
+          "latest": "2026-11-04T14:41:30Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:42:00Z",
+      "provenance": {
+        "reference": "synthmon-eu://chk-88122",
+        "contentHash": "sha256:b79bbfb0e3890c67a19e2a9d4d0470359134ee5d536679a667056d105ea0bcf3"
+      }
+    },
+    {
+      "id": "ev-a4",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "synthmon-eu",
+        "recordId": "chk-88123",
+        "authority": "SIGNED_MONITORING",
+        "clockId": "synthmon",
+        "signatureVerified": true
+      },
+      "assertion": {
+        "kind": "INTERVAL",
+        "state": "HEALTHY",
+        "start": {
+          "earliest": "2026-11-04T14:41:00Z",
+          "latest": "2026-11-04T14:41:30Z"
+        },
+        "end": {
+          "earliest": "2026-11-04T15:40:00Z",
+          "latest": "2026-11-04T15:40:00Z"
+        }
+      },
+      "observedAt": "2026-11-04T15:40:00Z",
+      "provenance": {
+        "reference": "synthmon-eu://chk-88123",
+        "contentHash": "sha256:55573446e2b9d159fc8431ec2908ff5b7d0103c7e2df92b997c8765924755ca3"
+      }
+    },
+    {
+      "id": "ev-b1",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "lb-access-logs",
+        "recordId": "lb-7f3a-down",
+        "authority": "AUTHENTICATED_INFRASTRUCTURE",
+        "clockId": "lb-eu-1"
+      },
+      "assertion": {
+        "kind": "TRANSITION",
+        "to": "UNAVAILABLE",
+        "at": {
+          "earliest": "2026-11-04T14:05:20Z",
+          "latest": "2026-11-04T14:05:40Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:06:00Z",
+      "provenance": {
+        "reference": "lb-access-logs://lb-7f3a-down",
+        "contentHash": "sha256:eef97f19e8a331aee94125e48068bf031fe7638d539b3ae4d13c503ca63af629"
+      }
+    },
+    {
+      "id": "ev-b2",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "lb-access-logs",
+        "recordId": "lb-7f3a-up",
+        "authority": "AUTHENTICATED_INFRASTRUCTURE",
+        "clockId": "lb-eu-1"
+      },
+      "assertion": {
+        "kind": "TRANSITION",
+        "to": "HEALTHY",
+        "at": {
+          "earliest": "2026-11-04T14:35:20Z",
+          "latest": "2026-11-04T14:35:40Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:36:00Z",
+      "provenance": {
+        "reference": "lb-access-logs://lb-7f3a-up",
+        "contentHash": "sha256:a12e14e1f11fddefb1a8ed4943e8f687cd8ce03f9097d44a73b962fc669154fc"
+      }
+    },
+    {
+      "id": "ev-e1",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1"
+      },
+      "source": {
+        "system": "incident-desk",
+        "recordId": "INC-7731/timeline/12",
+        "authority": "ENGINEERING_INCIDENT_REPORT",
+        "clockId": "incident-desk"
+      },
+      "assertion": {
+        "kind": "TRANSITION",
+        "to": "HEALTHY",
+        "at": {
+          "earliest": "2026-11-04T14:30:00Z",
+          "latest": "2026-11-04T14:34:00Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:52:00Z",
+      "provenance": {
+        "reference": "incident-desk://INC-7731/timeline/12",
+        "contentHash": "sha256:5bdb796dad0e385ba4c41d659b064963b09e01bcd96748bcc39b10d4f0428438"
+      },
+      "ingestedAt": "2026-11-04T14:53:10Z"
+    },
+    {
+      "id": "ev-c1",
+      "incidentId": "INC-7731",
+      "scope": {
+        "service": "orders-api",
+        "region": "eu-west-1",
+        "customer": "acme-logistics"
+      },
+      "source": {
+        "system": "support-desk",
+        "recordId": "ZD-55120",
+        "authority": "CUSTOMER_REPORT",
+        "clockId": "customer-device"
+      },
+      "assertion": {
+        "kind": "POINT",
+        "state": "UNAVAILABLE",
+        "at": {
+          "earliest": "2026-11-04T14:39:00Z",
+          "latest": "2026-11-04T14:39:59Z"
+        }
+      },
+      "observedAt": "2026-11-04T14:41:12Z",
+      "provenance": {
+        "reference": "support-desk://ZD-55120",
+        "contentHash": "sha256:080f7a6b29af256bc1ff63bd86da5fe8e659fc5d59802b26252051f49af7161f"
+      }
+    }
+  ]
+}
