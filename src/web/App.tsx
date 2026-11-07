@@ -1,22 +1,30 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react';
 import { api, go, useApi } from './api';
 import { Loading, ToastProvider, useToast } from './components/ui';
 import { Landing } from './components/Landing';
 import { ControlCenter } from './pages/ControlCenter';
-import { WorkflowStudio } from './pages/WorkflowStudio';
 import { Missions } from './pages/Missions';
-import { MissionWorkspace } from './pages/MissionWorkspace';
-import { WorkGraphPage } from './pages/WorkGraphPage';
-import { PeopleAgents } from './pages/PeopleAgents';
 import { ApprovalsPage } from './pages/ApprovalsPage';
-import { EvidencePage } from './pages/EvidencePage';
-import { PacksPage } from './pages/PacksPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { CaseReview } from './pages/CaseReview';
-import { HowItWorks } from './pages/HowItWorks';
-import { RealityPage } from './pages/RealityPage';
+import { MissionControl } from './pages/dash/MissionControl';
+import { SwitchRoom } from './components/SwitchRoom';
 
-const NAV = [['studio', 'Workflow Studio ✨'], ['case', 'Case Review'], ['how', 'How it works'],['control', 'Control Center'], ['reality', 'Reality Gap Engine'], ['missions', 'Missions'], ['graph', 'Work Graph'], ['people', 'People & Agents'], ['approvals', 'Approvals'], ['evidence', 'Evidence & Outcomes'], ['packs', 'Workflow Packs'], ['settings', 'Settings']] as const;
+// Larger pages load on demand so the first paint ships a small bundle (one code-split chunk per page).
+const named = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, key: K) => lazy(() => load().then((m) => ({ default: m[key] })));
+const WorkflowStudio = named(() => import('./pages/WorkflowStudio'), 'WorkflowStudio');
+const MissionWorkspace = named(() => import('./pages/MissionWorkspace'), 'MissionWorkspace');
+const WorkGraphPage = named(() => import('./pages/WorkGraphPage'), 'WorkGraphPage');
+const PeopleAgents = named(() => import('./pages/PeopleAgents'), 'PeopleAgents');
+const EvidencePage = named(() => import('./pages/EvidencePage'), 'EvidencePage');
+const PacksPage = named(() => import('./pages/PacksPage'), 'PacksPage');
+const SettingsPage = named(() => import('./pages/SettingsPage'), 'SettingsPage');
+const CaseReview = named(() => import('./pages/CaseReview'), 'CaseReview');
+const HowItWorks = named(() => import('./pages/HowItWorks'), 'HowItWorks');
+const RealityPage = named(() => import('./pages/RealityPage'), 'RealityPage');
+const Workbench = named(() => import('./pages/dash/Workbench'), 'Workbench');
+const TrustCenter = named(() => import('./pages/dash/TrustCenter'), 'TrustCenter');
+const KnowledgeCenter = named(() => import('./pages/dash/KnowledgeCenter'), 'KnowledgeCenter');
+
+const NAV = [['mission-control', 'Mission Control'], ['workbench', 'Operations Workbench'], ['trust', 'Trust & Evidence'], ['knowledge', 'Knowledge & Decisions'], ['switch', 'Switch Room'], ['studio', 'Workflow Studio ✨'], ['case', 'Case Review'], ['how', 'How it works'],['control', 'Control Center'], ['reality', 'Reality Gap Engine'], ['missions', 'Missions'], ['graph', 'Work Graph'], ['people', 'People & Agents'], ['approvals', 'Approvals'], ['evidence', 'Evidence & Outcomes'], ['packs', 'Workflow Packs'], ['settings', 'Settings']] as const;
 export type Me = { user: any; workspace: any; collab: any; provider: any };
 const useRoute = () => { const [h, setH] = useState(location.hash || '#/control'); useEffect(() => { const f = () => setH(location.hash || '#/control'); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f); }, []); return h.replace(/^#\//, '').split('/'); };
 
@@ -72,7 +80,7 @@ function Login({ onDone }: { onDone: () => void }) {
 function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
   const route = useRoute(); const toast = useToast();
   const { data: ov } = useApi<any>('/overview', 6000);
-  const badge = (k: string) => k === 'approvals' ? ov?.pendingApprovals?.length : k === 'control' ? (ov?.blocked?.length ?? 0) + (ov?.recovery?.length ?? 0) : 0;
+  const badge = (k: string) => k === 'approvals' ? ov?.pendingApprovals?.length : k === 'control' || k === 'mission-control' ? (ov?.blocked?.length ?? 0) + (ov?.recovery?.length ?? 0) : 0;
   const page = route[0] ?? 'control';
   const logout = async () => { try { await api('POST', '/auth/logout'); reloadMe(); } catch (e) { toast.err(e); } };
   return <div className="shell">
@@ -91,6 +99,12 @@ function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
       <div className="who"><strong style={{ color: '#fff' }}>{me.user.name}</strong><br />{me.user.title} · {me.user.role}<br />{me.workspace.name}<br /><button className="sm" style={{ marginTop: 8 }} onClick={logout}>Sign out</button></div>
     </nav>
     <main>
+      <Suspense fallback={<Loading />}>
+      {page === 'mission-control' && <MissionControl me={me} />}
+      {page === 'workbench' && <Workbench />}
+      {page === 'trust' && <TrustCenter me={me} />}
+      {page === 'knowledge' && <KnowledgeCenter />}
+      {page === 'switch' && <><h1>Switch Room</h1><p className="muted">One conversation with RIPPLE that can reach every dashboard. The switch connects or disconnects a Switch room; the console works locally either way.</p><SwitchRoom me={me} mode="page" /></>}
       {page === 'studio' && <WorkflowStudio me={me} />}
       {page === 'case' && <CaseReview />}
       {page === 'how' && <HowItWorks />}
@@ -105,7 +119,9 @@ function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
       {page === 'packs' && <PacksPage />}
       {page === 'settings' && <SettingsPage me={me} onWorkspaceDeleted={reloadMe} />}
       {!NAV.some(([k]) => k === page) && page !== 'mission' && <p>Page not found. <a href="#/control">Go to the Control Center</a></p>}
+      </Suspense>
     </main>
+    {page !== 'switch' && <SwitchRoom me={me} />}
   </div>;
 }
 

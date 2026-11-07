@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { AnalysisContext, ChangeItem, WorkflowPack } from '../../engine/types.js';
 import { Out, table } from '../common.js';
+import { parseProbes, twoSided } from '../../capabilities/verify/twosided.js';
 
 /**
  * Incident Sentinel pack, inherited from Incident-Sentinel (MIT, github.com/ronitgupta138/Incident-Sentinel) and tightened:
@@ -77,8 +78,8 @@ export const sentinelPack: WorkflowPack = {
   description: 'SRE incident war room: SLO-breach triage, deploy/commit correlation, blast radius, an on-call-only rollback approval, and a recovery claim that requires a measured number. Does not call a cluster or monitoring system.',
   labels: { baseline: 'Service SLO & Topology', change: 'Telemetry Anomaly / Incident', changeVerb: 'Trigger Incident', plan: 'Service Spec', mission: 'Incident Room', blurb: 'Correlates a telemetry spike to a release, asks the on-call SRE (and only them) to approve a rollback request, and claims recovery only from a recorded measurement.' },
   roles: [
-    { key: 'telemetry_triager', name: 'Telemetry Triager', kind: 'agent', responsibility: 'Evaluates error spikes and latency against SLO thresholds', department: 'SRE' },
-    { key: 'commit_investigator', name: 'Commit Investigator', kind: 'agent', responsibility: 'Correlates incident onset to deployments, commits and touched endpoints', department: 'Engineering' },
+    { key: 'telemetry_triager', name: 'Telemetry Triager', kind: 'agent', responsibility: 'Evaluates error spikes and latency against SLO thresholds', department: 'SRE', scope: 'read' },
+    { key: 'commit_investigator', name: 'Commit Investigator', kind: 'agent', responsibility: 'Correlates incident onset to deployments, commits and touched endpoints', department: 'Engineering', scope: 'read' },
     { key: 'sre_lead', name: 'SRE Incident Commander', kind: 'human', responsibility: 'Confirms blast radius and rollback safety; the only approver of the rollback request', department: 'SRE' },
     { key: 'rollback_operator', name: 'Rollback Operator', kind: 'agent', responsibility: 'Drafts the rollback request and the postmortem', department: 'Infrastructure' },
   ],
@@ -88,6 +89,7 @@ export const sentinelPack: WorkflowPack = {
     { key: 'telemetry_report', label: 'Telemetry Triaging Report', department: 'SRE', ownerRole: 'telemetry_triager', description: 'Metrics delta and SLO breach calculation' },
     { key: 'commit_correlation', label: 'Commit Correlation & Blast Radius', department: 'Engineering', ownerRole: 'commit_investigator', description: 'Ranked suspect releases with the reasons, and the blast radius' },
     { key: 'rollback_manifest', label: 'Rollback Request', department: 'Infrastructure', ownerRole: 'rollback_operator', description: 'Target release, evidence and an illustrative command' },
+    { key: 'interim_mitigation', label: 'Interim Mitigation (TEMPORARY, not a fix)', department: 'SRE', ownerRole: 'rollback_operator', description: 'A temporary step recorded by the on-call SRE. The permanent rollback waits until this step is recorded as executed and verified.' },
     { key: 'postmortem', label: 'Incident Postmortem (draft)', department: 'SRE', ownerRole: 'rollback_operator', description: 'Timeline from recorded timestamps; recovery only if measured' },
   ],
   rules: [
@@ -135,6 +137,13 @@ export const sentinelPack: WorkflowPack = {
     const t = text.trim();
     if (key === 'culprit_confirm') { const d = plan.deployments.find((x) => x.version === t || x.commitHash === t); return d ? { value: d.version } : { error: `Reply with one of the listed releases: ${plan.deployments.map((x) => x.version).join(', ')}.` }; }
     if (key === 'rollback_target') return /^[\w.+-]{1,40}$/.test(t) ? { value: t } : { error: 'Give a release/version identifier such as v2.13.9.' };
+    if (key === 'post_rollback_probes') {
+      // Two-sided verification (session 16): each line must parse as "must-block|must-allow <request>: <result>"; anything else is refused.
+      if (!t) return { value: '' };
+      const p = parseProbes(t);
+      if (p.unparsed.length) return { error: `These lines are not probe results (use "must-block <request>: blocked|allowed|unknown" or "must-allow <request>: allowed|blocked|unknown"): ${p.unparsed.slice(0, 2).join(' | ')}` };
+      return { value: t };
+    }
     if (key === 'post_rollback_error_rate') { const n = Number(t.replace('%', '')); return Number.isFinite(n) && n >= 0 && n <= 100 ? { value: n } : { error: 'Give the measured 5xx rate as a percentage, e.g. 0.03.' }; }
     return { value: t };
   },
@@ -187,13 +196,28 @@ export const sentinelPack: WorkflowPack = {
     if (!triage?.breach || !c.culprit || !c.target) return o.done('No rollback proposed (no breach, no unambiguous culprit, or no target).');
     o.work({ key: 'sre-lead-verify', title: 'Review the telemetry and confirm the rollback is safe (e.g. no incompatible schema change)', detail: `Rolling back ${c.culprit.version} → ${c.target.version}.`, department: 'SRE', roleKey: 'sre_lead', kind: 'review', artifactKey: 'rollback_manifest' });
     o.ask({ key: 'post_rollback_error_rate', text: `After the rollback, what 5xx error rate (%) does your monitoring show for ${svc.name}? RIPPLE does not read your monitoring; recovery is only claimed from the number you record.`, blocking: false, assigneeRole: 'sre_lead' });
+    o.ask({ key: 'interim_mitigation', text: 'Optional. Is there a TEMPORARY step you can take now that is not the rollback (for example switching off a feature flag)? Describe it in one line. It is recorded as temporary, and the rollback waits until it is verified. Leave it blank if there is none.', blocking: false, assigneeRole: 'sre_lead' });
+    o.ask({ key: 'post_rollback_probes', text: 'Optional. After the rollback, record one line per probe. "must-block <request>: blocked|allowed|unknown" for abuse that must still be refused; "must-allow <request>: allowed|blocked|unknown" for legitimate traffic that must still be served. RIPPLE sends no requests itself; a result you do not have is "unknown", which fails closed.', blocking: false, assigneeRole: 'sre_lead' });
+    // Interim-then-permanent (session 16; from Kite): a temporary mitigation recorded by the on-call SRE is its own TEMPORARY action,
+    // and the permanent rollback is blocked until that action is verified. RIPPLE does not run either step.
+    const interim = (ctx.answers.interim_mitigation?.value as string | undefined)?.trim();
+    if (interim) {
+      o.draft({ kind: 'interim_mitigation', name: `Interim mitigation (TEMPORARY): ${inc.incidentId}`, artifactKey: 'interim_mitigation', content: `# Interim Mitigation (TEMPORARY, not the fix): ${inc.incidentId}\n\n**Temporary step recorded by the on-call SRE:** ${interim}\n\nThis step is labelled temporary. It is not the permanent fix. The rollback request stays blocked until this step is recorded as executed and verified.\n\n_Recorded by a human. RIPPLE does not call any system._` });
+      o.act({ key: 'act-interim-mitigation', type: 'interim_mitigation', title: `TEMPORARY mitigation (not a fix) for ${svc.name}: ${interim.slice(0, 100)}`, connector: 'internal_notify', ownerRole: 'rollback_operator', consequential: true, draftKind: 'interim_mitigation', approvalRole: 'manager', ackRoles: ['sre_lead'], rationale: 'Temporary, recorded by the on-call SRE. Verification checks only the TEMPORARY label; it does not prove the mitigation worked.', target: `${svc.cluster}/${svc.name}`, effectKey: `interim-${svc.name}-${inc.incidentId}`, approver: { email: plan.onCallSre } });
+    }
     o.draft({ kind: 'rollback_manifest', name: 'Production Rollback Request', artifactKey: 'rollback_manifest', content: `# Production Rollback Request: ${inc.incidentId}\n\n- **Cluster / namespace**: ${svc.cluster} / ${svc.namespace}\n- **Service**: ${svc.name}\n- **Running (culprit) release**: ${c.culprit.version} (${c.culprit.commitHash})\n- **Roll back TO**: ${c.target.version}${c.target.commitHash ? ` (${c.target.commitHash})` : ''}: ${c.target.source}\n- **Evidence**: ${c.ranked.find((r) => r.d.version === c.culprit!.version)?.why.join('; ') || 'confirmed by a human'}\n- **Blast radius**: dependents [${plan.dependents.join(', ') || 'none listed'}]\n- **Illustrative command** (NOT executed by RIPPLE; confirm against your deployment tooling): \`kubectl rollout undo deployment/${svc.name} --namespace=${svc.namespace}\`\n\n> RIPPLE records this approved request in a local outbox. It does not call your cluster. Recovery is claimed only after a measured post-rollback error rate is recorded.` });
-    o.act({ key: 'act-rollback-k8s', type: 'k8s_rollback', title: `Request rollback of ${svc.name}: ${c.culprit.version} → ${c.target.version}`, connector: 'internal_notify', ownerRole: 'rollback_operator', consequential: true, draftKind: 'rollback_manifest', approvalRole: 'manager', ackRoles: ['sre_lead'], rationale: `${sev}: ${c.culprit.version} correlates with the incident; roll back to ${c.target.version}. Only the on-call SRE (${plan.onCallSre}) may approve. Nothing is executed on a cluster by RIPPLE.`, target: `${svc.cluster}/${svc.name}`, effectKey: `rollback-${svc.name}-${c.culprit.version}-to-${c.target.version}`, approver: { email: plan.onCallSre } });
+    o.act({ key: 'act-rollback-k8s', approvalTtlMinutes: 240, ...(interim ? { blockedUntil: { actions: ['act-interim-mitigation'] } } : {}), type: 'k8s_rollback', title: `Request rollback of ${svc.name}: ${c.culprit.version} → ${c.target.version}`, connector: 'internal_notify', ownerRole: 'rollback_operator', consequential: true, draftKind: 'rollback_manifest', approvalRole: 'manager', ackRoles: ['sre_lead'], rationale: `${sev}: ${c.culprit.version} correlates with the incident; roll back to ${c.target.version}. Only the on-call SRE (${plan.onCallSre}) may approve. Nothing is executed on a cluster by RIPPLE.`, target: `${svc.cluster}/${svc.name}`, effectKey: `rollback-${svc.name}-${c.culprit.version}-to-${c.target.version}`, approver: { email: plan.onCallSre } });
     return o.done(`Rollback request ${c.culprit.version} → ${c.target.version} drafted; on-call approval required.`);
   },
 
   verifyAction(action, observed, _revised, ctx) {
     const checks: { name: string; passed: boolean; detail: string }[] = [];
+    if (action.type === 'interim_mitigation') {
+      // Verifies the labelling only. It cannot prove the mitigation worked; that stays a human-recorded measurement.
+      checks.push({ name: 'stored as TEMPORARY', passed: observed.content.includes('TEMPORARY'), detail: observed.content.includes('TEMPORARY') ? 'label present in the stored document' : 'TEMPORARY label missing' });
+      checks.push({ name: 'states it is not the permanent fix', passed: observed.content.includes('not the permanent fix'), detail: 'honest scope statement present' });
+      return checks;
+    }
     if (action.type !== 'k8s_rollback') return checks;
     const text = observed.content;
     checks.push({ name: 'rollback command present', passed: text.includes('rollout undo'), detail: text.includes('rollout undo') ? 'illustrative rollout-undo command present' : 'command missing' });
@@ -209,6 +233,12 @@ export const sentinelPack: WorkflowPack = {
 
   completionChecks(ctx) {
     const plan = ctx.baselinePlan as Plan; const rate = ctx.answers.post_rollback_error_rate?.value as number | undefined;
-    return [{ key: 'recovery_measured', label: 'Recovery supported by a recorded post-rollback measurement within the SLO', passed: rate != null && rate <= plan.service.sloMaxErrorPct, detail: rate == null ? 'No measurement recorded: RIPPLE does not read your monitoring, so recovery is not claimed.' : `Human-reported ${rate}% vs SLO ${plan.service.sloMaxErrorPct}%.` }];
+    // Two-sided check: present only when the on-call person recorded probe results; then every probe must hold.
+    const probeText = ctx.answers.post_rollback_probes?.value as string | undefined;
+    const probeChecks = probeText ? (() => {
+      const { probes, unparsed } = parseProbes(probeText); const checks = twoSided(probes);
+      return [{ key: 'two_sided_verified', label: 'Two-sided post-rollback probes: every must-block refused and every must-allow still served', passed: unparsed.length === 0 && checks.every((c) => c.passed), detail: `${checks.map((c) => `${c.passed ? 'PASS' : 'FAIL'} ${c.name} (${c.detail})`).join('; ') || 'no probe lines'}${unparsed.length ? `; ${unparsed.length} line(s) not parsed` : ''}` }];
+    })() : [];
+    return [...probeChecks, { key: 'recovery_measured', label: 'Recovery supported by a recorded post-rollback measurement within the SLO', passed: rate != null && rate <= plan.service.sloMaxErrorPct, detail: rate == null ? 'No measurement recorded: RIPPLE does not read your monitoring, so recovery is not claimed.' : `Human-reported ${rate}% vs SLO ${plan.service.sloMaxErrorPct}%.` }];
   },
 };

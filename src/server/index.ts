@@ -26,7 +26,14 @@ syncDirectory(db, packs);
 // blocked (resumable). Stale agent tasks are swept every 15 s so nothing hangs silently.
 const recovered = engine.recoverInterrupted();
 if (recovered) console.log(`Recovered ${recovered} interrupted agent task(s); affected missions are blocked and resumable.`);
-setInterval(() => { try { engine.sweepStaleTasks(); } catch (e) { console.error('stale-task sweep failed', e); } }, 15_000).unref();
+setInterval(() => { try { engine.sweepStaleTasks(); engine.sweepExpiredApprovals(); } catch (e) { console.error('stale-task sweep failed', e); } }, 15_000).unref();
 const port = Number(process.env.PORT ?? 8787);
-serve({ fetch: createApp(engine, { production: prod }).fetch, port });
-console.log(`RIPPLE listening on http://localhost:${port}  collaboration=${collab.label}  provider=${engine.provider.name}`);
+const server = serve({ fetch: createApp(engine, { production: prod }).fetch, port }, () => {
+  console.log(`RIPPLE listening on http://localhost:${port}  collaboration=${collab.label}  provider=${engine.provider.name}`);
+});
+// A listen failure (e.g. the port is taken by another RIPPLE instance) is reported clearly instead of crashing with an unhandled 'error' event.
+server.on('error', (err: NodeJS.ErrnoException) => {
+  console.error(err.code === 'EADDRINUSE' ? `Port ${port} is already in use. Stop the other process or start with PORT=<free port>.` : `RIPPLE server error: ${err.message}`);
+  db.raw.close();
+  process.exit(1);
+});

@@ -2,7 +2,7 @@ import { j, nowIso, sha256, stable, uid, type Row } from '../db/db.js';
 import type { Actor, Engine } from '../engine/engine.js';
 import { EngineError } from '../engine/types.js';
 import { recordCausalEvent, type CauseType, type CausalLifecycleState } from '../engine/causal.js';
-import { instructionLikeText } from '../packs/untrusted.js';
+import { untrustedFindings } from '../packs/untrusted.js';
 import type { RoomInfo } from '../collab/port.js';
 import { assertMove, type RState } from './states.js';
 import { AGENTS, agentById, applyPatch, Lab, LabError, LAB_LABEL, stateHash } from './lab.js';
@@ -104,7 +104,7 @@ export class RealityEngine {
     Lab.seed(this.db, a.workspaceId, id, s.initial, s.faults);
     c.causalRoot = this.causal(w, 'agent_inference', 'PLANNED', `Planner: execution contract for "${s.intent}" (${s.steps.length} steps, ${s.invariants.length} invariants)`, 'planner', null, { planHash: w.plan_hash, baseline });
     // Memory agent ingests stored messages as DATA: instruction-like text is flagged and never treated as authority.
-    for (const ev of (s.events ?? []).filter((e) => e.kind === 'message')) c.messages.push({ body: ev.body ?? '', flags: instructionLikeText(ev.body ?? '') });
+    for (const ev of (s.events ?? []).filter((e) => e.kind === 'message')) c.messages.push({ body: ev.body ?? '', flags: untrustedFindings(ev.body ?? '') });
     this.saveContract(w, c);
     // Planning-time evidence for preconditions (mutable; expires).
     const lab = new Lab(this.db, a.workspaceId, id);

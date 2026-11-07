@@ -16,7 +16,7 @@ describe('MoveMate', () => {
     await expect(env.engine.submitChange(env.maya, r.id, { ...s.change, receivedOn: 'tomorrow' })).rejects.toThrow(/validation/);
   });
 
-  it('derives deadlines with notice lead times and propagates them through dependencies', () => {
+  it('derives deadlines with notice lead times and propagates them through dependencies', async () => {
     const s = S(); const a = assessMove(s.plan, s.change); const o = Object.fromEntries(a.out.map((x) => [x.id, x]));
     expect(a.daysLeft).toBe(12); expect(flags(a).ob_internet).toEqual(['at_risk']); expect(o.ob_internet.latestStart).toBe('2026-11-01');   // 10 days' notice before 11-11
     expect(o.ob_clean.deadline).toBe('2026-11-12'); expect(o.ob_clean.effective).toBe('2026-11-05');                                        // inspection (11-12) needs 7d lead after cleaning
@@ -60,7 +60,7 @@ describe('MoveMate', () => {
     expect(rows(env, 'SELECT status FROM actions WHERE mission_id=?', id).every((x) => x.status === 'verified')).toBe(true);
     expect(rows(env, "SELECT check_name FROM evidence WHERE mission_id=? AND kind='verification'", id).map((e) => e.check_name)).toEqual(expect.arrayContaining(['no legal conclusions', 'every obligation listed', 'not-legal-advice disclaimer present', 'move-out date stated']));
     ackAll(env, id); finishReviews(env, id);
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/Every move-out obligation is complete/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/Every move-out obligation is complete/);
     expect(missionRow(env, id).state).toBe('verifying');
   });
 
@@ -75,7 +75,7 @@ describe('MoveMate', () => {
     expect(carried.idempotency_key).toBe(mail1.idempotency_key); expect(row(env, 'SELECT status FROM actions WHERE id=?', mail1.id).status).toBe('superseded');
     expect(rows(env, "SELECT * FROM audit_events WHERE mission_id=? AND type='action_carried_over'", id).length).toBeGreaterThanOrEqual(1);
     await approveAll(env, id); await executeAll(env, id); ackAll(env, id); finishReviews(env, id);
-    env.engine.completeMission(env.maya, id);
+    await env.engine.completeMission(env.maya, id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.obligations.every((o: any) => o.status === 'done')).toBe(true); expect(b2.obligations.find((o: any) => o.id === 'ob_keys').ownerId).toBe('b');
     expect(missionRow(env, id)).toMatchObject({ state: 'completed', current_baseline_version: 2 });

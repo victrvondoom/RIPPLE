@@ -4,7 +4,11 @@
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+let chromium;
+for (const load of [() => require('playwright'), () => require('playwright-core'), () => require(require('node:path').join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright-core'))]) { try { ({ chromium } = load()); break; } catch { /* try the next location */ } }
+if (!chromium) { console.error('Playwright is not installed. Run: npm i -D playwright (or npm i -g playwright-core)'); process.exit(2); }
+// Prefer Playwright's bundled browser; fall back to the locally installed Google Chrome (no download needed).
+const launchBrowser = (o = {}) => chromium.launch(o).catch(() => chromium.launch({ ...o, channel: 'chrome' }));
 const BASE = process.env.BASE_URL ?? 'http://localhost:8787'; const PW = process.env.RIPPLE_SEED_PASSWORD ?? 'ripple-demo';
 const OUT = 'docs/evidence/packs'; mkdirSync(OUT, { recursive: true });
 const D = '@harborvine.example';
@@ -20,7 +24,7 @@ const pack = process.argv[2]; const cfg = CFG[pack]; if (!cfg) { console.error('
 const log = []; const consoleErrors = []; const step = (m) => { log.push(m); console.log('✔', m); };
 const fail = (m) => { console.error('✘', m); log.push('FAILED: ' + m); writeFileSync(`${OUT}/${pack}-log.txt`, log.join('\n')); process.exit(1); };
 const assert = (c, m) => { if (!c) fail(m); };
-const browser = await chromium.launch();
+const browser = await launchBrowser();
 async function session(who, viewport = { width: 1360, height: 900 }) {
   const ctx = await browser.newContext({ viewport }); const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(`${who}: ${m.text()}`); }); page.on('pageerror', (e) => consoleErrors.push(`${who}: ${e.message}`));

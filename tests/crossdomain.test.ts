@@ -66,9 +66,9 @@ describe('cross-domain intervention: one engine, one workspace, eight workflow p
     const nodeKinds = new Set(rows(env, 'SELECT kind FROM graph_nodes WHERE mission_id=? AND analysis_rev=?', id, missionRow(env, id).analysis_rev).map((n) => n.kind));
     expect(nodeKinds).toEqual(new Set(['change', 'artifact', 'department', 'owner', 'decision', 'task', 'action']));
     await approveAll(env, id); await executeAll(env, id);
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/acknowledgements/);                       // blocked while any acknowledgement is missing
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/acknowledgements/);                       // blocked while any acknowledgement is missing
     const pending = rows(env, "SELECT user_id FROM acknowledgements WHERE mission_id=? AND status='pending'", id); expect(pending.length).toBeGreaterThanOrEqual(1);
-    ackAll(env, id); finishReviews(env, id); env.engine.completeMission(env.maya, id);
+    ackAll(env, id); finishReviews(env, id); await env.engine.completeMission(env.maya, id);
     const out = row(env, 'SELECT * FROM outcomes WHERE mission_id=?', id); const done = JSON.parse(out.completed).join('\n'); const open = JSON.parse(out.unresolved).join('\n');
     expect(done).toMatch(/Executed & independently verified: Publish change order/); expect(done).toMatch(/Acknowledged by Ravi Menon/); expect(done).toMatch(/Human answer recorded/);
     expect(open).toMatch(/Outstanding task/);                                                                   // outcome lists BOTH completed and unresolved work
@@ -86,7 +86,7 @@ describe('shared-engine regression tests (generic behaviours the packs depend on
     const env = makeEnv(); const r = await startPack(env, 'podflow'); const k = row(env, "SELECT key FROM questions WHERE mission_id=? AND key LIKE 'clip_selection_%'", r.id).key; await answer(env, r.id, k, '1');
     const kit = row(env, "SELECT a.*, ar.owner_role FROM actions a JOIN artifacts ar ON ar.id=a.artifact_id WHERE a.mission_id=? AND a.key='export_kit'", r.id); expect(kit.owner_role).toBe('copy');
   });
-  it('legacy databases are migrated (outcomes.completed) and existing workspaces gain new packs’ roles and people', () => {
+  it('legacy databases are migrated (outcomes.completed) and existing workspaces gain new packs’ roles and people', async () => {
     const f = join(mkdtempSync(join(tmpdir(), 'rmig-')), 'old.db'); let db = new Db(f); const e = makeEnv();
     seedWorkspace(db, e.packs, { name: 'Legacy', password: 'pw-legacy-12' }); db.raw.exec('ALTER TABLE outcomes DROP COLUMN completed'); db.raw.exec("DELETE FROM agent_roles WHERE pack_id IN ('movemate','podflow')"); db.raw.exec("DELETE FROM users WHERE email='cleo@harborvine.example'");
     db = new Db(f); expect((db.raw.prepare('PRAGMA table_info(outcomes)').all() as any[]).map((c) => c.name)).toContain('completed');
@@ -94,7 +94,7 @@ describe('shared-engine regression tests (generic behaviours the packs depend on
     expect(db.get("SELECT user_id FROM agent_roles WHERE pack_id='podflow' AND key='human_creator'")!.user_id).toBeTruthy(); expect(db.all("SELECT 1 FROM agent_roles WHERE pack_id='movemate'").length).toBe(6);
     syncDirectory(db, e.packs); expect(db.all("SELECT 1 FROM agent_roles WHERE pack_id='movemate'").length).toBe(6);      // idempotent
   });
-  it('every implemented pack declares labels, roles, decisions and a sample that validates against its own schemas', () => {
+  it('every implemented pack declares labels, roles, decisions and a sample that validates against its own schemas', async () => {
     const env = makeEnv(); expect(env.packs.all().map((p) => p.id).sort()).toEqual(['beo-rescue', 'invoiceguard', 'movemate', 'podflow', 'sceneshift', 'scopeguard', 'shiftrelay', 'submitready']);
     for (const p of env.packs.all()) {
       const s = p.sample(); expect(p.planSchema.safeParse(s.plan).success, `${p.id} plan`).toBe(true); expect(p.changeSchema.safeParse(s.change).success, `${p.id} change`).toBe(true);
@@ -104,7 +104,7 @@ describe('shared-engine regression tests (generic behaviours the packs depend on
       if (p.id !== 'beo-rescue' && p.id !== 'sceneshift') expect(p.labels, `${p.id} labels`).toBeTruthy();
     }
   });
-  it('human roles of every pack resolve to real workspace users (no orphan owners)', () => {
+  it('human roles of every pack resolve to real workspace users (no orphan owners)', async () => {
     const env = makeEnv(); for (const r of rows(env, "SELECT pack_id,key,user_id FROM agent_roles WHERE workspace_id=? AND kind='human'", env.maya.workspaceId)) expect(r.user_id, `${r.pack_id}/${r.key}`).toBeTruthy();
     expect(actorById(env, row(env, "SELECT user_id FROM agent_roles WHERE pack_id='shiftrelay' AND key='human_supervisor'", ).user_id).role).toBe('manager');
   });

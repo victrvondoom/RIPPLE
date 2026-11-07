@@ -1,0 +1,140 @@
+{
+  "base": "http://localhost:8797",
+  "bridge": "http://127.0.0.1:52042",
+  "internalOnlyRooms": true,
+  "data": "synthetic sample (billing sandbox, dry-run email)",
+  "rooms": {
+    "happy-path": {
+      "missionId": "mis_a6af7888-030",
+      "roomId": "c1d61a5c-1598-40e4-b6fe-2ba4b2a75afc",
+      "messages": 38
+    },
+    "rejection-gate": {
+      "missionId": "mis_1e91d62a-f6a",
+      "roomId": "eba9c734-315f-40e7-9c43-89ce12a2cd8c",
+      "messages": 36
+    },
+    "timeout-recovery": {
+      "missionId": "mis_f024af92-188",
+      "roomId": "e2d4bf26-92a7-46dd-8b16-0f02d007e3bd",
+      "messages": 32
+    }
+  },
+  "steps": [
+    {
+      "scenario": "happy-path",
+      "step": "mission opened from the customer email",
+      "ok": true,
+      "detail": "mis_a6af7888-030 state=awaiting_approval"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "mission room is a real Switch room",
+      "ok": true,
+      "detail": "room c1d61a5c-1598-40e4-b6fe-2ba4b2a75afc"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "wrong department cannot approve the refund",
+      "ok": true,
+      "detail": "Support lead → HTTP 403"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "customer reply blocked before its obligations are met",
+      "ok": true,
+      "detail": "HTTP 409 blocked_by_dependency"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "refund and credit verified against the ledger read-back",
+      "ok": true,
+      "detail": "both verified"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "reply sent (dry-run) and verified after dependencies",
+      "ok": true,
+      "detail": "verified"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "mission completed",
+      "ok": true,
+      "detail": "completed"
+    },
+    {
+      "scenario": "happy-path",
+      "step": "Switch room read back: handoffs to department agents, approvals, verification",
+      "ok": true,
+      "detail": "38 messages"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "mission opened from the customer email",
+      "ok": true,
+      "detail": "mis_1e91d62a-f6a state=awaiting_approval"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "mission room is a real Switch room",
+      "ok": true,
+      "detail": "room eba9c734-315f-40e7-9c43-89ce12a2cd8c"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "over-cap credit flagged in the proposal",
+      "ok": true,
+      "detail": "Issue customer-requested service credit $10,000 — exceeds SLA cap $3,000"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "rejected credit can never execute",
+      "ok": true,
+      "detail": "HTTP 409"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "mission completed with the credit recorded as rejected",
+      "ok": true,
+      "detail": "credit=rejected"
+    },
+    {
+      "scenario": "rejection-gate",
+      "step": "Switch room shows the human rejection",
+      "ok": true,
+      "detail": "decision message found"
+    },
+    {
+      "scenario": "timeout-recovery",
+      "step": "mission opened from the customer email",
+      "ok": true,
+      "detail": "mis_f024af92-188 state=awaiting_approval"
+    },
+    {
+      "scenario": "timeout-recovery",
+      "step": "mission room is a real Switch room",
+      "ok": true,
+      "detail": "room e2d4bf26-92a7-46dd-8b16-0f02d007e3bd"
+    },
+    {
+      "scenario": "timeout-recovery",
+      "step": "lost response recorded as UNKNOWN, not success",
+      "ok": true,
+      "detail": "execution_unknown, mission recovery_required"
+    },
+    {
+      "scenario": "timeout-recovery",
+      "step": "recovery reads back first and verifies without a second refund",
+      "ok": true,
+      "detail": "recoveredBy=read-back"
+    },
+    {
+      "scenario": "timeout-recovery",
+      "step": "Switch room shows UNKNOWN escalation and the read-back recovery",
+      "ok": true,
+      "detail": "both messages found"
+    }
+  ],
+  "passed": true
+}

@@ -13,12 +13,15 @@ import { registerStudioRoutes } from './studio.js';
 import { getCausalGraph } from '../engine/causal.js';
 import { registerRealityRoutes, REALITY_TABLES } from './reality.js';
 import { registerCrossDomainRoutes } from './crossdomain.js';
+import { registerDashboardRoutes, DASH_TABLES } from './dashboards.js';
+import { issueReceipt, verifyReceipt, type LedgerReceipt } from './receipt.js';
+import { SwitchConsole, registerConsoleRoutes } from '../console/console.js';
 
 const COOKIE = 'ripple_session';
 const hashToken = (t: string) => createHash('sha256').update(t).digest('hex');
 type Env = { Variables: { actor: Actor } };
 
-export function createApp(engine: Engine, opts: { production?: boolean; webRoot?: string } = {}) {
+export function createApp(engine: Engine, opts: { production?: boolean; webRoot?: string; console?: SwitchConsole } = {}) {
   const app = new Hono<Env>();
   const db = engine.db;
   const attempts = new Map<string, { n: number; t: number }>();
@@ -151,7 +154,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     return after(c);
   });
   app.get('/api/missions/:id/completion', (c) => c.json(engine.completionPreview(A(c), mid(c))));
-  app.post('/api/missions/:id/complete', (c) => { engine.completeMission(A(c), mid(c)); return after(c); });
+  app.post('/api/missions/:id/complete', async (c) => { await engine.completeMission(A(c), mid(c)); return after(c); });
   // Centralized human control of the orchestrator (managers/owners only; every call is audited).
   app.post('/api/missions/:id/pause', async (c) => { const b = await json(c, z.object({ reason: z.string().max(500).default('') })); engine.pauseMission(A(c), mid(c), b.reason); return after(c); });
   app.post('/api/missions/:id/resume', async (c) => { await engine.resumeMission(A(c), mid(c)); return after(c); });
@@ -181,6 +184,16 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   registerRealityRoutes(app, engine);
   // Cross-Domain Invariant Intelligence (session 9)
   registerCrossDomainRoutes(app, engine);
+  // Four dashboards (Mission Control, Operations Workbench, Trust & Evidence, Knowledge & Decisions) + capability catalog (session 10)
+  registerDashboardRoutes(app, engine);
+  // Portable signed ledger receipts (session 16; inherited from switch-notary/Shipyard). Issue: manager/owner. Verify: any member.
+  app.post('/api/dash/trust/receipt', (c) => c.json(issueReceipt(engine, A(c))));
+  app.post('/api/dash/trust/receipt/verify', async (c) => {
+    const b = (await c.req.json().catch(() => ({}))) as { receipt?: LedgerReceipt; publicKey?: string };
+    return c.json(verifyReceipt(engine, A(c).workspaceId, b.receipt as LedgerReceipt, b.publicKey));
+  });
+  // Switch Console: one conversational room on every page, with an on/off Switch connection (session 10)
+  registerConsoleRoutes(app, opts.console ?? SwitchConsole.fromEnv(engine, process.env));
 
   // settings / data governance
   app.get('/api/workspace/audit', (c) => {
@@ -200,7 +213,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   });
   app.get('/api/workspace/export', (c) => {
     const a = A(c); engine.require(a, 'owner');
-    const tables = ['workspaces', 'users', 'missions', 'artifacts', 'baselines', 'change_events', 'graph_nodes', 'dependencies', 'work_items', 'agent_roles', 'agent_runs', 'rooms', 'messages', 'questions', 'approvals', 'actions', 'acknowledgements', 'evidence', 'outcomes', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES];
+    const tables = ['workspaces', 'users', 'missions', 'artifacts', 'baselines', 'change_events', 'graph_nodes', 'dependencies', 'work_items', 'agent_roles', 'agent_runs', 'rooms', 'messages', 'questions', 'approvals', 'actions', 'acknowledgements', 'evidence', 'outcomes', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES];
     const out: Record<string, unknown> = { exportedAt: nowIso(), note: 'Password hashes are excluded.' };
     for (const t of tables) out[t] = db.all(`SELECT * FROM ${t} WHERE ${t === 'workspaces' ? 'id' : 'workspace_id'}=?`, a.workspaceId).map((r) => { const { password_hash, ...rest } = r as any; void password_hash; return rest; });
     engine.audit(a.workspaceId, null, 'user', a.name, 'workspace_export', 'Workspace data exported');
@@ -213,7 +226,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     const ws = db.get('SELECT name FROM workspaces WHERE id=?', a.workspaceId)!;
     if (b.confirmName !== ws.name) throw new EngineError(422, 'confirm_mismatch', 'Type the exact workspace name to confirm deletion.');
     db.tx(() => {
-      for (const t of ['acknowledgements', 'evidence', 'outcomes', 'actions', 'approvals', 'questions', 'messages', 'rooms', 'agent_runs', 'agent_roles', 'work_items', 'dependencies', 'graph_nodes', 'change_events', 'baselines', 'artifacts', 'missions', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES]) db.exec(`DELETE FROM ${t} WHERE workspace_id=?`, a.workspaceId);
+      for (const t of ['acknowledgements', 'evidence', 'outcomes', 'actions', 'approvals', 'questions', 'messages', 'rooms', 'agent_runs', 'agent_roles', 'work_items', 'dependencies', 'graph_nodes', 'change_events', 'baselines', 'artifacts', 'missions', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES]) db.exec(`DELETE FROM ${t} WHERE workspace_id=?`, a.workspaceId);
       db.exec('DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE workspace_id=?)', a.workspaceId);
       db.exec('DELETE FROM users WHERE workspace_id=?', a.workspaceId);
       db.exec('DELETE FROM workspaces WHERE id=?', a.workspaceId);

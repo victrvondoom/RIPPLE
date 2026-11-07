@@ -63,5 +63,9 @@ export function validateRoleResult(pack: WorkflowPack, expectedRole: string, raw
   for (const w of r.workItems) if (!roles.has(w.roleKey)) return { ok: false, error: `work item "${w.key}" assigned to unknown role "${w.roleKey}"` };
   const kinds = new Set<string>();
   for (const d of r.drafts) { if (kinds.has(d.kind)) return { ok: false, error: `duplicate draft kind "${d.kind}"` }; kinds.add(d.kind); }
+  // Per-role tool scope (session 16, from OpsRoom's read-only Sentinel vs the investigator that holds the fix): a read-only role
+  // may analyse and report, but may not propose actions. Its output is discarded, so no action can enter the ledger from it.
+  const scope = pack.roles.find((x) => x.key === expectedRole)?.scope ?? 'act';
+  if (scope === 'read' && (r.actions ?? []).length > 0) return { ok: false, error: `role "${expectedRole}" is read-only and proposed ${r.actions.length} action(s); it may analyse and report, not act` };
   return { ok: true, result: r };
 }

@@ -16,7 +16,7 @@ describe('InvoiceGuard', () => {
     await expect(env.engine.submitChange(env.maya, r.id, { ...s.change, invoiceDate: '2/11/2026' })).rejects.toThrow(/validation/);
   });
 
-  it('classifies the ₹48,000 vs ₹40,000 example: variance, unaccepted deliverable, evidence gap, rate cap', () => {
+  it('classifies the ₹48,000 vs ₹40,000 example: variance, unaccepted deliverable, evidence gap, rate cap', async () => {
     const s = S();
     expect(codes(s.plan, s.change)).toEqual(['hours_exceed_evidence', 'rate_over_cap', 'total_exceeds_approved', 'unaccepted_deliverable', 'unmatched_line']);
     const d = reconcile(s.plan, s.change);
@@ -68,8 +68,8 @@ describe('InvoiceGuard', () => {
     await approveAll(env, id); await executeAll(env, id);
     expect(rows(env, 'SELECT status FROM actions WHERE mission_id=?', id).filter((a) => a.status === 'verified')).toHaveLength(2);
     expect(rows(env, "SELECT check_name FROM evidence WHERE mission_id=? AND kind='verification'", id).map((e) => e.check_name)).toEqual(expect.arrayContaining(['neutral wording (no accusation)', 'every discrepancy recorded', 'states no payment was initiated', 'cites the invoice number']));
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/acknowledgements|reviews/);
-    ackAll(env, id); finishReviews(env, id); env.engine.completeMission(env.maya, id);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/acknowledgements|reviews/);
+    ackAll(env, id); finishReviews(env, id); await env.engine.completeMission(env.maya, id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.invoices[0]).toMatchObject({ invoiceNo: 'PF-2026-117', status: 'clarification_requested' }); expect(b2.invoices[0].note).toMatch(/does not initiate payments/);
     expect(b2.milestones[1].billedToDate).toBe(0);          // disputed invoice is NOT booked as billed
@@ -89,7 +89,7 @@ describe('InvoiceGuard', () => {
     const m = await env.engine.createMission(env.maya, { packId: 'invoiceguard', title: 'clean', plan }); env.engine.approveBaseline(env.maya, m.id, '');
     await env.engine.submitChange(env.maya, m.id, { ...s.change, total: 40000, lines: [{ description: 'Milestone 2', milestoneId: 'M2', amount: 40000, hours: 32, rate: 1200 }] });
     expect(rows(env, "SELECT key FROM actions WHERE mission_id=? AND status='proposed'", m.id).map((a) => a.key)).toEqual(['record_reconciliation']);
-    await approveAll(env, m.id); await executeAll(env, m.id); ackAll(env, m.id); finishReviews(env, m.id); env.engine.completeMission(env.maya, m.id);
+    await approveAll(env, m.id); await executeAll(env, m.id); ackAll(env, m.id); finishReviews(env, m.id); await env.engine.completeMission(env.maya, m.id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', m.id).plan);
     expect(b2.invoices[0].status).toBe('reconciled_clean'); expect(b2.milestones[1].billedToDate).toBe(40000);
   });

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { AnalysisContext, ChangeItem, WorkflowPack } from '../../engine/types.js';
 import { Out, table } from '../common.js';
-import { instructionLikeText } from '../untrusted.js';
+import { untrustedFindings } from '../untrusted.js';
 
 /**
  * CrewPilot pack, inherited from CrewPilot (MIT, github.com/vincenzo-afk/CrewPilot: structured triage {category, severity, difficulty, summary,
@@ -47,7 +47,7 @@ const HARD = /\b(concurren\w*|race condition|deadlock|migration|rewrite|architec
 export function triage(plan: Plan, issue: Issue, answers: Answers = {}): Triage {
   const clar = answers[clarifyKey(issue.issueId)]?.text;
   const text = `${issue.title}\n${issue.body}${clar ? `\n${clar}` : ''}`;
-  const injection = instructionLikeText(text);
+  const injection = untrustedFindings(text);
   const category: Triage['category'] = BUG.test(text) ? 'bug' : FEATURE.test(text) ? 'feature' : CHORE.test(text) ? 'chore' : 'question';
   const low = text.toLowerCase();
   const scored = plan.architectureModules.map((m) => {

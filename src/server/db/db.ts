@@ -28,6 +28,12 @@ export class Db {
     const apCols = (this.raw.prepare('PRAGMA table_info(approvals)').all() as any[]).map((c) => c.name);
     if (!apCols.includes('approver_user_id')) this.raw.exec('ALTER TABLE approvals ADD COLUMN approver_user_id TEXT');
     if (!apCols.includes('approver_label')) this.raw.exec('ALTER TABLE approvals ADD COLUMN approver_label TEXT');
+    if (!apCols.includes('separate_from_requester')) this.raw.exec('ALTER TABLE approvals ADD COLUMN separate_from_requester INTEGER NOT NULL DEFAULT 0');
+    if (!apCols.includes('expires_at')) this.raw.exec('ALTER TABLE approvals ADD COLUMN expires_at TEXT');
+    const actCols = (this.raw.prepare('PRAGMA table_info(actions)').all() as any[]).map((c) => c.name);
+    if (!actCols.includes('quiet_hours')) this.raw.exec('ALTER TABLE actions ADD COLUMN quiet_hours TEXT');
+    const sealCols = (this.raw.prepare('PRAGMA table_info(ledger_seals)').all() as any[]).map((c) => c.name);
+    if (!sealCols.includes('last_rowid')) this.raw.exec('ALTER TABLE ledger_seals ADD COLUMN last_rowid INTEGER');
     const qCols = (this.raw.prepare('PRAGMA table_info(questions)').all() as any[]).map((c) => c.name);
     if (!qCols.includes('assignee_only')) this.raw.exec('ALTER TABLE questions ADD COLUMN assignee_only INTEGER NOT NULL DEFAULT 0');
     const mCols = (this.raw.prepare('PRAGMA table_info(missions)').all() as any[]).map((c) => c.name);

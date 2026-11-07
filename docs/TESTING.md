@@ -26,10 +26,30 @@
 - `crossdomain` (9): all 8 packs in one workspace without merged data; differing approval levels enforced; one person's work across domains; a change in one mission does not disturb others; multi-department fan-out with acknowledgement gating and completed+unresolved outcome; workspace isolation; shared-engine regressions (cross-role drafts, migration/sync, sample/schema consistency, no orphan roles).
 
 ## Not covered
-Real Switch (postponed); real model API; real email/chat; UI component unit tests; load/security testing; browser matrix (Chromium only); accessibility audit (labels/roles used, not audited).
+Mattermost-bridged rooms with humans in chat (the `!` commands being typed by a human); the gateway export with a human session (sessions 13–15 cover agent-only rooms and the agent API); real model API; real email/chat; UI component unit tests; load/security testing; browser matrix (Chromium only); accessibility audit (labels/roles used, not audited).
 
 ## Latest recorded results
 See `docs/evidence/test-output.txt` (vitest/tsc/eslint) and `docs/evidence/e2e-log.txt` (browser run). The e2e whitelists only two expected console errors: the pre-login 401 session probe and the one deliberate 422 refusal of early completion.
+
+## Session 15 (Level 3) - results (real runs, 2026-11-06)
+- `npx vitest run`: **31 files / 256 tests passed**. New: `tests/switch-level3.test.ts` (7 — one per Level-3 capability, engine integration to COMPLETED with a written version-2 playbook, and honest/local degradation). `tsc --noEmit` clean; `eslint src tests scripts` clean; `vite build` OK.
+- `python -m pytest tests_py/test_switch_level3.py`: **6 passed** (one dedicated pytest verification test per Switch primitive, through `ripple_switch/switch_client.py` against `tests_py/mock_switch_core.py`; capabilities 5 and 6 cross-verify the TypeScript guardrail/playbook composer through `scripts/guardrail-cli.ts` / `scripts/playbook-cli.ts`).
+- LIVE against the real switch-core 0.31.0 (server running, API 127.0.0.1:52042): `npx tsx scripts/switch-live-level3.ts` — **ALL 11 STEPS PASSED**:
+  ```
+  PASS  bridge health — http://127.0.0.1:52042/health
+  PASS  create_room with linked_rooms + roles (room_role_defined at creation) — intake 750074b0-…; ops 8e5a9ec8-…; finance 42ba88f9-…
+  PASS  room-membership isolation on #finance-settle (non-member connect refused) — HTTP 400 {"detail":"Agent is not a member of this room"}
+  PASS  arbiter assumes settlement-signer (assume_role) — role: settlement-signer; instruction delta received (88 chars)
+  PASS  list_roles read-back shows the live lease — held_by: ripple-arbiter; assumable_by_me: true
+  PASS  conflicting assume_role refused while the exclusive seat is held — HTTP 400 "Role 'conflict-signer' is exclusive and currently held by another agent"
+  PASS  addressing introspection + APPROVE authority announcement — get_my_context: who_can_talk=owner_and_owner_agents; owner=agent-bootstrap@switch.local; announced in #finance-settle
+  PASS  follow-ups bootstrap posted; server feature flag read back — server.features: …, follow_the_conversation, …
+  PASS  RECLAIM #908 guardrail (live check of the same deterministic code) — guard 3/3; quarantined: true; llmCalls 0
+  PASS  create_room_document + load_internal_documents read-back — document_id ff103f5f-…; read back 1 document(s)
+  PASS  GET /rooms/{id}/yaml attempted; local fallback playbook written — local_fallback: playbooks\resolved-l3-393738be.template.yaml
+  ```
+  Evidence with full details: `docs/evidence/switch-live-level3-2026-11-06.json`. Real-server facts found this session and encoded honestly (not from mocks): non-member `connect_to_room` = **400** "Agent is not a member of this room"; `create_room` refuses an unknown `group_name`; `load_internal_documents` **requires `ids`**; `assume_role` keeps **one lease per agent**.
+- NOT covered: Mattermost-bridged rooms with humans typing `!follow-ups on` in chat; the gateway `/rooms/{id}/yaml` with a real human session (agent key refused; labelled local fallback used instead); a `/rooms/from-yaml` re-import round-trip of an exported playbook.
 
 ## Session 5 (orchestrator) - results
 - `npm test`: 18 files / 148 tests passed (2 consecutive full runs). New: `tests/orchestrator.test.ts` (13: BEO task graph and affected-only re-run after an answer; convergence of a mutually dependent pair; bounded escalation; malformed output rejection; pause mid-run and resume with reuse; manager-only pause and refused actions while paused; reassign authorization; restart recovery; stale-task timeout; cancellation; fingerprint and validation rules) and `tests/switch-generation.test.ts` (2: heartbeat echoes the announced generation; no generation for servers that never announce one).

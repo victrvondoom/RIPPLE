@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { AnalysisContext, ChangeItem, WorkflowPack } from '../../engine/types.js';
 import { Out, money, table } from '../common.js';
-import { instructionLikeText } from '../untrusted.js';
+import { untrustedFindings } from '../untrusted.js';
 
 /**
  * ClearSend pack, inherited from ClearSend Room (MIT, github.com/dukemawex/clearsend-room: escrow lifecycle, "no money moves without a
@@ -51,11 +51,11 @@ export function evaluate(plan: Plan, sub: Sub): Evaluation {
   const hashOk = /^[0-9a-f]{64}$/i.test(sub.submittedArtifactHash) && sub.submittedArtifactHash.toLowerCase() === ms.requiredArtifactHash.toLowerCase();
   if (!/^[0-9a-f]{64}$/i.test(sub.submittedArtifactHash)) issues.push('Submitted hash is not a 64-hex SHA-256 digest.');
   else if (!hashOk) issues.push('Submitted hash does not match the agreed artifact hash.');
-  const injection = instructionLikeText([sub.contractorNotes, sub.deliverableUrl, ...sub.criteriaEvidence.map((e) => e.evidence)].join('\n'));
+  const injection = untrustedFindings([sub.contractorNotes, sub.deliverableUrl, ...sub.criteriaEvidence.map((e) => e.evidence)].join('\n'));
   const criteria = criteriaOf(ms.acceptanceCriteria).map((c) => {
     const e = sub.criteriaEvidence.find((x) => norm(x.criterion) === norm(c));
     const evidence = e?.evidence.trim() ?? '';
-    return { criterion: c, met: evidence.length >= 10 && instructionLikeText(evidence).length === 0, evidence };
+    return { criterion: c, met: evidence.length >= 10 && untrustedFindings(evidence).length === 0, evidence };
   });
   const unmet = criteria.filter((c) => !c.met);
   if (unmet.length) issues.push(`${unmet.length} acceptance criterion/criteria without recorded evidence: ${unmet.map((c) => `"${c.criterion}"`).join('; ')} (no evidence = not met).`);

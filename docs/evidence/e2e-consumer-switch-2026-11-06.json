@@ -1,0 +1,133 @@
+{
+  "base": "http://localhost:8796",
+  "bridge": "http://127.0.0.1:52042",
+  "internalOnlyRoom": true,
+  "startedAt": "2026-11-06T10:14:02.833Z",
+  "missionId": "mis_0ac159fa-341",
+  "roomId": "0a01648c-f48c-41be-a46d-4cfc0573c571",
+  "kinds": {
+    "status": 5,
+    "handoff": 8,
+    "question": 1,
+    "finding": 8,
+    "escalation": 1,
+    "answer": 1,
+    "approval_request": 3,
+    "decision": 3
+  },
+  "targeted": [
+    "ripple-intake",
+    "ripple-commitments",
+    "ripple-rights",
+    "ripple-drafting"
+  ],
+  "sample": [
+    {
+      "sender": "ripple",
+      "body": "ripple joined the room"
+    },
+    {
+      "sender": "ripple-intake",
+      "body": "ripple-intake joined the room"
+    },
+    {
+      "sender": "ripple",
+      "body": "Hello! Tag @ripple to loop me in."
+    },
+    {
+      "sender": "ripple-commitments",
+      "body": "ripple-commitments joined the room"
+    },
+    {
+      "sender": "ripple-intake",
+      "body": "Hey! I'm on standby — @ripple-intake to get started."
+    },
+    {
+      "sender": "ripple-rights",
+      "body": "ripple-rights joined the room"
+    }
+  ],
+  "steps": [
+    {
+      "step": "mission opened and blocked on the consumer",
+      "ok": true,
+      "detail": "mis_0ac159fa-341 state=blocked"
+    },
+    {
+      "step": "mission room is a real Switch room",
+      "ok": true,
+      "detail": "room 0a01648c-f48c-41be-a46d-4cfc0573c571 (Switch bridge http://127.0.0.1:52042; agent a387c370-8f22-4691-9d06-a6c71e49f952; connected rooms: 1)"
+    },
+    {
+      "step": "a manager cannot answer for the consumer",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "step": "consumer confirms refund preference",
+      "ok": true,
+      "detail": "state=awaiting_approval"
+    },
+    {
+      "step": "only the consumer may approve",
+      "ok": true,
+      "detail": "HTTP 403 for Maya"
+    },
+    {
+      "step": "consumer approves the exact content",
+      "ok": true,
+      "detail": "3 approval(s)"
+    },
+    {
+      "step": "every action independently verified",
+      "ok": true,
+      "detail": "send_airline_followup:verified, send_bank_dispute:verified, record_case_file:verified"
+    },
+    {
+      "step": "mission completed through evaluateCompletion",
+      "ok": true,
+      "detail": "state=completed"
+    },
+    {
+      "step": "Switch room history read back",
+      "ok": true,
+      "detail": "HTTP 200; 49 message(s); by kind {\"status\":5,\"handoff\":8,\"question\":1,\"finding\":8,\"escalation\":1,\"answer\":1,\"approval_request\":3,\"decision\":3}"
+    },
+    {
+      "step": "room contains [handoff] messages",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "step": "room contains [finding] messages",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "step": "room contains [approval_request] messages",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "step": "room contains [decision] messages",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "step": "room contains [status] messages",
+      "ok": true,
+      "detail": "5"
+    },
+    {
+      "step": "handoffs were addressed to the role agents in Switch",
+      "ok": true,
+      "detail": "ripple-intake, ripple-commitments, ripple-rights, ripple-drafting"
+    },
+    {
+      "step": "verification results reached the room",
+      "ok": true,
+      "detail": "status messages \"Verification for …: verified\""
+    }
+  ],
+  "passed": true
+}

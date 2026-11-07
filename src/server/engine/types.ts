@@ -6,6 +6,8 @@ export type MissionState =
 
 export interface RoleDef {
   key: string; name: string; kind: 'agent' | 'human'; responsibility: string; department?: string;
+  /** Session 16 tool scope. 'read' = analyse and report only (its output may not carry actions). Default 'act'. */
+  scope?: 'read' | 'act';
 }
 export interface ChangeItem {
   field: string; label: string; before: unknown; after: unknown; kind: 'modified' | 'added' | 'removed';
@@ -43,6 +45,27 @@ export interface ActionSpec {
    * Fail-closed: if nobody resolves, nobody can approve and the approval says so.
    */
   approver?: { role?: string; email?: string };
+  /**
+   * Session 16 four-eyes rule (inherited from Shipyard's second-person approval): the person who SUBMITTED the change
+   * may not decide this approval, whatever else the approver gate allows. Fail-closed and enforced in decideApproval.
+   */
+  separateFromRequester?: boolean;
+  /**
+   * Obligation dependencies (fail-closed, enforced by the engine at execution time): this action may run only after
+   * the listed actions (by key, same analysis revision) are VERIFIED and the listed work items (by key) are DONE.
+   * Example: "do not tell the customer about a refund until Finance's refund is verified and Engineering confirmed the fix".
+   */
+  blockedUntil?: { actions?: string[]; workItems?: string[] };
+  /**
+   * Session 16 quiet hours (inherited from Hermit's bedtime gate): execution is refused, and nothing changes state, while the
+   * current UTC hour is inside the window. The window may wrap midnight (e.g. fromHour 22, toHour 6).
+   */
+  quietHours?: { fromHour: number; toHour: number };
+  /**
+   * Session 16 approval expiry (inherited from Shipyard's approval TTL): the approval expires this many minutes after it is
+   * requested. An expired approval cannot be decided, and the sweep moves its action back to stale.
+   */
+  approvalTtlMinutes?: number;
 }
 export interface Finding { severity: 'info' | 'warning' | 'risk'; text: string; needsHumanReview?: boolean }
 /** An agent asking the orchestrator to re-analyse another role. Honoured only if that role's inputs actually changed. */
@@ -91,6 +114,12 @@ export interface WorkflowPack {
    */
   roleInputs?(roleKey: string, ctx: AnalysisContext): unknown;
   roleDeps?: Record<string, string[]>;
+  /**
+   * Session 15 (Level 3): optional declaration of a dynamically provisioned Switch case topology.
+   * Pure configuration — the engine executes it generically through the collab boundary (only the Switch
+   * adapter can run it); packs never run Switch protocol calls themselves. See collab/port.ts.
+   */
+  switchCaseTopology?: import('../collab/port.js').SwitchCaseTopology;
 }
 
 export interface CompletionContext { baselinePlan: any; revisedPlan: any; change: any; answers: AnalysisContext['answers']; today: string }

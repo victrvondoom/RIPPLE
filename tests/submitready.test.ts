@@ -21,7 +21,7 @@ describe('SubmitReady', () => {
     await expect(env.engine.submitChange(env.maya, r.id, { ...s.change, updates: [{ deliverableId: 'd_report', status: 'finished' }] })).rejects.toThrow(/validation/);
   });
 
-  it('distinguishes verified / incomplete / uncertain / not applicable strictly from evidence', () => {
+  it('distinguishes verified / incomplete / uncertain / not applicable strictly from evidence', async () => {
     const s = S(); const e = evaluate(s.plan, s.change); const x = st(e);
     expect(x).toEqual({ R1: 'uncertain', R2: 'uncertain', R3: 'verified', R4: 'incomplete', R5: 'incomplete', R6: 'uncertain', R7: 'incomplete', R8: 'uncertain' });
     expect(e.reqs.find((r) => r.id === 'R1')!.reason).toMatch(/evidence recorded but not verified/); expect(e.reqs.find((r) => r.id === 'R3')!.evidence[0]).toMatch(/a41f9c2/);
@@ -34,7 +34,7 @@ describe('SubmitReady', () => {
     expect(Object.values(st(evaluate(s.plan, ready(), { na_R8: { text: 'yes', value: 'yes' } }))).every((v) => v === 'verified' || v === 'not_applicable')).toBe(true);
   });
 
-  it('detects cross-deliverable inconsistencies and deadline risk', () => {
+  it('detects cross-deliverable inconsistencies and deadline risk', async () => {
     const s = S(); const e = evaluate(s.plan, s.change); expect(e.issues).toEqual(['Title mismatch in Presentation slides: "Orbit: Adaptive Routing v2" vs project title "Orbit: Adaptive Routing"'].map((x) => x));
     const wrong = evaluate(s.plan, { ...s.change, updates: [{ deliverableId: 'd_report', status: 'complete', addEvidence: ev('r.pdf', { teamName: 'Team Nova' }) }] }); expect(wrong.issues.join()).toMatch(/Team name mismatch/);
     const items = submitReadyPack.detectChanges(s.plan, { ...s.change, receivedOn: '2026-11-18' }).map((i) => i.field); expect(items).toContain('deadline.at_risk');
@@ -68,13 +68,13 @@ describe('SubmitReady', () => {
 
   it('is not completable while requirements are unverified; completes only after evidence-backed updates and a human N/A confirmation', async () => {
     const env = makeEnv(); const { id } = await startPack(env, 'submitready'); await answer(env, id, 'owner_d_video', 'Ben'); await approveAll(env, id); await executeAll(env, id); ackAll(env, id); finishReviews(env, id);
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/evidence-verified/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/evidence-verified/);
     await env.engine.submitChange(env.maya, id, ready()); expect(missionRow(env, id).state).toBe('awaiting_approval');
     await answer(env, id, 'na_R8', 'yes — instructor confirmed by email');                         // human confirmation, on the record
     expect(rows(env, "SELECT * FROM actions WHERE mission_id=? AND status='stale'", id).length).toBeGreaterThanOrEqual(3);
     await approveAll(env, id); await executeAll(env, id); ackAll(env, id); finishReviews(env, id);
     expect(rows(env, "SELECT status FROM actions WHERE mission_id=? AND analysis_rev=?", id, missionRow(env, id).analysis_rev).every((a) => a.status === 'verified')).toBe(true);
-    expect(artifact(env, id, 'compliance_report')).toMatch(/\*\*96\/96 points\*\*/); env.engine.completeMission(env.maya, id);
+    expect(artifact(env, id, 'compliance_report')).toMatch(/\*\*96\/96 points\*\*/); await env.engine.completeMission(env.maya, id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.rubric.find((r: any) => r.id === 'R8').applicable).toBe(false); expect(Object.values(b2.reports.at(-1).statuses).every((v) => v === 'verified' || v === 'not_applicable')).toBe(true);
     expect(missionRow(env, id)).toMatchObject({ state: 'completed', current_baseline_version: 2 });

@@ -3,7 +3,11 @@
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+let chromium;
+for (const load of [() => require('playwright'), () => require('playwright-core'), () => require(require('node:path').join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright-core'))]) { try { ({ chromium } = load()); break; } catch { /* try the next location */ } }
+if (!chromium) { console.error('Playwright is not installed. Run: npm i -D playwright (or npm i -g playwright-core)'); process.exit(2); }
+// Prefer Playwright's bundled browser; fall back to the locally installed Google Chrome (no download needed).
+const launchBrowser = (o = {}) => chromium.launch(o).catch(() => chromium.launch({ ...o, channel: 'chrome' }));
 const BASE = process.env.BASE_URL ?? 'http://localhost:8787';
 const PW = process.env.RIPPLE_SEED_PASSWORD ?? 'ripple-demo';
 const OUT = 'docs/evidence'; mkdirSync(OUT, { recursive: true });
@@ -11,7 +15,7 @@ const log = []; const consoleErrors = [];
 const step = (m) => { log.push(m); console.log('✔', m); };
 function assert(c, m) { if (!c) { console.error('✘ ASSERTION FAILED:', m); log.push('FAILED: ' + m); writeFileSync(`${OUT}/e2e-log.txt`, log.join('\n')); process.exit(1); } }
 
-const browser = await chromium.launch();
+const browser = await launchBrowser();
 async function session(email, viewport = { width: 1360, height: 900 }) {
   const ctx = await browser.newContext({ viewport }); const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(`${email}: ${m.text()}`); });
@@ -26,8 +30,11 @@ const tab = (p, name) => p.getByRole('tab', { name: new RegExp(name) }).click();
 
 const maya = await session('maya@harborvine.example');
 await maya.getByText('Control Center').first().waitFor();
-assert(await maya.getByText('LOCAL mode (not Switch)').count() > 0, 'control center labels local mode honestly');
-await shot(maya, '01-control-center-empty'); step('Signed in as Event Manager; Control Center shows LOCAL mode label');
+// The label must state whichever collaboration mode the server is actually in (Switch or local), never a guess.
+const modeText = await maya.locator('p', { hasText: 'collaboration:' }).first().innerText();
+assert(/collaboration: (Switch|LOCAL mode \(not Switch\))/.test(modeText), 'control center states the collaboration mode honestly');
+const shownMode = modeText.split('collaboration:')[1].trim();
+await shot(maya, '01-control-center-empty'); step(`Signed in as Event Manager; Control Center shows collaboration mode: ${shownMode}`);
 
 await nav(maya, 'Missions').click(); await maya.getByRole('button', { name: 'New mission' }).click();
 await maya.getByRole('button', { name: 'Load sample plan' }).click();
@@ -70,7 +77,7 @@ await maya.getByText('Executing', { exact: true }).first().waitFor(); step('Appr
 
 // Owner arms fault injection on email outbox
 const sam = await session('sam@harborvine.example'); await nav(sam, 'Settings').click();
-await sam.getByRole('row', { name: /Email outbox/ }).getByLabel('fail next execution').click(); await sam.waitForTimeout(500); await shot(sam, '11-settings-fault-injection'); step('Owner armed dev fault injection on email connector (audited)');
+await sam.getByRole('row', { name: /Email outbox/ }).getByLabel('Arm failure next run').click(); await sam.waitForTimeout(500); await shot(sam, '11-settings-fault-injection'); step('Owner armed dev fault injection on email connector (audited)');
 
 // Execute: client email first → fails
 const execAll = async () => { for (let guard = 0; guard < 12; guard++) { const b = maya.getByRole('button', { name: 'Execute now' }); if (!(await b.count())) break; await b.first().click(); await maya.waitForTimeout(500); } };
@@ -103,7 +110,7 @@ await maya.getByText('Completed', { exact: true }).first().waitFor();
 await shot(maya, '14-completed-evidence-outcome'); step('Completion criteria all met → mission Completed with outcome record and baseline v2');
 await maya.getByRole('tab', { name: 'Audit & recovery' }).click(); await shot(maya, '15-audit-trail');
 await nav(maya, 'Control Center').click(); await maya.getByText('Recent verified outcomes').waitFor(); await shot(maya, '16-control-center-after');
-await nav(maya, 'Evidence & Outcomes').click(); await maya.getByText('Evidence ledger').waitFor(); await shot(maya, '17-evidence-ledger');
+await nav(maya, 'Evidence & Outcomes').click(); await maya.getByText(/Independent Verification Ledger/).waitFor(); await shot(maya, '17-evidence-ledger');
 await nav(maya, 'Work Graph').click(); await maya.locator('svg[aria-label="Dependency graph"]').waitFor(); await shot(maya, '18-work-graph');
 await nav(maya, 'Workflow Packs').click(); await maya.getByText('SceneShift').first().waitFor(); await shot(maya, '19-workflow-packs');
 

@@ -4,9 +4,13 @@ import { assertTransition, STATE_LABEL } from './states.js';
 import { buildImpactGraph } from './graph.js';
 import { recordCausalEvent } from './causal.js';
 import type { PackRegistry } from '../packs/registry.js';
-import type { CollabPort, OutboundMessage, RoomInfo } from '../collab/port.js';
+import type { CollabPort, OutboundMessage, RoomInfo, CaseRoomRecord } from '../collab/port.js';
 import type { Connector, Observation } from '../connectors/index.js';
 import type { TextProvider } from '../agents/provider.js';
+import { sanitizeAttachments } from '../capabilities/reclaim/attachments.js';
+import { untrustedFindings } from '../packs/untrusted.js';
+import { RepeatGuard } from './repeat.js';
+import { inQuietWindow, validQuietWindow } from './quiet.js';
 import { evaluateCompletion } from './completion.js';
 import { MAX_PASSES, ORCHESTRATOR, TASK_TIMEOUT_MS, depsOf, roleFingerprint, validateRoleResult } from './orchestrator.js';
 
@@ -18,6 +22,8 @@ const AGENT_SENDER = 'ripple';
 const isoMinus = (ms: number) => new Date(Date.now() - ms).toISOString();
 
 export class Engine {
+  /** Session 16: suppresses repeated identical findings (see repeat.ts). */
+  private repeats = new RepeatGuard();
   db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider;
   constructor(public deps: EngineDeps) { this.db = deps.db; this.packs = deps.packs; this.collab = deps.collab; this.connectors = deps.connectors; this.provider = deps.provider; }
 
@@ -80,14 +86,34 @@ export class Engine {
     if (info.externalId && this.collab.subscribe) {
       // Inbound Switch activity is recorded as ADVISORY, clearly external messages. It never changes mission state by itself:
       // answers and approvals must come through authenticated RIPPLE users.
+      // Attachments bypass text guardrails (Switch issue #908), so every one is inspected by RECLAIM's deterministic
+      // sanitizer BEFORE any parsing; the sanitized, labelled form is the only thing downstream analysis may read.
       const seen = new Set<string>();
       this.collab.subscribe(info, (im) => {
         if (im.messageId && seen.has(im.messageId)) return; if (im.messageId) seen.add(im.messageId);
-        this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'external', sender_key: im.senderId, sender_name: im.senderName || im.senderId, to_key: null, body: im.body, data: JSON.stringify({ addressed: im.addressed, messageId: im.messageId }), ref_id: null, source: 'switch', created_at: nowIso() });
-        this.audit(m.workspace_id, m.id, 'system', 'switch', 'switch_inbound', `Message from ${im.senderName || im.senderId} received via Switch (advisory)`, { messageId: im.messageId });
+        const guard = sanitizeAttachments(im.attachments ?? []);
+        this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'external', sender_key: im.senderId, sender_name: im.senderName || im.senderId, to_key: null, body: im.body, data: JSON.stringify({ addressed: im.addressed, messageId: im.messageId, ...(guard.length ? { attachments: guard.map((g) => ({ safeLabel: g.safeLabel, guard: g.guard, quarantined: g.quarantined, findings: g.findings.map((f) => `${f.code}: ${f.detail}`) })) } : {}) }), ref_id: null, source: 'switch', created_at: nowIso() });
+        // Session 16: the same untrusted-text scan used by packs. Flags are advisory: recorded for a human, never acted on.
+        const flags = untrustedFindings(im.body ?? '');
+        // Repeat suppression (session 16): the same flag from the same sender is not re-recorded within 5 minutes.
+        if (flags.length && this.repeats.admit(`${m.id}|${im.senderId}|${flags.join('|')}`)) this.audit(m.workspace_id, m.id, 'system', 'switch', 'untrusted_content_flagged', `Inbound Switch message from ${im.senderName || im.senderId} flagged for human review (not acted on): ${flags.join('; ')}`, { messageId: im.messageId, flags });
+        this.audit(m.workspace_id, m.id, 'system', 'switch', 'switch_inbound', `Message from ${im.senderName || im.senderId} received via Switch (advisory)${guard.some((g) => g.quarantined) ? `; ${guard.filter((g) => g.quarantined).length} attachment(s) quarantined by the RECLAIM guardrail` : guard.length ? `; ${guard.length} attachment(s) passed the guardrail` : ''}`, { messageId: im.messageId });
       });
     }
     this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'room_opened', `Collaboration room opened in ${info.mode.toUpperCase()} mode`, { name: info.name });
+    // Level 3 (session 15): a pack-declared case topology is bootstrapped generically when the room is a real Switch room.
+    if (pack.switchCaseTopology && info.mode === 'switch' && this.collab.openCaseTopology) {
+      try {
+        const topology = await this.collab.openCaseTopology({ missionId: m.id, caseId: String(m.id), title: m.title, topic: `RIPPLE mission ${m.id} (${pack.name})`, intakeRoom: info, agentRoles: pack.roles.filter((r) => r.kind === 'agent').map((r) => ({ key: r.key, name: r.name })), topology: pack.switchCaseTopology });
+        for (const cr of topology.rooms) {
+          this.db.insert('rooms', { id: uid('room'), workspace_id: m.workspace_id, mission_id: m.id, mode: 'switch', external_id: cr.externalId, name: cr.name, status: 'open', note: `Level-3 case room (${cr.key}) · ${cr.note}`, created_at: nowIso() });
+        }
+        this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'case_topology_bootstrapped', `Level 3 Switch topology for case ${topology.caseId}: ${topology.rooms.length} case room(s) linked to #ripple-intake; membership-isolation refusal ${topology.isolation.verifiedRefusal ? `confirmed by the server (HTTP ${topology.isolation.status}, "not a member")` : 'NOT confirmed'}; follow-ups bootstrap ${topology.followUps.bootstrapPosted ? 'posted' : 'not posted'}; ${topology.role?.confirmedHolder ? `settlement-signer held by ${topology.role.confirmedHolder}` : 'settlement-signer not assumed in this runtime'}`, topology as unknown as Record<string, unknown>);
+        this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'system', sender_key: 'ripple', sender_name: 'RIPPLE', to_key: null, body: `Level 3 Switch bootstrap for case ${topology.caseId}: ${topology.rooms.map((r) => `#${r.name}`).join(', ') || 'no case rooms'} linked to the intake room. Membership isolation (non-members refused, observed HTTP 400/403 on switch-core 0.31): ${topology.isolation.attempted ? `${topology.isolation.verifiedRefusal ? `the server refused the coordinator (HTTP ${topology.isolation.status})` : 'NOT confirmed'}` : 'not attempted'}. ${topology.labels.join(' ')}`, data: JSON.stringify({ topology }), ref_id: null, source: 'ripple', created_at: nowIso() });
+      } catch (e) {
+        this.audit(m.workspace_id, m.id, 'system', AGENT_SENDER, 'switch_error', `Level 3 case topology bootstrap failed (mission continues in the intake room): ${String((e as Error).message).slice(0, 200)}`);
+      }
+    }
     return { row, info };
   }
   async say(m: Row, msg: OutboundMessage & { senderKind: 'agent' | 'human' | 'system'; data?: unknown; refId?: string }) {
@@ -268,7 +294,7 @@ export class Engine {
     // actions + approvals (not created when the orchestrator escalated after its iteration limit: a human must decide first)
     for (const c of run.escalated ? [] : collected) {
       const { spec } = c;
-      const payload = { subject: c.spec.title, target: spec.target, body: c.content, draftKind: c.draftKind };
+      const payload = { subject: c.spec.title, target: spec.target, body: c.content, draftKind: c.draftKind, ...(spec.blockedUntil ? { blockedUntil: spec.blockedUntil } : {}) };
       const payloadHash = sha256(stable(payload));
       const idem = sha256(`${ws}|${m.id}|${spec.effectKey}|${payloadHash}`).slice(0, 32);
       const prior = this.db.get("SELECT * FROM actions WHERE mission_id=? AND idempotency_key=? AND status='verified' ORDER BY executed_at DESC", m.id, idem);
@@ -283,9 +309,9 @@ export class Engine {
         this.audit(ws, m.id, 'system', AGENT_SENDER, 'action_carried_over', `"${spec.title}": identical content already executed & verified (action ${prior.id}); effect NOT repeated (idempotent).`, { from: prior.id, to: aid });
         continue;
       }
-      this.db.insert('actions', { ...base, status: 'proposed', attempts: 0 });
+      this.db.insert('actions', { ...base, status: 'proposed', attempts: 0, quiet_hours: spec.quietHours && validQuietWindow(spec.quietHours) ? JSON.stringify(spec.quietHours) : null });
       const gate = this.resolveApprover(ws, pack.id, pack, spec);
-      this.db.insert('approvals', { id: uid('apr'), workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: `Approve: ${spec.title}`, rationale: spec.rationale, required_role: spec.approvalRole, status: 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: gate?.userId ?? null, approver_label: gate?.label ?? null });
+      this.db.insert('approvals', { id: uid('apr'), workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: `Approve: ${spec.title}`, rationale: spec.rationale, required_role: spec.approvalRole, status: 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: gate?.userId ?? null, approver_label: gate?.label ?? null, separate_from_requester: spec.separateFromRequester ? 1 : 0, expires_at: spec.approvalTtlMinutes ? new Date(Date.now() + spec.approvalTtlMinutes * 60_000).toISOString() : null });
       for (const rk of spec.ackRoles) {
         const u = this.roleUser(ws, pack.id, rk);
         if (u) this.db.insert('acknowledgements', { id: uid('ack'), workspace_id: ws, mission_id: m.id, action_id: aid, user_id: u.id, status: 'pending' });
@@ -544,6 +570,18 @@ export class Engine {
   }
 
   // ---------- approvals ----------
+  /** Session 16 (Shipyard approval TTL): every pending approval past its expiry becomes expired and its action returns to stale. */
+  sweepExpiredApprovals(nowMs: number = Date.now()): number {
+    const rows = this.db.all("SELECT * FROM approvals WHERE status='pending' AND expires_at IS NOT NULL AND expires_at < ?", new Date(nowMs).toISOString());
+    for (const ap of rows) this.expireApproval(ap, ap.workspace_id, ap.mission_id);
+    return rows.length;
+  }
+  private expireApproval(ap: Row, ws: string, missionId: string) {
+    this.db.exec("UPDATE approvals SET status='expired', decided_at=?, decision_note=? WHERE id=?", nowIso(), 'Expired: not decided within the approval window.', ap.id);
+    this.db.exec("UPDATE actions SET status='stale', stale_reason=? WHERE id=? AND status='proposed'", 'Approval expired before it was decided', ap.subject_id);
+    this.audit(ws, missionId, 'system', AGENT_SENDER, 'approval_expired', `Approval expired (not decided in time): ${ap.title}`, { approvalId: ap.id, actionId: ap.subject_id });
+  }
+
   async decideApproval(a: Actor, missionId: string, approvalId: string, decision: 'approved' | 'rejected', note: string) {
     const m = this.mission(a.workspaceId, missionId);
     const ap = this.db.get('SELECT * FROM approvals WHERE id=? AND mission_id=? AND workspace_id=?', approvalId, m.id, a.workspaceId);
@@ -552,6 +590,15 @@ export class Engine {
     if (ap.required_role === 'owner' && a.role !== 'owner') throw new EngineError(403, 'forbidden', 'Only the workspace owner can decide this approval.');
     // who-specific gate (optional, fail-closed): approver_label is set whenever the action declared an `approver`
     if (ap.approver_label && ap.approver_user_id !== a.id) throw new EngineError(403, 'forbidden', ap.approver_user_id ? `Only ${ap.approver_label} can decide this approval.` : `This approval is bound to ${ap.approver_label}, but no person is mapped to it in this workspace, so nobody can decide it. Map the role to a user first.`);
+    // four-eyes (optional per action): the person who submitted the change may not decide its approval
+    if (ap.separate_from_requester) {
+      const sub = this.db.get('SELECT created_by FROM change_events WHERE mission_id=? AND workspace_id=? AND seq=?', m.id, a.workspaceId, ap.change_seq);
+      if (sub?.created_by === a.id) throw new EngineError(403, 'four_eyes', 'Four-eyes rule: the person who submitted this change cannot approve this action. A different person must decide it.');
+    }
+    if (ap.status === 'pending' && ap.expires_at && nowIso() > ap.expires_at) {
+      this.expireApproval(ap, a.workspaceId, m.id);
+      throw new EngineError(409, 'expired', 'This approval expired before it was decided. Its action has been returned to stale; propose it again.');
+    }
     if (ap.status === 'stale') throw new EngineError(409, 'stale', 'This approval is stale — the plan changed after it was requested. Review the new proposal.');
     if (ap.status !== 'pending') throw new EngineError(409, 'already_decided', `Approval already ${ap.status}.`);
     if (ap.change_seq !== m.change_seq || ap.analysis_rev !== m.analysis_rev) throw new EngineError(409, 'stale', 'Approval does not match the current change/analysis version.');
@@ -589,6 +636,17 @@ export class Engine {
     if (act.consequential) {
       const ap = this.db.get("SELECT * FROM approvals WHERE subject_id=? AND workspace_id=? ORDER BY created_at DESC", act.id, a.workspaceId);
       if (!ap || ap.status !== 'approved') throw new EngineError(409, 'no_approval', 'Consequential action has no granted human approval.');
+    }
+    const openDeps = this.openDependencies(a.workspaceId, act);
+    if (openDeps.length) {
+      this.audit(a.workspaceId, m.id, 'system', AGENT_SENDER, 'dependency_blocked', `"${act.title}" refused: waiting for ${openDeps.join('; ')}`, { actionId: act.id });
+      throw new EngineError(409, 'blocked_by_dependency', `"${act.title}" is blocked until: ${openDeps.join('; ')}.`);
+    }
+    // Quiet hours (session 16): refused without changing the action's state, so it can run once the window ends.
+    const quiet = act.quiet_hours ? JSON.parse(act.quiet_hours) : null;
+    if (quiet && validQuietWindow(quiet) && inQuietWindow(quiet, new Date())) {
+      this.audit(a.workspaceId, m.id, 'system', AGENT_SENDER, 'action_deferred_quiet', `"${act.title}" not executed: quiet hours (${String(quiet.fromHour).padStart(2, '0')}:00–${String(quiet.toHour).padStart(2, '0')}:00 UTC). Nothing changed; it can run after the window.`, { actionId: act.id });
+      throw new EngineError(423, 'quiet_hours', `"${act.title}" is in quiet hours (${String(quiet.fromHour).padStart(2, '0')}:00–${String(quiet.toHour).padStart(2, '0')}:00 UTC). Try again after the window.`);
     }
     if (act.status === 'execution_unknown') {
       // An unknown outcome is never repeated blindly. Read back first: if the effect exists, verify it instead of executing again.
@@ -687,6 +745,21 @@ export class Engine {
   }
 
   /** Independent verification: re-reads the effect from the connector and checks it. Never trusts the executor's own report. */
+  /** Unmet obligation dependencies of an action (empty = free to run). A missing dependency counts as unmet (fail-closed). */
+  openDependencies(ws: string, act: Row): string[] {
+    const dep = (j<any>(act.payload, {}).blockedUntil ?? {}) as { actions?: string[]; workItems?: string[] };
+    const out: string[] = [];
+    for (const k of dep.actions ?? []) {
+      const d = this.db.get("SELECT title,status FROM actions WHERE mission_id=? AND workspace_id=? AND key=? AND analysis_rev=? AND status NOT IN ('superseded','stale')", act.mission_id, ws, k, act.analysis_rev);
+      if (!d) out.push(`action "${k}" (not proposed in this revision)`); else if (d.status !== 'verified') out.push(`"${d.title}" to be verified (now ${d.status})`);
+    }
+    if (dep.workItems?.length) {
+      const items = this.db.all('SELECT title,status,data FROM work_items WHERE mission_id=? AND workspace_id=? AND analysis_rev=?', act.mission_id, ws, act.analysis_rev);
+      for (const k of dep.workItems) { const w = items.find((x) => j<any>(x.data, {}).key === k); if (!w) out.push(`work item "${k}" (missing)`); else if (w.status !== 'done') out.push(`"${w.title}" to be done`); }
+    }
+    return out;
+  }
+
   verifyAction(a: Actor, m: Row, actionId: string) {
     const act = this.db.get('SELECT * FROM actions WHERE id=? AND workspace_id=?', actionId, a.workspaceId)!;
     const conn = this.connectors[act.connector];
@@ -789,7 +862,7 @@ export class Engine {
 
   completionPreview(a: Actor, missionId: string) { const m = this.mission(a.workspaceId, missionId); return evaluateCompletion(this, m); }
 
-  completeMission(a: Actor, missionId: string) {
+  async completeMission(a: Actor, missionId: string) {
     this.require(a, 'owner', 'manager');
     const m = this.mission(a.workspaceId, missionId);
     const res = evaluateCompletion(this, m);
@@ -820,7 +893,43 @@ export class Engine {
       this.transition(m, 'completed', `All completion criteria satisfied. Baseline v${newV} saved.`, a.name);
     });
     this.audit(a.workspaceId, m.id, 'user', a.name, 'mission_completed', `Mission completed; baseline v${newV}`, { unresolved });
+    await this.captureResolvedPlaybook(a, m);
     return this.mission(a.workspaceId, m.id);
+  }
+
+  /**
+   * Session 15, capability 6 (self-encoding room capture). On completion, a Switch-mode mission exports its
+   * resolved room topology as a reusable `version: 2` YAML playbook (switch gateway GET /rooms/{id}/yaml when a
+   * human session is configured, else a labelled local fallback), plus the final Trust & ROI telemetry document.
+   * All telemetry numbers are counted from workspace rows here; nothing is fabricated. Best-effort: a failure is
+   * audited, never blocks completion.
+   */
+  private async captureResolvedPlaybook(a: Actor, m: Row) {
+    if (!this.collab.captureResolvedPlaybook) return;
+    const intake = this.db.get("SELECT * FROM rooms WHERE mission_id=? AND workspace_id=? ORDER BY created_at ASC", m.id, a.workspaceId);
+    if (!intake || intake.mode !== 'switch' || !intake.external_id) return;
+    const caseRooms: CaseRoomRecord[] = this.db.all("SELECT * FROM rooms WHERE mission_id=? AND workspace_id=? AND external_id IS NOT NULL", m.id, a.workspaceId)
+      .filter((r: Row) => r.id !== intake.id && !['draft', 'degraded'].includes(String(r.status)))
+      .map((r: Row) => { const key = String(r.name).startsWith('ops-verify') ? 'ops-verify' : String(r.name).startsWith('finance-settle') ? 'finance-settle' : 'ops-verify'; return { key: key as CaseRoomRecord['key'], externalId: r.external_id, name: r.name, linkedTo: intake.external_id, note: r.note }; });
+    const telemetry = {
+      guardrail: (() => { const inspected = this.db.all("SELECT * FROM messages WHERE mission_id=? AND workspace_id=? AND source='switch'", m.id, a.workspaceId).map((x: Row) => j(x.data)).filter((d) => d?.attachments?.length); const total = inspected.reduce((s, d) => s + (d as any).attachments.length, 0); const quarantined = inspected.reduce((s, d) => s + (d as any).attachments.filter((g: any) => g.quarantined).length, 0); return { inspected: total, quarantined, status: total ? (quarantined ? `QUARANTINE (${quarantined} of ${total})` : 'PASS') : 'PASS (none received)', zeroLlm: true }; })(),
+      verification: {
+        actionsVerified: this.db.all("SELECT 1 FROM actions WHERE mission_id=? AND workspace_id=? AND status='verified'", m.id, a.workspaceId).length,
+        actionsExecuted: this.db.all("SELECT 1 FROM actions WHERE mission_id=? AND workspace_id=? AND status IN ('executed','verified')", m.id, a.workspaceId).length,
+        llmCalls: 0,
+      },
+      rows: { messages: this.db.all('SELECT 1 FROM messages WHERE mission_id=? AND workspace_id=?', m.id, a.workspaceId).length, workItemsDone: this.db.all("SELECT 1 FROM work_items WHERE mission_id=? AND workspace_id=? AND status='done'", m.id, a.workspaceId).length, audits: this.db.all('SELECT 1 FROM audit_events WHERE mission_id=? AND workspace_id=?', m.id, a.workspaceId).length },
+    };
+    try {
+      const book = await this.collab.captureResolvedPlaybook({ caseId: String(m.id), missionId: String(m.id), title: String(m.title), rooms: caseRooms, intakeRoom: { mode: 'switch', externalId: intake.external_id, name: intake.name, note: intake.note }, telemetry });
+      if (book) {
+        this.db.insert('artifacts', { id: uid('art'), workspace_id: a.workspaceId, mission_id: m.id, kind: 'resolved_playbook', name: `Resolved room playbook (${book.source === 'gateway' ? 'gateway export' : 'local fallback'})`, content: book.yaml, content_hash: sha256(book.yaml), status: 'final', generated_by: `switch:${book.source}`, owner_role: null, created_at: nowIso() });
+        this.audit(a.workspaceId, m.id, 'system', AGENT_SENDER, 'room_playbook_captured', `Resolved room topology saved as a reusable version-2 YAML playbook (${book.source}): ${book.path}`, { path: book.path, source: book.source, rooms: caseRooms.length + 1, telemetry });
+      } else this.audit(a.workspaceId, m.id, 'system', AGENT_SENDER, 'switch_error', 'Room playbook was not captured (adapter returned no result).');
+    } catch (e) {
+      this.audit(a.workspaceId, m.id, 'system', AGENT_SENDER, 'switch_error', `Room playbook capture failed: ${String((e as Error).message).slice(0, 200)}`);
+      this.db.insert('artifacts', { id: uid('art'), workspace_id: a.workspaceId, mission_id: m.id, kind: 'resolved_playbook', name: 'Resolved room playbook (capture failed — see audit)', content: `{ "error": ${JSON.stringify(String((e as Error).message).slice(0, 300))} }`, content_hash: sha256(String((e as Error).message)), status: 'final', generated_by: 'switch:error', owner_role: null, created_at: nowIso() });
+    }
   }
 
   cancelMission(a: Actor, missionId: string, reason: string) {

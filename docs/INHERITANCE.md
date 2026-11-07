@@ -5,6 +5,26 @@ Authoritative and current as of session 3, plus the session-4 moa frontend entry
 from `~/Downloads/vultr/moa-main` (moa, Cal Hacks; source: https://github.com/petersenmatthew/moa).
 "Verified" below means covered by a test or e2e run listed in [END_TO_END_VERIFICATION.md](END_TO_END_VERIFICATION.md).
 
+## Session 17: nine ideas (OpsRoom, Kite, Hermit, Shipyard, Gatekeeper, Rupiverse)
+| Source | Taken into RIPPLE | Where |
+|---|---|---|
+| OpsRoom | Read-only role cannot propose actions | `engine/orchestrator.ts`, `packs/sentinel/pack.ts` |
+| Kite | Two-sided must-block / must-allow verification, fail-closed; interim-then-permanent with `blockedUntil` | `capabilities/verify/twosided.ts`, `packs/sentinel/pack.ts` |
+| Hermit | Quiet-hours window on actions (off by default) | `engine/quiet.ts`, `engine/engine.ts` |
+| Shipyard | Approval expiry with sweep; deploy gate that blocks only new critical CVEs (supplied evidence, no scan) | `engine/engine.ts`, `packs/depgate/pack.ts` |
+| Gatekeeper | Repeat suppression; placeholder-aware secrets; clean copy; agent-instruction file classifier; more dangerous commands | `engine/repeat.ts`, `packs/untrusted.ts` |
+| Rupiverse | Cached value reconciled with its recomputed value, gap shown, never overwritten | `capabilities/reconcile/derived.ts`, `api/dashboards.ts` (seal check) |
+| Not taken | Rupiverse's merchant autocomplete, search highlight, tree-aware filter and flow-type constraint (not built this round); Hermit's presence and bedtime detection (device signals); Kite's scanners, web discovery and GitHub PR automation (they call external systems, which the dry-run rule forbids). | see discovery notes |
+
+## Session 16: four reference folders (`switch-notary-main`, `gatekeeper-master`, `shipyard-main`, plus the survey of the rest)
+| Source | Taken into RIPPLE | Where | Not taken (and why) |
+|---|---|---|---|
+| Gatekeeper (`agent_guard.py`) | Hidden text in Unicode Tag characters decoded to ASCII; bidi overrides; zero-width runs; secrets pasted into rooms; destructive commands. All flags for humans, never clearances. | `packs/untrusted.ts`, `engine.ts` (inbound Switch flag) | Live package-registry polling (`squat_watch.py`): network access breaks the local dry-run rule. |
+| Shipyard (`policy.py`) | Second-person approval: the submitter may not decide the approval. | `engine/types.ts` (`separateFromRequester`), `engine.ts` `decideApproval`, billing refund and credit | SBOM/CVE gate and read-only shell allowlist: no scanner or shell is run by RIPPLE. |
+| switch-notary (`ledger.rs`, `notary-verify`) | Signed, portable receipt over the audit chain head; offline-style verification with the trusted key supplied out of band. | `api/receipt.ts`, `app.ts` routes | Rust judge and claim-vs-evidence verdicts (`unverified` vs `contradicted`): would need a claims contract for packs; recorded as future work. |
+| Already present (survey was wrong) | Hash chain over the audit log and ledger seals. | `api/dashboards.ts` | nothing new |
+| Surveyed, not built | UNSEEN digest-bound approvals and supersede lineage; kite two-sided verification and interim/permanent pairs; hermit role lease; data-room numeric grounding gate; showrunner canon invariants; BizOwl briefdesk; BangSayur commerce; Release Desk; bug-to-pr reproduction evidence. | see `progress.md` Session 16 | Recorded with target files and sizes; none claimed as integrated. |
+
 ## Two generic engine additions (all packs can use them)
 | Addition | Why | Where |
 |---|---|---|

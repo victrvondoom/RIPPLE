@@ -16,13 +16,18 @@ try { pw = require('playwright-core'); } catch { pw = require(join(execSync('npm
 
 const log = []; const say = (m) => { log.push(`${new Date().toISOString()} ${m}`); console.log(m); };
 const errors = [];
-const browser = await pw.chromium.launch({ headless: true });
+const browser = await pw.chromium.launch({ headless: true }).catch(() => pw.chromium.launch({ headless: true, channel: 'chrome' }));
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(String(e)));
 const shot = async (name, opts = {}) => { await page.waitForTimeout(400); await page.screenshot({ path: join(out, name), ...opts }); say(`screenshot ${name}`); };
 const btn = (name) => page.getByRole('button', { name, exact: true });
-const toast = async () => (await page.locator('.toast').first().textContent({ timeout: 8000 }).catch(() => ''));
+// Toasts replace each other in one slot: wait for a message that differs from the last one read, so a lingering earlier toast is never mistaken for the new one.
+let lastToast = '';
+const toast = async () => {
+  for (let i = 0; i < 40; i++) { const t = (await page.locator('.toast').first().textContent({ timeout: 250 }).catch(() => '')) ?? ''; if (t && t !== lastToast) { lastToast = t; return t; } await page.waitForTimeout(200); }
+  return '';
+};
 const surface = async (label) => { await page.locator('.rge-tabs a', { hasText: label }).last().click(); await page.waitForTimeout(800); };
 const check = (cond, msg) => { if (!cond) throw new Error(`CHECK FAILED: ${msg}`); say(`ok: ${msg}`); };
 
@@ -40,7 +45,7 @@ try {
   const locals = await page.locator('.cd-validity span:first-child').allTextContents();
   check(locals.length === 3 && locals.every((t) => t.includes('locally valid')), 'all three workflows are locally valid on their own evidence');
   await page.locator('.cd-wf', { hasText: 'Wedding party booking' }).getByRole('button', { name: 'Execute through gate' }).click();
-  const refusal = await toast();
+  const refusal = (await page.locator('.toast', { hasText: /globally blocked/ }).first().textContent({ timeout: 8000 }).catch(() => null)) ?? await toast();
   check(/locally valid but globally blocked/.test(refusal), `gate refused the wedding: "${refusal.slice(0, 90)}…"`);
   await page.locator('.cd-camp').scrollIntoViewIfNeeded();
   await shot('01-gate-refuses-locally-valid-workflow.png');
@@ -74,7 +79,7 @@ try {
   await shot('05-invariant-inspector-capacity.png');
 
   await surface('Impact explorer');
-  await page.locator('.card select').first().selectOption('res:inventory/suite-301');
+  await page.locator('.card', { hasText: 'If this changes' }).locator('select').first().selectOption('res:inventory/suite-301');
   await page.waitForSelector('.cd-impact');
   await shot('06-impact-explorer-suite-301.png');
 
@@ -102,6 +107,7 @@ try {
 
   // ---------------- Scenario 4: recovery × concurrent workflow (stale approval) ----------------
   await page.goto(`${base}/#/reality/crossdomain`);
+  await page.reload(); // a hash-only goto keeps the SPA state of the previous scenario; start clean
   await page.locator('.cd-start select').selectOption('cd-recovery-concurrent');
   await btn('Start live scenario').click();
   await page.waitForSelector('.cd-wf');
@@ -115,8 +121,8 @@ try {
   await btn('Approve (bound to plan hash)').click();
   await page.waitForTimeout(800);
   await btn('Execute guarded resolution').click();
-  await page.waitForSelector('text=Outcome: replanned', { timeout: 20000 });
-  check(true, 'concurrent change detected after approval: stale approval rejected, plan re-made');
+  const outcome4 = await page.locator('.banner strong', { hasText: /^Outcome: / }).first().textContent({ timeout: 20000 }).catch(() => 'no outcome banner');
+  check(outcome4 === 'Outcome: replanned', `concurrent change detected after approval: stale approval rejected, plan re-made (saw "${outcome4}"; toast: "${(await page.locator('.toast').first().textContent({ timeout: 500 }).catch(() => ''))?.slice(0, 160)}")`);
   await shot('11-stale-approval-rejected-replanned.png');
   await surface('Plan collision');
   await shot('12-replanned-collateral-rejected.png');

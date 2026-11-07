@@ -94,6 +94,17 @@ describe('Switch adapter against a MOCK of the documented protocol', () => {
     expect(row(env, 'SELECT state FROM missions WHERE id=?', mission.id).state).toBe('blocked');   // core workflow still functions
   });
 
+  it('with several mission rooms, re-claims the target room before posting (post_message has no room id)', async () => {
+    const mb = mockBridge();
+    const sw = new SwitchCollab({ bridgeUrl: 'http://bridge.test', agentId: 'a', apiKey: 'k', roleAgents: {}, fetchImpl: mb.fetchImpl, beatMs: 5000 });
+    const roomA = { mode: 'switch' as const, externalId: 'room-A', name: 'A', note: '' }, roomB = { ...roomA, externalId: 'room-B', name: 'B' };
+    await sw.send(roomA, { kind: 'status', senderKey: 's', senderName: 'S', body: 'to A' });
+    await Promise.all([sw.send(roomB, { kind: 'status', senderKey: 's', senderName: 'S', body: 'to B' }), sw.send(roomA, { kind: 'status', senderKey: 's', senderName: 'S', body: 'to A again' })]);
+    const seq = mb.calls.filter((c) => /connect_to_room|post_message/.test(c.path)).map((c) => (c.path.endsWith('connect_to_room') ? `claim:${c.body.room_id}` : `post:${c.body.body.split(': ')[1]}`));
+    expect(seq).toEqual(['claim:room-A', 'post:to A', 'claim:room-B', 'post:to B', 'claim:room-A', 'post:to A again']);
+    await sw.close();
+  });
+
   it('reads config from env and returns null when unset', () => {
     expect(switchConfigFromEnv({})).toBeNull();
     expect(switchConfigFromEnv({ SWITCH_BRIDGE_URL: 'http://x', SWITCH_AGENT_ID: 'i', SWITCH_AGENT_API_KEY: 'k', SWITCH_ROLE_AGENTS: 'kitchen=ripple-kitchen, service=ripple-service' })?.roleAgents).toEqual({ kitchen: 'ripple-kitchen', service: 'ripple-service' });

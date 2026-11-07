@@ -1,0 +1,64 @@
+# RIPPLE — single-company dispute & SLA resolution. Switch template, version 2 (switch-core 0.31 template language).
+#
+# What this template creates: the bootstrap room #ripple-intake for one company, with RIPPLE's four protocol agents
+# and the support lead, plus an optional managed Claude Code assistant for Engineering.
+# What it does NOT create: the per-case rooms. ripple-coordinator provisions #ops-verification-<case> and
+# #finance-approvals-<case> at runtime with create_room + link_rooms (Level 3 dynamic topology), so that the finance room
+# holds only ripple-arbiter and the finance approvers.
+#
+# The four RIPPLE agents are custom protocol agents registered out of band (node scripts/switch-register.mjs) and run by
+# `python run_demo.py`; rooms reference them by their existing names. Lint: Switch's own template_lint (tests_py).
+version: 2
+params:
+  company:
+    type: string
+    label: Company
+    description: The company whose departments resolve the dispute
+    default: Harbor & Vine Cloud
+  support_lead:
+    type: user
+    label: Support lead
+    description: Person on the messaging app who watches #ripple-intake (defaults to whoever deploys the template)
+    default: "{$creator}"
+  with_claude:
+    type: boolean
+    label: Add a Claude Code assistant for Engineering
+    description: Optional managed agent that reads the evidence manifest and answers engineers' questions (it never approves or computes payouts)
+    default: false
+  claude_machine:
+    type: machine
+    label: Machine for the Claude Code assistant
+    if: "{with_claude}"
+    default: [$first]
+resources:
+  eng_assistant:
+    type: agent
+    if: "{with_claude}"
+    display_name: RIPPLE Engineering Assistant
+    description: Explains incident evidence to engineers; read-only; never approves or computes money
+    provider: claude
+    machine: "{claude_machine}"
+    directory: "{$agents_dir}/ripple-eng-assistant"
+    addressing: {anyone_in: [intake]}
+    instructions: |
+      You help {company} engineers read RIPPLE evidence manifests in #ops-verification rooms.
+      Never state amounts, approve, or reject: payouts are computed by ripple-arbiter in deterministic code and
+      approved only by a finance approver with APPROVE <CASE_ID> <PAYLOAD_SHA256>.
+  intake:
+    type: room
+    name: ripple-intake
+    description: "{company}: customer disputes land here; RIPPLE provisions linked Engineering and Finance rooms per case"
+    instructions: |
+      Bootstrap channel. Only verified claims, room-document ids and SHA-256 digests are posted here.
+      Raw incident logs stay in #ops-verification-<case>; the raw ledger stays in #finance-approvals-<case>.
+      Follow-ups are on: reply in an agent's thread to continue with it without an @mention.
+    agents:
+      - ripple-coordinator
+      - resolve-comms
+      - reclaim-investigator
+      - ripple-arbiter
+      - {if: "{with_claude}", value: eng_assistant}
+    users:
+      - {if: "{support_lead}", value: ["{support_lead}"]}
+      - {value: []}
+    kickoff: "!follow-ups on"

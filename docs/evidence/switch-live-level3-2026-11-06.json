@@ -1,0 +1,118 @@
+{
+  "startedAt": "2026-11-06T12:29:37.115Z",
+  "tag": "393738be",
+  "switchCore": "0.31.0 (local Switch Console native runtime)",
+  "steps": [
+    {
+      "step": "bridge health",
+      "ok": true,
+      "detail": "http://127.0.0.1:52042/health"
+    },
+    {
+      "step": "create_room with linked_rooms + roles (room_role_defined at creation)",
+      "ok": true,
+      "detail": "intake 750074b0-50f3-4cdd-b394-6ebaf1b81381; ops 8e5a9ec8-5571-4ebc-ad98-89279fffb6d5; finance 42ba88f9-3285-47f9-9ae6-9d3b980e2b90"
+    },
+    {
+      "step": "room-membership isolation on #finance-settle (non-member connect refused)",
+      "ok": true,
+      "detail": "HTTP 400 — Switch op connect_to_room failed: HTTP 400 {\"detail\":\"Agent is not a member of this room\"}"
+    },
+    {
+      "step": "arbiter assumes settlement-signer (assume_role)",
+      "ok": true,
+      "detail": "role: settlement-signer; instruction delta received (88 chars)"
+    },
+    {
+      "step": "list_roles read-back shows the live lease",
+      "ok": true,
+      "detail": "held_by: ripple-arbiter; assumable_by_me: true"
+    },
+    {
+      "step": "conflicting assume_role refused while the exclusive seat is held",
+      "ok": true,
+      "detail": "HTTP 400 — Switch op assume_role failed: HTTP 400 {\"detail\":\"Role 'conflict-signer' is exclusive and currently held by another agent\"} (the agent-bridge op layer answers 400; the refusal text is the exclusive-role guarantee)"
+    },
+    {
+      "step": "addressing introspection + APPROVE authority announcement",
+      "ok": true,
+      "detail": "get_my_context: who_can_talk=owner_and_owner_agents; owner=agent-bootstrap@switch.local; announced in #finance-settle"
+    },
+    {
+      "step": "follow-ups bootstrap posted; server feature flag read back",
+      "ok": true,
+      "detail": "server.features: agent_chats, agent_management, follow_the_conversation, service_connections, switch_buddy — the per-room !commands are typed by a human in the bridged chat."
+    },
+    {
+      "step": "RECLAIM #908 guardrail (live check of the same deterministic code)",
+      "ok": true,
+      "detail": "guard 3/3; quarantined: true; llmCalls 0"
+    },
+    {
+      "step": "create_room_document + load_internal_documents read-back",
+      "ok": true,
+      "detail": "document_id ff103f5f-dfb4-4a2f-8a91-de2e808fe40a; read back 1 document(s)"
+    },
+    {
+      "step": "GET /rooms/{id}/yaml attempted; local fallback playbook written",
+      "ok": true,
+      "detail": "local_fallback: playbooks\\resolved-l3-393738be.template.yaml (SWITCH_GATEWAY_URL not set — the agent key is not a gateway session in any case)"
+    }
+  ],
+  "rooms": {
+    "intake": "750074b0-50f3-4cdd-b394-6ebaf1b81381",
+    "opsVerify": "8e5a9ec8-5571-4ebc-ad98-89279fffb6d5",
+    "financeSettle": "42ba88f9-3285-47f9-9ae6-9d3b980e2b90",
+    "failedAttachments": []
+  },
+  "isolation": {
+    "status": 400,
+    "detail": "Switch op connect_to_room failed: HTTP 400 {\"detail\":\"Agent is not a member of this room\"}"
+  },
+  "settlementSigner": {
+    "assumed": true,
+    "holders": [
+      "ripple-arbiter"
+    ],
+    "connect": "42ba88f9-3285-47f9-9ae6-9d3b980e2b90"
+  },
+  "conflictTest": {
+    "status": 400,
+    "detail": "Switch op assume_role failed: HTTP 400 {\"detail\":\"Role 'conflict-signer' is exclusive and currently held by another agent\"}"
+  },
+  "oneLeasePerAgent": "switch-core 0.31 refused a second concurrent lease for the same agent (\"You already hold a role lease; release it before assuming another\") — one seat per agent is server-enforced too.",
+  "addressing": {
+    "policy": "owner_and_owner_agents",
+    "authority": "Agent Bootstrap <agent-bootstrap@switch.local> (workspace_role: member)",
+    "features": [
+      "agent_chats",
+      "agent_management",
+      "follow_the_conversation",
+      "service_connections",
+      "switch_buddy"
+    ]
+  },
+  "followUps": {
+    "bootstrapPosted": true,
+    "serverFeatures": [
+      "agent_chats",
+      "agent_management",
+      "follow_the_conversation",
+      "service_connections",
+      "switch_buddy"
+    ]
+  },
+  "trustDoc": {
+    "id": "ff103f5f-dfb4-4a2f-8a91-de2e808fe40a",
+    "readBack": true
+  },
+  "playbook": {
+    "path": "playbooks\\resolved-l3-393738be.template.yaml",
+    "source": "local_fallback",
+    "yaml": "# Gateway /rooms/{id}/yaml refused (SWITCH_GATEWAY_URL not configured; using local fallback export.); this document is the local self-encoding fallback composed from the rooms the adapter created.\n\n# Trust & ROI telemetry at completion: {\"liveCheck\":\"393738be\",\"guardrail\":\"PASS (deterministic)\",\"llmCalls\":0}\n# Resolved-room playbook — case L3-393738be\n# Composed by RIPPLE's Switch adapter as a LOCAL fallback from the rooms the adapter recorded (switch-core GET /rooms/{id}/yaml needs a human gateway session; the agent key is not accepted there).\n# Reusable: this is a Switch template v2 document; POST it to /rooms/from-yaml to recreate the topology.\nversion: 2\nparams:\n  provider: {type: provider, description: Provider the agents run on}\n  machine: {type: machine, description: Machine the agents run on}\n  directory: {type: directory, description: Directory for agent workspaces}\n  team: {type: string, default: ripple, pattern: \"^[a-z0-9][a-z0-9-]{0,30}$\"}\nresources:\n  intake:\n    type: room\n    name: \"ripple-intake\"\n    description: \"Intake for RIPPLE case L3-393738be: Level 3 live check\"\n    instructions: |\n      RIPPLE holds authoritative state. Answer handoffs with concrete findings; never certify food safety, legal outcomes or payments. Approval record: APPROVE L3-393738BE <SHA256> is authoritative only from the authenticated sender announced by the arbiter (addressing-policy introspection).\n    agents: [\"ripple\"]\n    group: case\n  ops_verify:\n    type: room\n    name: \"ops-verify-L3-393738be\"\n    description: \"Verification room for case L3-393738be\"\n    instructions: |\n      Verification agents post findings here; every finding cites recorded evidence.\n    agents: [\"ripple\"]\n    group: case\n  finance_settle:\n    type: room\n    name: \"finance-settle-L3-393738be\"\n    description: \"Settlement room for case L3-393738be; only the arbiter is a member.\"\n    instructions: |\n      The settlement-signer seat is exclusive. Payout/receipt statements are posted only by the live holder of the settlement-signer role.\n    agents: []\n    roles:\n      {name: \"settlement-signer\", exclusive: true, instructions: \"Draft and countersign settlement statements for this case. No other agent may emit a payout receipt while you hold this seat.\"}\n    group: case\n  case:\n    type: group\n    name: \"ripple-l3-393738be\"\n    description: \"Resolved RIPPLE case L3-393738be (captured 2026-11-06)\"\n    links:\n      {from: ops_verify, to: intake, label: intake}\n      {from: finance_settle, to: intake, label: intake}\nkickoff: |\n  Follow-the-conversation bootstrap for the intake room:\n  !follow-ups on\n  !assign-agent @ripple\n"
+  },
+  "finishedAt": "2026-11-06T12:29:41.393Z",
+  "bridge": "http://127.0.0.1:52042",
+  "adapterState": "Switch bridge http://127.0.0.1:52042; agent a387c370-8f22-4691-9d06-a6c71e49f952; connected rooms: 2",
+  "passed": true
+}

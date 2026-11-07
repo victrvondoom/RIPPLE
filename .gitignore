@@ -8,3 +8,13 @@ test-results
 
 # machine-local Claude Code settings
 .claude/settings.local.json
+
+# Switch agent keys written by scripts/switch-register.mjs (secrets)
+data/switch-agents.local.json
+
+# Python Switch-native workflow runtime state (re-created by run_demo.py)
+data/ripple_switch/
+data/mock_enterprise/
+out/
+__pycache__/
+.pytest_cache/

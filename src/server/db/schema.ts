@@ -61,13 +61,13 @@ CREATE TABLE IF NOT EXISTS approvals (
   title TEXT NOT NULL, rationale TEXT NOT NULL, required_role TEXT NOT NULL, status TEXT NOT NULL,
   baseline_version INTEGER NOT NULL, change_seq INTEGER NOT NULL, analysis_rev INTEGER NOT NULL,
   decided_by TEXT, decision_note TEXT, decided_at TEXT, created_at TEXT NOT NULL,
-  approver_user_id TEXT, approver_label TEXT);
+  approver_user_id TEXT, approver_label TEXT, separate_from_requester INTEGER NOT NULL DEFAULT 0, expires_at TEXT);
 CREATE TABLE IF NOT EXISTS actions (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, key TEXT NOT NULL, type TEXT NOT NULL,
   title TEXT NOT NULL, connector TEXT NOT NULL, owner_role TEXT NOT NULL, owner_user_id TEXT, consequential INTEGER NOT NULL,
   artifact_id TEXT, payload TEXT NOT NULL, payload_hash TEXT NOT NULL, idempotency_key TEXT NOT NULL,
   status TEXT NOT NULL, stale_reason TEXT, baseline_version INTEGER NOT NULL, change_seq INTEGER NOT NULL, analysis_rev INTEGER NOT NULL,
-  attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT, result TEXT, executed_at TEXT, created_at TEXT NOT NULL);
+  attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT, result TEXT, executed_at TEXT, created_at TEXT NOT NULL, quiet_hours TEXT);
 CREATE TABLE IF NOT EXISTS acknowledgements (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, mission_id TEXT NOT NULL, action_id TEXT NOT NULL,
   user_id TEXT NOT NULL, status TEXT NOT NULL, note TEXT, acked_at TEXT, UNIQUE (action_id, user_id));
@@ -204,6 +204,18 @@ CREATE TABLE IF NOT EXISTS cd_edges (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, campaign_id TEXT NOT NULL, from_node TEXT NOT NULL, to_node TEXT NOT NULL,
   rel TEXT NOT NULL, provenance TEXT NOT NULL, evidence_id TEXT, causal_id TEXT NOT NULL, created_at TEXT NOT NULL,
   UNIQUE (campaign_id, from_node, to_node, rel));
+-- ===== Dashboards + Switch Console (session 10). Every row is workspace-scoped. =====
+-- Ledger seal: the hash-chain head over the first N audit events at sealing time. Re-verification recomputes the chain.
+CREATE TABLE IF NOT EXISTS ledger_seals (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, upto INTEGER NOT NULL, head TEXT NOT NULL, sealed_by TEXT NOT NULL, created_at TEXT NOT NULL, last_rowid INTEGER);
+-- Switch console: per-workspace on/off switch and the conversation log. 'switch' rows are advisory messages that arrived from a Switch room.
+CREATE TABLE IF NOT EXISTS console_state (
+  workspace_id TEXT PRIMARY KEY, enabled INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'off', detail TEXT NOT NULL DEFAULT '',
+  room_external_id TEXT, updated_by TEXT, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS console_messages (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, user_id TEXT, author TEXT NOT NULL CHECK (author IN ('user','ripple','switch')),
+  author_name TEXT NOT NULL, body TEXT NOT NULL, data TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_console_msgs ON console_messages(workspace_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_cd_wf ON cd_workflows(workspace_id, campaign_id);
 CREATE INDEX IF NOT EXISTS idx_cd_ops ON cd_ops(workspace_id, campaign_id, workflow_id);
 CREATE INDEX IF NOT EXISTS idx_cd_find ON cd_findings(workspace_id, status, severity);

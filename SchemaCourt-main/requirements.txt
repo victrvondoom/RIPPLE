@@ -1,9 +1,0 @@
-duckdb
-pyarrow
-pandas
-streamlit
-fastapi
-uvicorn
-requests
-pydantic
-

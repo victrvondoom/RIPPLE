@@ -14,7 +14,7 @@ describe('ShiftRelay', () => {
     await expect(env.engine.submitChange(env.maya, r.id, { ...s.change, updates: [{ jobId: 'J-1', status: 'maybe' }] })).rejects.toThrow(/validation/);
   });
 
-  it('scores urgency transparently and detects the omitted job', () => {
+  it('scores urgency transparently and detects the omitted job', async () => {
     const s = S(); const a = Object.fromEntries(assess(s.plan, s.change).map((x) => [x.id, x]));
     expect(a['J-102']).toMatchObject({ level: 'critical', score: 7, unreported: false }); expect(a['J-102'].reasons.join()).toMatch(/SLA in 3h.*missing part: Igniter module HW-22.*callback promised/);
     expect(a['J-101'].level).toBe('high'); expect(a['J-103'].resolved).toBe(true);
@@ -44,14 +44,14 @@ describe('ShiftRelay', () => {
     expect(rows(env, "SELECT status FROM actions WHERE mission_id=?", id).every((a) => a.status === 'verified')).toBe(true);
     expect(missionRow(env, id).state).toBe('verifying');
     const note = artifact(env, id, 'handover_note'); expect(note).toMatch(/UNRESOLVED \(3\)/); expect(note).toMatch(/Omar Reyes/);
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/acknowledgements/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/acknowledgements/);
     const pending = rows(env, "SELECT user_id FROM acknowledgements WHERE mission_id=? AND status='pending'", id).map((k) => actorById(env, k.user_id).name).sort();
     expect(pending).toEqual(['Jo Park', 'Omar Reyes', 'Tess Kim']);
-    ackAll(env, id); expect(() => env.engine.completeMission(env.maya, id)).toThrow(/reviews/);          // callback not yet confirmed
+    ackAll(env, id); await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/reviews/);          // callback not yet confirmed
     const cb = row(env, "SELECT * FROM work_items WHERE mission_id=? AND kind='review'", id);
     expect(() => env.engine.updateWorkItem(actorById(env, row(env, 'SELECT id FROM users WHERE email=?', 'dan@harborvine.example').id), id, cb.id, 'done')).toThrow(/Only the owner/);
     env.engine.updateWorkItem(actorById(env, cb.owner_user_id), id, cb.id, 'done'); finishReviews(env, id);
-    env.engine.completeMission(env.maya, id);
+    await env.engine.completeMission(env.maya, id);
     const out = row(env, 'SELECT * FROM outcomes WHERE mission_id=?', id); const un = JSON.parse(out.unresolved).join('\n');
     expect(un).toMatch(/Take ownership of J-102/); expect(un).toMatch(/Take ownership of J-101/);       // unresolved repairs stay visible
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);

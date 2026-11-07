@@ -1,10 +1,14 @@
 // Cross-domain UI journey: ONE workspace, ONE Control Center, ALL packs (demo missions with labelled sample data).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
-const require = createRequire(import.meta.url); const { chromium } = require('playwright');
+const require = createRequire(import.meta.url); let chromium;
+for (const load of [() => require('playwright'), () => require('playwright-core'), () => require(require('node:path').join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright-core'))]) { try { ({ chromium } = load()); break; } catch { /* try the next location */ } }
+if (!chromium) { console.error('Playwright is not installed. Run: npm i -D playwright (or npm i -g playwright-core)'); process.exit(2); }
+// Prefer Playwright's bundled browser; fall back to the locally installed Google Chrome (no download needed).
+const launchBrowser = (o = {}) => chromium.launch(o).catch(() => chromium.launch({ ...o, channel: 'chrome' }));
 const BASE = process.env.BASE_URL ?? 'http://localhost:8787'; const PW = process.env.RIPPLE_SEED_PASSWORD ?? 'ripple-demo'; const OUT = 'docs/evidence/packs'; mkdirSync(OUT, { recursive: true });
 const log = []; const step = (m) => { log.push(m); console.log('✔', m); }; const fail = (m) => { console.error('✘', m); writeFileSync(`${OUT}/crossdomain-log.txt`, log.join('\n') + '\nFAILED: ' + m); process.exit(1); }; const assert = (c, m) => { if (!c) fail(m); };
-const browser = await chromium.launch(); const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 } }); const p = await ctx.newPage(); const errs = [];
+const browser = await launchBrowser(); const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 } }); const p = await ctx.newPage(); const errs = [];
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(BASE); await p.getByLabel('Email').fill('maya@harborvine.example'); await p.getByLabel('Password').fill(PW); await p.getByRole('button', { name: 'Sign in' }).click(); await p.getByRole('navigation').waitFor();
 const nav = (n) => p.getByRole('navigation').getByRole('link', { name: new RegExp('^' + n) });
@@ -28,8 +32,8 @@ const owners = await p.getByLabel('Owner').locator('option').allTextContents(); 
 await p.getByLabel('Recent change').selectOption('24'); assert(await count() >= 8, 'recent change filter'); await p.getByLabel('Recent change').selectOption(''); step('Recent-change filter works');
 // a human answers ScopeGuard's blocking scope question so its owner-level approval appears in the shared queue
 await nav('Missions').click(); await p.getByRole('link', { name: /Northwind Redesign/ }).first().click(); await p.getByRole('tab', { name: /Tasks & questions/ }).click();
-const qf = p.locator('form', { hasText: /premium/ }).first(); await qf.getByLabel('Answer').fill('out of scope'); await qf.getByRole('button', { name: 'Submit answer' }).click(); await p.getByText(/Answer recorded|re-analysing/).first().waitFor(); await p.waitForTimeout(1200);
-await nav('Approvals').click(); await p.getByText(/Pending approvals \(/).waitFor(); const pend = Number((await p.getByText(/Pending approvals \((\d+)\)/).textContent()).match(/\((\d+)\)/)[1]); assert(pend >= 6, 'shared approvals queue: ' + pend);
+const qf = p.locator('form', { hasText: /premium/ }).first(); await qf.getByLabel('Answer').fill('out of scope'); await qf.getByRole('button', { name: 'Submit answer' }).click(); await p.locator('.toast', { hasText: /Answer recorded|re-analysing/ }).first().waitFor(); await p.waitForTimeout(1200);
+await nav('Approvals').click(); await p.getByText(/Pending approvals \(/i).waitFor(); const pend = Number((await p.getByText(/Pending approvals \((\d+)\)/i).textContent()).match(/\((\d+)\)/)[1]); assert(pend >= 6, 'shared approvals queue: ' + pend);
 const roles = await p.locator('.badge', { hasText: /needs (manager|owner)/ }).allTextContents(); assert(roles.some((r) => /owner/.test(r)) && roles.some((r) => /manager/.test(r)), 'differing approval levels visible: ' + [...new Set(roles)].join(',')); await p.screenshot({ path: `${OUT}/crossdomain-05-approvals.png`, fullPage: true }); step(`One approvals queue holds ${pend} approvals across domains, with manager- and owner-level requirements`);
 await nav('People & Agents').click(); await p.getByText('Ana Silva').waitFor(); await p.screenshot({ path: `${OUT}/crossdomain-06-people.png`, fullPage: true }); step('People & Agents lists the domain-specific owners and every pack’s agent roles');
 await nav('Work Graph').click(); await p.locator('svg[aria-label="Dependency graph"]').waitFor(); const opts = await p.getByLabel('Mission').locator('option').count(); assert(opts >= 8, 'work graph selector lists missions of all domains'); step(`Work Graph selector lists ${opts} analysed missions`);

@@ -17,7 +17,7 @@ describe('PodFlow', () => {
     expect(missionRow(env, mission.id).state).toBe('baseline_ready');
   });
 
-  it('measures transcript coverage honestly and finds deterministic, claim-flagged highlight candidates', () => {
+  it('measures transcript coverage honestly and finds deterministic, claim-flagged highlight candidates', async () => {
     const s = S(); const cv = coverage(s.plan, s.change.segments); expect(cv.pct).toBeGreaterThan(0.8); expect(cv.pct).toBeLessThan(0.9); expect(cv.gaps).toHaveLength(1);
     const a = candidates(s.plan, s.change.segments, s.change.platforms); const b = candidates(s.plan, s.change.segments, s.change.platforms);
     expect(a).toEqual(b); expect(a.length).toBe(4); expect(a.every((c, i) => c.n === i + 1 && c.dur >= 20 && c.dur <= 90)).toBe(true);
@@ -58,8 +58,8 @@ describe('PodFlow', () => {
     const env = makeEnv(); const { id } = await startPack(env, 'podflow'); await answer(env, id, selKey(env, id), '1,4');
     await approveAll(env, id); await executeAll(env, id);
     expect(rows(env, "SELECT check_name FROM evidence WHERE mission_id=? AND kind='verification'", id).map((e) => e.check_name)).toEqual(expect.arrayContaining(['source labelled as transcript text', 'every approved clip present with timestamps', 'captions within platform limits', 'every uncertainty flag travels with the kit', 'does not claim media was processed']));
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/reviews/);
-    finishReviews(env, id); env.engine.completeMission(env.maya, id);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/reviews/);
+    finishReviews(env, id); await env.engine.completeMission(env.maya, id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.selectedClips).toEqual([1, 4]); expect(b2.kits[0]).toMatchObject({ sourceKind: 'transcript_text' }); expect(b2.transcript.length).toBeGreaterThan(10);
     expect(JSON.parse(row(env, 'SELECT unresolved FROM outcomes WHERE mission_id=?', id).unresolved).join('\n')).toMatch(/Upload clip 1/);   // publishing stays visibly open

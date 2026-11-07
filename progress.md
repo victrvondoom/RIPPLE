@@ -1,6 +1,168 @@
 # progress.md - resume here
 
-## Session 7 (latest): Reality Gap Engine + RIGOR benchmark + Split-Brain showcase
+## Session 17: nine ideas from the reference folders (owner directive: "proceed")
+Discovery first (nine read-only agents, one per folder, ideas kept as text under the session scratchpad `ideas/`), then the owner chose these nine. Each is labelled by its source. Verified 2026-11-07: `npm run typecheck` 0, `npm run lint` 0, `npx vitest run` **40 files, 310 tests passed**; `scripts/e2e.mjs` and `scripts/e2e-crossdomain.mjs` both pass on a clean local-mode server (port 8791, Switch variables blank).
+- **Per-role tool scope** (OpsRoom): `RoleDef.scope: 'read' | 'act'` (`engine/types.ts`). `validateRoleResult` refuses a read-only role's output that proposes actions. Sentinel's `telemetry_triager` and `commit_investigator` are read-only; `rollback_operator` keeps the default.
+- **Repeat suppression** (Gatekeeper): `engine/repeat.ts`. A repeated inbound Switch flag from the same sender in the same mission is recorded once per 5 minutes. Only the inbound flag path uses it.
+- **Untrusted-text additions** (Gatekeeper, `packs/untrusted.ts`): placeholder suppression for secrets (`AKIA…EXAMPLE` is ignored, a real-looking key is still flagged); `cleanCopy` (a reviewer copy with hidden characters removed and each dropped line listed; the stored original is never replaced); `agentFileKind` (CLAUDE.md, AGENTS.md, .cursorrules, copilot-instructions, mcp.json, .claude/); five more dangerous-command patterns (mkfs, dd to a device, DROP DATABASE/TABLE/SCHEMA, force-push, fork bomb); four more agent-directed patterns (hide actions from the user; read or send credentials).
+- **Quiet hours** (Hermit): `engine/quiet.ts`, `ActionSpec.quietHours` (UTC window, may wrap midnight), `actions.quiet_hours` column. `executeAction` returns 423 and changes nothing while quiet. **Not enabled in any pack:** blocking an incident rollback overnight would be harmful, so the mechanism is available and off by default.
+- **Approval expiry** (Shipyard): `ActionSpec.approvalTtlMinutes`, `approvals.expires_at` column. `decideApproval` refuses an expired approval (409 `expired`) and returns its action to stale; `sweepExpiredApprovals()` runs on the server's existing 15-second timer. Enabled on sentinel's rollback approval (240 minutes).
+- **Two-sided verification** (Kite): `capabilities/verify/twosided.ts`. The on-call SRE records probe results (`must-block …: blocked`, `must-allow …: allowed`); an `unknown` fails closed. Sentinel adds a non-blocking question and a completion check that appears only when probes are recorded. **RIPPLE sends no requests itself**; Kite's "simulated" success on probe exceptions is deliberately not carried over.
+- **Interim-then-permanent pair** (Kite): sentinel `interim_mitigation` question. A recorded TEMPORARY step becomes its own action, and the rollback is `blockedUntil` that action. The interim verifier checks only the TEMPORARY label and the "not the permanent fix" statement; it cannot prove the mitigation worked.
+- **Derived-value reconciliation** (Rupiverse): `capabilities/reconcile/derived.ts` (integer units, explicit tolerance, `no-cached-value` rather than zero, statement comparison that shows the gap and corrects nothing). Wired into the ledger seal check: each seal records its highest covered rowid (`ledger_seals.last_rowid`), and the check reports how many covered events still exist. Seals made before the column report `no-cached-value`. **No billing balance is wired:** billing's refunded totals are computed at snapshot time, not cached, so there was nothing real to reconcile there.
+- **Deploy gate** (Shipyard): new pack `packs/depgate` (id `deploy-gate`, engineering workspace). It blocks only NEW critical CVEs compared with the deployed release, using an SBOM and CVE list the team supplies. Unverified evidence never clears; a block can be overridden only by the release owner (Sam in the seed); a clear gate proposes a dry-run deploy request. **It never scans, deploys or certifies.** Seeded role `depgate_owner` is mapped to Sam.
+- **Limits, do not claim:** none of these runs against a live system. Two-sided checks depend on human-recorded probe results. The interim verifier does not prove the mitigation worked. Quiet hours are unused by any pack. The deploy gate's sample evidence is illustrative.
+- **Still open from the owner:** "elevator" was named in the owner's list, but no folder or file in the project matches that name.
+
+## Session 16: reference-folder integration (four ideas ported into the one engine; the rest recorded, not built)
+Owner directive: survey every `*-main` reference folder, integrate the ideas that are missing from RIPPLE into the centralized workflow (no extra app, no new top-level folder). Surveyed with four read-only ECC code-explorer agents covering all 13 folders. **Correction to those surveys:** one claimed "no tamper-evident audit chain" and was wrong. RIPPLE already had a hash chain over `audit_events` and ledger seals (`src/server/api/dashboards.ts`, `auditChain`/`sealLedger`/`verifySeals`), which I verified by reading the code before building.
+- **Hidden-instruction, secret and dangerous-command scan** (Gatekeeper): `src/server/packs/untrusted.ts` adds `hiddenTextFindings` (Unicode Tag characters decoded to the ASCII they hide, bidi overrides, runs of 3+ zero-width characters), `secretFindings` (AWS/GitHub/Slack/`sk-` tokens and private-key blocks; the value is never echoed), `dangerousCommandFindings` (`rm -rf` on root/home, pipe-to-shell, `chmod 777`), and one entry point `untrustedFindings`. Callers switched: billing, clearsend, consumer, crewpilot packs and `reality/rge.ts`. **Inbound Switch messages** are now scanned in `engine.ts` and recorded as an advisory `untrusted_content_flagged` audit event (not acted on, state unchanged).
+- **Four-eyes approvals** (Shipyard): `ActionSpec.separateFromRequester`; `approvals.separate_from_requester` column with a forward migration in `db/db.ts`; `decideApproval` refuses the person who submitted the change. Enabled on billing `refund_duplicate` and `issue_sla_credit` (money-moving actions).
+- **Signed, portable ledger receipts** (switch-notary): `src/server/api/receipt.ts`. `POST /api/dash/trust/receipt` (manager/owner) issues a receipt over the current chain head, Ed25519-signed when `RIPPLE_RECEIPT_PRIVATE_KEY` is set (otherwise labelled UNSIGNED). `POST /api/dash/trust/receipt/verify` checks the signature and whether the first N events still hash to the signed head. Trust limits are stated in the receipt: an embedded key proves consistency, not identity; the verifier must supply the trusted public key. `.env.example` documents the variable.
+- **Review fixes (ECC code-reviewer, same day):** a receipt that claimed `signed: true` with no signature object was returned `intact`; it is now `signature-invalid`. A negative event count is rejected. An intact chain checked only against an embedded key now returns `consistent-untrusted`, not `intact` (`intact` requires a trusted public key).
+- **Verified (2026-11-07 runs):** `npm run typecheck` exit 0; `npm run lint` exit 0; `npx vitest run` → **34 files, 277 tests passed** (baseline before this session: 31 files, 256). Browser journeys on a clean local-mode server (port 8791, Switch variables blank): `node scripts/e2e.mjs` → `E2E PASSED`; `node scripts/e2e-crossdomain.mjs` → `CROSS-DOMAIN JOURNEY PASSED`. Note: `scripts/e2e.mjs` hardcodes port 8787, where an older RIPPLE server started with the Switch configuration was still running, so the first e2e attempt failed on the "LOCAL mode" assertion. That is an environment conflict, not a regression; stop the old server to run the script unchanged. New tests: `tests/controls16.test.ts` (16: scan cases, four-eyes refusal and flag-off path, receipt sign/verify/tamper/unsigned/workspace/key-escape/audit cases), `tests/receipt-api.test.ts` (2: manager issues and verifies over HTTP, viewer refused), `tests/inbound-untrusted.test.ts` (2: flagged inbound message recorded and state unchanged; ordinary message not flagged). Billing tests (8) still pass with four-eyes on.
+- **NOT built (recorded for later, do not claim):** digest-bound approvals (UNSEEN); two-sided verification (kite); interim-then-permanent action pairs (kite); role-ownership lease with stale-holder takeover (hermit); numeric grounding gate for proposals (data-room; no pack consumer yet, so not added); canon-invariant checker (showrunner); SBOM/CVE gate (shipyard); briefdesk pack (BizOwl); commerce/order pack (BangSayur); release-desk pack (Release Desk); crewpilot reproduction-evidence stage (bug-to-pr). No receipt UI in the Trust page yet (API only).
+- **Not exercised:** no live Switch run for any of this. The inbound flag is tested with a test port that mimics a Switch room, not a real room.
+- **Housekeeping (updated):** the owner asked for the reference-project folders to be deleted. The extracted `*-main` folders, `mock_data/` and `mock_enterprise.py` were removed (no git copy; they were not referenced by any code). The app's own folders (`src/`, `scripts/`, `tests/`, `tests_py/`, `ripple_switch/`, `playbooks/`, `switch/`, `docs/`) are kept.
+
+## Session 15: Level 3 — the six rare Switch primitives, live + mock + tests
+Scope (owner directive): implement the 6 rarest/highest-scoring `sandbox-quantum/switch` capabilities other hackathon entries missed, each with a dedicated pytest verification test, and a "Why RIPPLE Pushes Switch to Level 3" table at the top of README.md. All protocol claims below were checked against the vendored switch-core 0.31.0 source FIRST (`%APPDATA%\switchdash\...\switch-core\0.31.0\src`), then exercised against the RUNNING real server.
+- **Canonical names used (verified in source, not invented):** `/ops/create_room` with `linked_rooms`/`roles`/`agent_names` (bridges/agent/operations/definitions.py), `isolation refusal` (agent bridge: HTTP 400 "Agent is not a member of this room" — OBSERVED; 403 is the op auth layer), `define_role`/`assume_role`/`list_roles` (exclusive: one LIVE holder; one lease per agent), `get_my_context` (who_can_talk / person / server.features), `create_room_document` + `load_internal_documents` (requires `ids`), `GET /rooms/{id}/yaml` (gateway; needs a human session), `!follow-ups on` / `!assign-agent` (human-typed admin commands; template **version: 2**), `follow_the_conversation` feature flag.
+- **New code:**
+  - `src/server/capabilities/reclaim/attachments.ts` — the **#908 guardrail**: deterministic attachment/caption/filename sanitizer (mimetype/extension mismatch, executables, size, mxc:// validity, control chars, injection patterns); quarantined content stays data, `llmCalls: 0`.
+  - `src/server/collab/switch.ts` — Level-3 primitives on the adapter: `createCaseRoom` (linked_rooms + roles), `joinRoom`, `inspectRoom`, `defineRoomRole`/`assumeRoomRole`/`listRoomRoles`, `myContext`, `createRoomDocument`/`loadInternalDocuments(ids)`, `exportRoomYamlGateway`, `openCaseTopology` (caps 1–4 executed, structured `CaseTopologyResult` with honest labels), `captureResolvedPlaybook` (cap 6 gateway attempt → labelled local `version: 2` fallback) + `postFinalTelemetryDocument`. New env: `SWITCH_ARBITER_*`, `SWITCH_GATEWAY_*` (.env.example).
+  - `src/server/collab/playbook.ts` — the `version: 2` playbook composer + `playbooks/resolved-<case_id>.template.yaml` writer.
+  - `src/server/collab/port.ts` — optional `CollabPort.openCaseTopology` / `captureResolvedPlaybook` + `CaseTopologyResult`. Types only added, nothing removed.
+  - `src/server/engine/engine.ts` — pack-declared `switchCaseTopology` executed generically in `ensureRoom` (rooms rows + `case_topology_bootstrapped` audit + room message); inbound Switch attachments run through the guardrail before recording; on completion `captureResolvedPlaybook` + `resolved_playbook` artifact + `room_playbook_captured` audit. No branching on pack id in engine/UI. `completeMission` is now `async` (both callers await).
+  - `packs/billing/pack.ts` — declares the case topology (ops/finance rooms, exclusive `settlement-signer`, arbiter `ripple-arbiter`); dispute `change.attachments` (zod, default []) are sanitized in `bd_intake` and quarantines surface as risks + a `attachment.quarantined` change item.
+  - `switch/ripple-room.template.yaml` — rewritten as **`version: 2`** (agents with addressing, intake + ops_verify + finance_settle rooms, ONE group with links, exclusive settlement-signer role, kickoff with the `!follow-ups on`/`!assign-agent` bootstrap).
+- **Verified (real runs, 2026-11-06):**
+  - `npx tsx scripts/switch-live-level3.ts` against the RUNNING real switch-core 0.31.0 (API 127.0.0.1:52042): **ALL 11 STEPS PASSED** (health; linked-room provisioning; non-member connect refused 400 with the server's own text; arbiter assumes settlement-signer with its own key; list_roles lease read-back; conflicting assume refused — "is exclusive and currently held by another agent", one-lease-per-agent also observed; get_my_context addressing introspection + APPROVE authority announcement; follow-ups bootstrap + `follow_the_conversation` ON in server.features; #908 guardrail live check (guard 3/3, 0 LLM); trust-ROI room document created + read back via ids; gateway 401-refusal path → local `version: 2` playbook written). Evidence: `docs/evidence/switch-live-level3-2026-11-06.json`; playbook: `playbooks/resolved-l3-393738be.template.yaml`.
+  - Real-server facts that changed the code (found live, not from the mock): `group_name` in `create_room` must name an EXISTING group (400 otherwise — we stopped sending it; the group lives in the v2 template/playbook); non-member connect = **400**, not 403; `load_internal_documents` **requires `ids`**; assume_role refuses a second concurrent lease per agent; conflict refusal text is `Role 'X' is exclusive and currently held by another agent`.
+  - `npm test`-equivalent: `npx vitest run` **31 files / 256 tests passed** (new: `tests/switch-level3.test.ts`, 7 — one per capability + engine integration to COMPLETED with a written playbook + honest-degradation). `tsc --noEmit` clean, `eslint src tests scripts` clean, `vite build` OK.
+  - `python -m pytest tests_py/test_switch_level3.py`: **6 passed** (one per primitive, via `ripple_switch/switch_client.py` against `tests_py/mock_switch_core.py`; caps 5/6 cross-verify the TS guardrail/playbook composer through `scripts/guardrail-cli.ts` / `scripts/playbook-cli.ts` — the same code the engine runs, never a re-implementation).
+- **NOT done / do not claim:**
+  1. **Mattermost-bridged rooms** with humans typing `!follow-ups on` / `!assign-agent` in chat — still not running; agent-only `internal_only` rooms carry the contract in room instructions + the bootstrap post, and the `!` flag flip itself is honestly labelled as human-typed.
+  2. **Gateway export** (`GET /rooms/{id}/yaml`) with a REAL human session — the live run recorded the agent-key refusal and used the labelled local fallback; no `SWITCH_GATEWAY_*` credentials were configured.
+  3. **`POST /rooms/from-yaml` round-trip** of an exported playbook (re-importing `playbooks/resolved-…`) was not run against the real server.
+  4. The arbiter is NOT an always-on separate process: it connects with its own key during the bootstrap and disconnects after; an exclusive lease auto-releases shortly after disconnect (the role stays defined+exclusive on the server, and at most one LIVE holder is still the guarantee).
+  5. Role-agent live answering (same as sessions 13–14) and bridge-addressed humans remain outside this session.
+
+## Session 14: single-company Billing & SLA Dispute (obligation graph), 3 must-pass scenarios on real Switch
+Scope chosen by the owner: one company, internal departments (Support, Engineering/Ops, Finance, Legal & Policy). Customers stay outside Switch: email in, dry-run email out. No multi-org or multinational scope.
+- **Engine (generic):** `ActionSpec.blockedUntil {actions, workItems}`. `executeAction` refuses (409 `blocked_by_dependency`, audited) until the listed actions are verified and the listed work items are done. The field is stored in the payload only when declared, so other packs' hashes are unchanged.
+- **Connector:** `billing_sandbox` (`connectors/billing.ts` + `packs/billing/ledger.ts`). It is a labelled per-mission test ledger: refund/credit with independent read-back, plus a provider-side rule that a charge is refunded at most once. A scripted `lost_response` fault commits the refund and then loses the response.
+- **Pack `billing-dispute`** (`packs/billing/pack.ts`):
+  - agents: Support intake (RESOLVE commitments), Incident agent, Billing agent (shares only the verified claim), Policy agent (SLA tiers/cap, claims grounded with RECLAIM `verifyClaim`), Comms (obligation graph OB-1..OB-6 + reply);
+  - humans: Nora (Finance lead, approves refund/credit and reconciles amounts), Eli (Engineering lead, confirms the fix), Sofia (Support lead, approves the reply).
+- **Switch adapter fix (found in the live run):** `post_message`/`send_targeted_message` have no room id in switch-core 0.31. With several missions, messages could land in another mission's room. All claims and sends now run through a serial queue that re-claims the target room. Regression test in `tests/switch.test.ts`.
+- **Verified (real runs):**
+  - tsc and eslint clean; `npx vitest run` 30 files / 249 tests passed (`tests/billing.test.ts` 8 + 1 Switch regression);
+  - `npm run demo` (fresh server + real Switch, agent-only rooms): ALL 3 SCENARIOS PASSED. Happy path; $10,000 credit rejected and never executed; timeout → UNKNOWN → read-back → verified, not repeated. Evidence in `docs/evidence/e2e-billing-switch-2026-11-06.json`;
+  - `scripts/switch-live.ts` 9/9 again after the fix.
+- **NOT done:**
+  - per-department Switch rooms (one mission room is used; Finance's raw ledger stays in a Finance-owned artifact, but artifact read access is NOT role-restricted);
+  - Mattermost humans in chat;
+  - approval typed in chat;
+  - docker-compose (the demo is `npm run demo`; Switch itself runs from Switch Console).
+
+## Session 13: RECLAIM + RESOLVE + REDEEM combined into RIPPLE; real Switch connected
+Full write-up: **docs/integration/INTEGRATION_REPORT.md**.
+- **Capabilities, ported to TS (no second engine):**
+  - `src/server/capabilities/resolve/commitments.ts` (RESOLVE `inbox_intel.py`);
+  - `capabilities/reclaim/knowledge.ts` + `corpus.json` (BM25, provenance, citation checks; 28 airline/banking authored-guide rows);
+  - `capabilities/redeem/intake.ts` (safety refusals, scam scan, confirmed-memory mapper).
+- **New pack `consumer-resolution`** (`packs/consumer/pack.ts`, extended registry):
+  - one mission per consumer problem across an airline and a bank;
+  - only the consumer (Asha Rao, `asha@`) answers her questions and approves her messages; Kai Mendes (`kai@`) is the case reviewer;
+  - the outcome stays "awaiting organisation response" until the consumer confirms a refund.
+- **Switch:** postponement lifted by the owner.
+  - Agents are registered on the local switch-core 0.31.0 (`scripts/switch-register.mjs`).
+  - The adapter now supports `SWITCH_INTERNAL_ONLY=1` (agent-only rooms), because the Mattermost bridge was not running.
+- **Verified (real runs):**
+  - tsc and eslint clean; `npx vitest run` 29 files / 240 tests passed;
+  - `scripts/switch-live.ts` 9/9 against real Switch;
+  - `scripts/e2e-consumer-switch.mjs` E2E PASSED. Real server + real Switch, mission completed, 49 room messages read back.
+  - Evidence: `docs/evidence/switch-live-2026-11-06.json`, `docs/evidence/e2e-consumer-switch-2026-11-06.json`.
+- **NOT done:**
+  - Mattermost-bridged rooms with humans in chat;
+  - role agents running as separate Switch processes;
+  - approval from chat;
+  - Gmail/voice/OCR ports;
+  - Playwright e2e for the new pack.
+
+## Session 12: "fix all errors"
+**Checks run:** typecheck, eslint, vitest, vite build, editor diagnostics, an API sweep (56 read endpoints × manager/member/viewer, all 200), a browser sweep (21 pages × manager + viewer: no JS errors, no error banners), and every e2e script.
+
+**Fixed:**
+1. **Server port conflict:** the server crashed with an unhandled `'error'` event when the port was taken (`src/server/index.ts`). It now prints a clear message and exits.
+2. **Bundle size:** the vite warning (main bundle 558 kB) is gone. Larger pages lazy-load (`App.tsx`), bringing the main bundle to 278 kB.
+3. **Hidden replan outcome (Cross-Domain Resolution):** after a replan, the "Outcome: replanned" banner was hidden, because it sat inside the chosen-option card and the new plan has no chosen option yet. It is now shown above the cards (`CrossDomainPanel.tsx`).
+4. **Pack demo buttons (accessibility):** the buttons on Workflow Packs had identical names on every card. They now have per-pack `aria-label`s (`PacksPage.tsx`), with no visual change.
+5. **E2E scripts:**
+   - they crashed when Playwright was missing; they now resolve `playwright`, then `playwright-core`, then a global `playwright-core`, and fall back to the installed Chrome;
+   - stale UI strings were updated ("Arm failure next run", "Independent Verification Ledger", "Pending Approvals");
+   - a lingering-toast race in e2e-cdii was fixed;
+   - e2e-cdii now does a clean reload before scenario 4;
+   - selectors were scoped (impact select, answer toast).
+
+**Verified (real runs, fresh DB each):**
+- `vitest` 28 files / 225 tests passed; tsc and eslint 0 errors; build has no warnings.
+- e2e results:
+  - `e2e.mjs`: E2E PASSED;
+  - `e2e-packs.mjs` × 6 (scopeguard, invoiceguard, shiftrelay, movemate, podflow, submitready): all PASSED;
+  - `e2e-crossdomain.mjs`: PASSED;
+  - `e2e-cdii.mjs`: PASSED twice; its only console entries are the expected pre-login 401 and the deliberate 409 gate refusal;
+  - `e2e-followups.mjs` and `e2e-inherited.mjs`: exit 0.
+
+## Session 11 (latest): flagship Revenue Recovery + nothing static
+Full write-up, including the demo runbook and limitations: **docs/RIPPLE_IMPLEMENTATION_REPORT.md**.
+- **New pack `revenue-recovery`** (extended registry), with a labelled warehouse sandbox connector `warehouse_sandbox`. Human roles: `incident_commander` → Maya, `revenue_controller` → Ravi.
+- **Flow:** competing hypotheses → adversarial review on evidence → human choice → per-operation approval → scripted lost response → `EXECUTION_UNKNOWN` → read-back recovery without repeating → invariant verification → completion. All of it is driven by chat.
+- **Console additions:** `complete mission`; clearer UNKNOWN/Recovered wording; the execute proposal names the connector's real mode.
+- **Now live:** How it works (`/api/dash/how`), Case Review (a real mission plus the console) and Studio home (live coverage). Workflow Studio's synthetic scenario is unchanged (labelled).
+- **Verified:**
+  - `npx vitest run`: 28 files / 225 tests passed (new: `tests/revenue.test.ts`, 2); tsc and eslint clean; vite build OK.
+  - Browser (fresh DB, port 8794): the full flagship ran by chat to "Mission completed"; no console errors.
+- **NOT done:**
+  - real Switch: installed but stopped here, still mock-tested only;
+  - the other two showcase verticals as new slices;
+  - a visual workflow composer and a policy DSL;
+  - a live call to the Opus fallback.
+
+## Session 10 (latest): four dashboards + Switch room (console with on/off Switch connection)
+Directive: build the "34 projects → 7 capability systems → 4 dashboards → 1 engine" architecture as live content (reference images were for content only), keep the existing peach/coral UI, and add a Switch room reachable from every page where you can turn the Switch connection on/off and get work done by talking.
+- **Catalog:** `src/server/capabilities/catalog.ts` records 7 systems, all 34 source projects and scenarios A–G, and maps the 13 packs to systems. Integration status is honest: `pack-backed` only where an implemented pack exercises the capability; everything else is `catalogued`. RupiVerse stays `pending` (its source is a FastAPI/Expo scaffold with only `/` and `/health`). Bangsayur is classified into Commerce from its README.
+- **Read models:** `src/server/api/dashboards.ts` serves `/api/dash/mission-control|workbench|workbench/:id|trust|knowledge|briefing`, `/api/capabilities` and `/api/dash/trust/receipts/:id` (portable JSON receipt), plus `POST /api/dash/trust/verify|seal`. Every number is computed from recorded rows; with no data, values are null ("—"), never fabricated.
+- **Trust:** a sha256 hash chain over `audit_events`. `ledger_seals` anchors heads, and re-verification detects any edit to a sealed row (tested). Separation of duties is re-checked from the ledger.
+- **Knowledge:** decision validity (valid/applied/superseded) comes from change_seq and the subject action's status. Contradictions come from `cd_findings` and from approved actions whose observed outcome failed.
+- **Switch console:** `src/server/console/` (intents.ts + console.ts), routes `/api/console*`.
+  - Interpretation is a deterministic parser first. An optional model (Anthropic, default `claude-opus-5-5`, env `RIPPLE_CONSOLE_MODEL`) runs only for unrecognised phrasing, is schema-validated, and can never confirm.
+  - Every state change (approve/reject/execute/answer/demo/seal) is a proposal that a signed-in user must confirm. It then runs through the normal Engine method under that user's role.
+  - Messages from a Switch room are advisory: read-only replies only, and changes are queued for a RIPPLE user.
+  - The on/off switch reports what it observed: `not_configured` (no env), `unreachable` (health/create_room failed), `connected` (mock bridge in tests), `disconnected` (after restart).
+- **UI:** new pages `src/web/pages/dash/*` (Mission Control, Operations Workbench, Trust & Evidence, Knowledge & Decisions), `src/web/components/SwitchRoom.tsx` (floating dock on every page, Ctrl+K, voice input where the browser supports it, full page at `#/switch`), and CSS appended to `theme.css` using the existing tokens. No existing page was changed or removed; the nav gained 5 entries at the top.
+- **Persistence:** 3 workspace-scoped tables (`ledger_seals`, `console_state`, `console_messages`), included in workspace export and delete.
+
+Verified (real runs, this session):
+- `npx vitest run`: 27 files / 223 tests passed (new: `tests/console.test.ts` 7 and `tests/dashboards.test.ts` 3, covering cross-tenant isolation, viewer/member refusal, tamper detection, and Switch advisory-only against a mock bridge). `tsc --noEmit` clean, `eslint src tests scripts` clean, `vite build` OK.
+- Real browser (Chrome, fresh DB, port 8793) as Maya, all inside the Switch room:
+  - "start demo invoiceguard" → Confirm → mission created;
+  - "list approvals" → "approve 1 because matches the purchase order" → "yes" → approved as Maya;
+  - "execute 1" → "yes" → "Executed and independently verified";
+  - the toggle showed "Switch not configured · local console";
+  - Trust: seal → "all seals intact";
+  - Knowledge showed the decision with its rationale as valid;
+  - no app console errors (only the MetaMask extension).
+
+NOT done (do not claim):
+1. **Switch** is still not exercised against a real server. Connected mode is tested only against a mock of the documented protocol.
+2. **The model interpreter** was not called against the live Anthropic API (no key); only its guard logic is tested with an injected fetch.
+3. **The 34 source projects** are catalogued, not ported. Only the pack-backed ones run today.
+4. **The ledger chain** is computed on read. Seals detect edits to sealed rows, but there is no external anchoring or signing.
+5. **Playwright e2e scripts** were not run; the browser check was manual.
+
+## Session 7: Reality Gap Engine + RIGOR benchmark + Split-Brain showcase
 A second "RESOLVE competitive domination" directive was received. Following its own rule ("one fully working vertical slice over ten mock integrations"), this session built one slice: the Reality Gap Engine, the RIGOR benchmark and the split-brain demo. Full write-up: **docs/REALITY_GAP_ENGINE.md**.
 - **Server code:** new `src/server/reality/` (states, types, lab, scenarios, rge, benchmark) and `src/server/api/reality.ts`.
 - **Persistence:** 12 new workspace-scoped tables, created with `CREATE IF NOT EXISTS`.

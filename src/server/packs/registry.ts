@@ -12,6 +12,10 @@ import { schemacourtPack } from './schemacourt/pack.js';
 import { clearsendPack } from './clearsend/pack.js';
 import { crewpilotPack } from './crewpilot/pack.js';
 import { offerroomPack } from './offerroom/pack.js';
+import { revenuePack } from './revenue/pack.js';
+import { consumerPack } from './consumer/pack.js';
+import { billingPack } from './billing/pack.js';
+import { depgatePack } from './depgate/pack.js';
 
 export interface PackListing { id: string; name: string; domain: string; status: 'implemented' | 'planned'; tagline: string }
 const PLANNED: PackListing[] = [];
@@ -44,5 +48,9 @@ export function extendedRegistry() {
     .register(schemacourtPack)
     .register(clearsendPack)
     .register(crewpilotPack)
-    .register(offerroomPack);
+    .register(offerroomPack)
+    .register(revenuePack)
+    .register(consumerPack)
+    .register(billingPack)
+    .register(depgatePack);
 }

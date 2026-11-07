@@ -109,6 +109,7 @@ export function PacksPage() {
                     className="sm"
                     style={{ flex: 1 }}
                     disabled={!!busy}
+                    aria-label={`Create demo mission with approved baseline for ${k.name}`}
                     onClick={() => demo(k.id, false)}
                   >
                     Load Baseline
@@ -117,6 +118,7 @@ export function PacksPage() {
                     className="sm primary"
                     style={{ flex: 1 }}
                     disabled={!!busy}
+                    aria-label={`Create demo mission and run analysis for ${k.name}`}
                     onClick={() => demo(k.id, true)}
                   >
                     Demo + Analyse ⚡

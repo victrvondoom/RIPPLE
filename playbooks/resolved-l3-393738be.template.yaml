@@ -1,0 +1,50 @@
+# Gateway /rooms/{id}/yaml refused (SWITCH_GATEWAY_URL not configured; using local fallback export.); this document is the local self-encoding fallback composed from the rooms the adapter created.
+
+# Trust & ROI telemetry at completion: {"liveCheck":"393738be","guardrail":"PASS (deterministic)","llmCalls":0}
+# Resolved-room playbook — case L3-393738be
+# Composed by RIPPLE's Switch adapter as a LOCAL fallback from the rooms the adapter recorded (switch-core GET /rooms/{id}/yaml needs a human gateway session; the agent key is not accepted there).
+# Reusable: this is a Switch template v2 document; POST it to /rooms/from-yaml to recreate the topology.
+version: 2
+params:
+  provider: {type: provider, description: Provider the agents run on}
+  machine: {type: machine, description: Machine the agents run on}
+  directory: {type: directory, description: Directory for agent workspaces}
+  team: {type: string, default: ripple, pattern: "^[a-z0-9][a-z0-9-]{0,30}$"}
+resources:
+  intake:
+    type: room
+    name: "ripple-intake"
+    description: "Intake for RIPPLE case L3-393738be: Level 3 live check"
+    instructions: |
+      RIPPLE holds authoritative state. Answer handoffs with concrete findings; never certify food safety, legal outcomes or payments. Approval record: APPROVE L3-393738BE <SHA256> is authoritative only from the authenticated sender announced by the arbiter (addressing-policy introspection).
+    agents: ["ripple"]
+    group: case
+  ops_verify:
+    type: room
+    name: "ops-verify-L3-393738be"
+    description: "Verification room for case L3-393738be"
+    instructions: |
+      Verification agents post findings here; every finding cites recorded evidence.
+    agents: ["ripple"]
+    group: case
+  finance_settle:
+    type: room
+    name: "finance-settle-L3-393738be"
+    description: "Settlement room for case L3-393738be; only the arbiter is a member."
+    instructions: |
+      The settlement-signer seat is exclusive. Payout/receipt statements are posted only by the live holder of the settlement-signer role.
+    agents: []
+    roles:
+      {name: "settlement-signer", exclusive: true, instructions: "Draft and countersign settlement statements for this case. No other agent may emit a payout receipt while you hold this seat."}
+    group: case
+  case:
+    type: group
+    name: "ripple-l3-393738be"
+    description: "Resolved RIPPLE case L3-393738be (captured 2026-11-06)"
+    links:
+      {from: ops_verify, to: intake, label: intake}
+      {from: finance_settle, to: intake, label: intake}
+kickoff: |
+  Follow-the-conversation bootstrap for the intake room:
+  !follow-ups on
+  !assign-agent @ripple

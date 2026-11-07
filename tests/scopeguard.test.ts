@@ -13,7 +13,7 @@ describe('ScopeGuard', () => {
     await expect(env.engine.submitChange(env.maya, mission.id, { ...s.change, items: [{ title: 'x', kind: 'dream' }] })).rejects.toThrow(/validation/);
   });
 
-  it('classifies included / out-of-scope / uncertain from the approved scope and allowances', () => {
+  it('classifies included / out-of-scope / uncertain from the approved scope and allowances', async () => {
     const s = scopeGuardPack.sample(); const c = classify(s.plan, s.change);
     const by = Object.fromEntries(c.map((x) => [x.title, x]));
     expect(by['Table-booking flow with online deposit'].status).toBe('out_of_scope');
@@ -62,9 +62,9 @@ describe('ScopeGuard', () => {
     expect(rows(env, 'SELECT status FROM actions WHERE mission_id=?', id).filter((a) => a.status === 'verified')).toHaveLength(3);
     const names = rows(env, "SELECT check_name FROM evidence WHERE mission_id=? AND kind='verification'", id).map((e) => e.check_name);
     expect(names).toEqual(expect.arrayContaining(['change order lists every out-of-scope item', 'no price quoted to client', 'no deadline promised to client']));
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/acknowledgements|reviews/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/acknowledgements|reviews/);
     ackAll(env, id); finishReviews(env, id);
-    env.engine.completeMission(env.maya, id);
+    await env.engine.completeMission(env.maya, id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.changeOrders[0]).toMatchObject({ ref: 'CO-1', status: 'issued_pending_client_acceptance' });
     expect(b2.scope.filter((x: any) => x.changeOrder === 'CO-1').length).toBe(5);   // booking, Stripe, Pricing, Team, premium (decided out of scope)

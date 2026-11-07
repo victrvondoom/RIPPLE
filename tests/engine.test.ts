@@ -7,7 +7,7 @@ import { samplePlan, sampleChange } from '../src/server/packs/beo/sample.js';
 import { makeEnv, newBaselinedMission, row, rows, toAwaitingApproval } from './helpers.js';
 
 describe('state machine', () => {
-  it('rejects invalid transitions and allows the documented path', () => {
+  it('rejects invalid transitions and allows the documented path', async () => {
     expect(() => assertTransition('draft', 'completed')).toThrow(/cannot move/);
     expect(() => assertTransition('completed', 'executing')).toThrow();
     expect(() => assertTransition('cancelled', 'draft')).toThrow();
@@ -17,7 +17,7 @@ describe('state machine', () => {
 });
 
 describe('impact graph', () => {
-  it('propagates only along dependencies actually reached by the change', () => {
+  it('propagates only along dependencies actually reached by the change', async () => {
     const plan = samplePlan();
     const items = beoPack.detectChanges(plan, { ...sampleChange(), serviceTime: undefined, addVegan: false, veganCount: null });
     expect(items.map((i) => i.field)).toEqual(['event.guestCount']);
@@ -27,7 +27,7 @@ describe('impact graph', () => {
     expect(g.checkedNotAffected).toContain('dietary_plan');
     expect(g.edges.some((e) => e.from === 'change:event.guestCount' && e.to === 'artifact:menu_quantities')).toBe(true);
   });
-  it('detects no changes when the request equals the baseline', () => {
+  it('detects no changes when the request equals the baseline', async () => {
     expect(beoPack.detectChanges(samplePlan(), { receivedOn: '2026-11-09', description: '', addVegan: false, guestCount: 120 })).toEqual([]);
   });
 });
@@ -96,18 +96,18 @@ describe('BEO Rescue end-to-end through the mission engine', () => {
     expect(ev.every((e) => e.verifier === 'ripple-verifier/readback@1')).toBe(true);
 
     // completion refused: acks pending, chef review open
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/acknowledgements|reviews/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/acknowledgements|reviews/);
     expect(row(env, 'SELECT state FROM missions WHERE id=?', id).state).toBe('verifying');
     expect(() => env.engine.acknowledge(env.maya, id, row(env, "SELECT id FROM actions WHERE key='send_kitchen' AND mission_id=?", id).id, '')).toThrow(/not a required recipient/);
     env.engine.acknowledge(env.luis, id, row(env, "SELECT id FROM actions WHERE key='send_kitchen' AND mission_id=?", id).id, 'got it');
     env.engine.acknowledge(env.priya, id, row(env, "SELECT id FROM actions WHERE key='send_procurement' AND mission_id=?", id).id, '');
     env.engine.acknowledge(env.dan, id, row(env, "SELECT id FROM actions WHERE key='send_staffing' AND mission_id=?", id).id, '');
-    expect(() => env.engine.completeMission(env.maya, id)).toThrow(/reviews/);
+    await expect(env.engine.completeMission(env.maya, id)).rejects.toThrow(/reviews/);
     const review = row(env, "SELECT * FROM work_items WHERE mission_id=? AND kind='review' AND role_key='human_chef'", id);
     expect(() => env.engine.updateWorkItem(env.dan, id, review.id, 'done')).toThrow(/Only the owner/);
     env.engine.updateWorkItem(env.luis, id, review.id, 'done');
     for (const w of rows(env, "SELECT * FROM work_items WHERE mission_id=? AND kind='review' AND status!='done'", id)) env.engine.updateWorkItem(env.maya, id, w.id, 'done');
-    env.engine.completeMission(env.maya, id);
+    await env.engine.completeMission(env.maya, id);
     expect(row(env, 'SELECT * FROM missions WHERE id=?', id)).toMatchObject({ state: 'completed', current_baseline_version: 2 });
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', id).plan);
     expect(b2.event).toMatchObject({ guestCount: 145, serviceTime: '19:30' }); expect(b2.dietary.vegan).toBe(18);
@@ -172,7 +172,7 @@ describe('BEO Rescue end-to-end through the mission engine', () => {
     env.engine.approveBaseline(env.maya, m.id, '');
     await expect(env.engine.submitChange(env.maya, m.id, { receivedOn: '2026-11-09', guestCount: 120 })).rejects.toThrow(/does not differ/);
     await expect(env.engine.submitChange(env.maya, m.id, { receivedOn: 'yesterday', guestCount: 130 })).rejects.toThrow(/validation/);
-    expect(() => env.engine.completeMission(env.maya, m.id)).toThrow(/criteria/);
+    await expect(env.engine.completeMission(env.maya, m.id)).rejects.toThrow(/criteria/);
     expect(row(env, 'SELECT state FROM missions WHERE id=?', m.id).state).toBe('baseline_ready');
   });
 

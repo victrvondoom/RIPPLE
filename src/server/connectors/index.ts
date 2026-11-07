@@ -1,6 +1,8 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { sha256 } from '../db/db.js';
+import { WarehouseSandboxConnector } from './warehouse.js';
+import { BillingSandboxConnector } from './billing.js';
 
 export interface ConnectorRequest { workspaceId: string; missionId: string; idempotencyKey: string; subject: string; target: string; body: string }
 export interface ConnectorResult { effectId: string; location: string; contentHash: string; deduped: boolean; deliveryNote: string }
@@ -42,5 +44,7 @@ export function buildConnectors(root: string): Record<string, Connector> {
     document_store: new FileConnector('document_store', 'Document store', 'local-filesystem', 'Writes the document to the mission document store (local files).', 'documents', root, 'md', 'Stored locally; no external document system connected.'),
     internal_notify: new FileConnector('internal_notify', 'Internal notification', 'local-outbox', 'Queues an internal notification to a department lead in the local outbox. Nothing is pushed to chat/email.', 'notifications', root, 'txt', 'Queued in local outbox only; recipient is NOT actually notified outside RIPPLE.'),
     email_outbox: new FileConnector('email_outbox', 'Email outbox (dry-run)', 'dry-run', 'Writes an .eml file. No SMTP configured — nothing is sent.', 'email', root, 'eml', 'DRY-RUN: no email was sent.'),
+    warehouse_sandbox: new WarehouseSandboxConnector(root),
+    billing_sandbox: new BillingSandboxConnector(root),
   };
 }

@@ -16,7 +16,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint src tests scripts",
-    "e2e": "node scripts/e2e.mjs"
+    "e2e": "node scripts/e2e.mjs",
+    "demo": "node scripts/run-demo.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",

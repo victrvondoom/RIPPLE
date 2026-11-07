@@ -19,10 +19,10 @@ describe('SceneShift runs on the SAME engine (reusability proof)', () => {
     for (const ap of rows(env, "SELECT * FROM approvals WHERE mission_id=? AND status='pending'", mission.id)) await env.engine.decideApproval(env.maya, mission.id, ap.id, 'approved', '');
     for (const a of rows(env, "SELECT * FROM actions WHERE mission_id=? AND status='approved'", mission.id)) await env.engine.executeAction(env.maya, mission.id, a.id);
     expect(rows(env, 'SELECT status FROM actions WHERE mission_id=?', mission.id).filter((a) => a.status === 'verified').length).toBe(2);
-    expect(() => env.engine.completeMission(env.maya, mission.id)).toThrow(/reviews|acknowledgements/);   // takes-log review + ack outstanding
+    await expect(env.engine.completeMission(env.maya, mission.id)).rejects.toThrow(/reviews|acknowledgements/);   // takes-log review + ack outstanding
     for (const w of rows(env, "SELECT * FROM work_items WHERE mission_id=? AND kind='review' AND status!='done'", mission.id)) env.engine.updateWorkItem(env.maya, mission.id, w.id, 'done');
     for (const a of rows(env, "SELECT id FROM actions WHERE mission_id=? AND key='notify_departments' AND status='verified'", mission.id)) env.engine.acknowledge(env.maya, mission.id, a.id, '');
-    env.engine.completeMission(env.maya, mission.id);
+    await env.engine.completeMission(env.maya, mission.id);
     const b2 = JSON.parse(row(env, 'SELECT plan FROM baselines WHERE mission_id=? AND version=2', mission.id).plan);
     expect(b2.production.scriptVersion).toBe('v7');
     expect(b2.scenes.find((s: any) => s.n === 8).status).toBe('cut');

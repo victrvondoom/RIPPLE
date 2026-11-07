@@ -37,7 +37,7 @@ Dev users (password `RIPPLE_SEED_PASSWORD`, default `ripple-demo`): maya@ (manag
 A pack is one `WorkflowPack` object (`engine/types.ts`): schemas, roles + `roleOrder`, artifact catalog, propagation `rules`/`artifactEdges`/`decisions`, `detectChanges(plan, change, answers)`, `applyChange`, `analyzeRole` (returns `RoleResult` via the `Out` builder in `packs/common.ts`), optional `parseAnswer`, `verifyAction(action, observed, revisedPlan, ctx)`, `completionChecks(ctx)`, `labels`. Rules of thumb: derive statuses only from recorded data/evidence; ask a *blocking* question (and propose no actions) when a human decision is missing; keep question keys stable per decision (bind approvals to what was shown, see PodFlow `clip_selection_<fp>`); state the limits of what the pack did not do in its drafts; write a `verifyAction` that re-checks the *domain promise* (e.g. no price in client message); never branch on pack id in the engine/UI. Map every human role in `seed.ts` and add pack tests (the cross-domain test enforces sample validity and no orphan roles).
 
 ## Hard rules — no fake functionality, no false completion claims
-1. Switch integration is POSTPONED. Never claim a Switch connection works unless it was exercised against a real Switch server; today it has only been tested against a **mock of the documented protocol** (`tests/switch.test.ts`). Say so.
+1. Switch integration is ACTIVE (postponement lifted by the owner, session 13). Never claim a Switch capability works unless it was exercised against a real Switch server. What HAS been exercised against the local switch-core 0.31.0 (Switch Console): agent registration, `create_room` (agent-only `internal_only` rooms), events stream, `connect_to_room`, heartbeat, `post_message`, `send_targeted_message`, room history read-back, a second agent replying and RIPPLE receiving it, and a full consumer-resolution mission (`scripts/switch-live.ts`, `scripts/e2e-consumer-switch.mjs`, evidence in `docs/evidence/`). NOT yet exercised: Mattermost-bridged rooms with humans in chat (the bridge was not running). Unit tests still use a mock (`tests/switch*.test.ts`). Say exactly which.
 2. An action is `verified` only when `Engine.verifyAction` independently re-reads the real effect. Never set action status from an agent's claim.
 3. A mission completes only through `evaluateCompletion` (all criteria met). Do not bypass it.
 4. Agents may flag allergen risks / missing info for qualified human review. They must never certify food safety (a verifier check also enforces wording).
@@ -61,4 +61,28 @@ See `progress.md` (authoritative) and `docs/IMPLEMENTATION_PLAN.md`.
 ## Orchestration (session 5)
 - `src/server/engine/orchestrator.ts` holds the Mission Orchestrator rules (fingerprints, output validation, MAX_PASSES). `Engine.orchestrate()` persists role tasks in `workflow_tasks`. Packs declare `roleDeps` and optional `roleInputs`; they never need to change the engine.
 - Agents are deterministic analyzers. A role re-runs only when its inputs changed. Agent requests are honoured only when the target's inputs changed. The loop stops at MAX_PASSES and escalates to a human.
-- Switch is still POSTPONED: the installed 0.31.0 was stopped and not connected. See docs/SWITCH.md.
+- (Superseded in session 13) Switch is now connected to the local switch-core 0.31.0 for agent-only rooms; see hard rule 1 and docs/SWITCH.md.
+
+## Billing & SLA dispute (session 14): one company, obligation graph
+- `npm run demo` registers agents on Switch (if `.env` configures it), boots a fresh server and runs the 3 must-pass scenarios (`scripts/e2e-billing-switch.ts`).
+- The obligation dependencies are engine-enforced via `ActionSpec.blockedUntil`. Never let a customer-facing message claim a refund, credit or fix that is not verified or confirmed.
+- `billing_sandbox` is a test ledger and must always be labelled as such. It never moves money.
+- One Switch connection serves all rooms. Never call `post_message` without going through the adapter's serial room claim (`SwitchCollab.send`).
+
+## Consumer resolution (session 13) — RECLAIM + RESOLVE + REDEEM, read docs/integration/
+- The three source products were integrated as CAPABILITIES ported to TypeScript, not as apps: `src/server/capabilities/reclaim` (retrieval, provenance, citation checks), `capabilities/resolve` (commitment ledger), `capabilities/redeem` (intake safety, scam scan, confirmed memory). They are pure functions; the only orchestrator is RIPPLE's engine.
+- The `consumer-resolution` pack (`packs/consumer/`) uses all three. Only the consumer (`cr_consumer`) may answer their questions or approve messages sent on their behalf. A refund counts only when the consumer confirms it; never write "refunded" from a provider message.
+- The bundled corpus rows are `authored_guide` (RECLAIM authors, not official regulator text). Keep that label everywhere, and only cite claims `verifyClaim` finds in the corpus.
+- The original Python repos (RESEOLVE, Open-Agent/reclaim, redeem) are outside this folder and must not be modified from here.
+
+## Dashboards, Switch console, flagship (sessions 10–11), see docs/RIPPLE_IMPLEMENTATION_REPORT.md
+- Feature preservation is the minimum bar: never remove a page, route, API, pack or nav destination. Extend instead.
+- `src/server/api/dashboards.ts` has the read models for the 4 dashboards. Every number comes from rows. When there is no data, return null and the UI shows "—"; never fabricate a metric. UI pages must not hardcode content; add a read model instead.
+- `src/server/capabilities/catalog.ts` is configuration. A source project is `pack-backed` only when an implemented pack exercises the capability.
+- `src/server/console/`:
+  - every state change is a proposal that a signed-in human confirms;
+  - it then runs through the normal Engine method under that user's identity;
+  - the model interpreter is a fallback only and may never confirm;
+  - messages from Switch are advisory (read-only answers; changes are queued for a RIPPLE user);
+  - the on/off switch reports only what it observed.
+- Scripted faults live in the approved operation (e.g. `revenue-recovery` `scenarioFaults`). They are labelled and part of the workflow, so a failure must surface as a recorded state (`execution_unknown`, `recovery_required`), never as an app error. Never report UNKNOWN as success, and never repeat a write before a read-back.

@@ -284,6 +284,8 @@ function Resolution({ d, id, me, busy, act }: { d: any; id: string; me: Me; busy
   const steps: [string, boolean][] = [['Analysed', c.round > 0], ['Arbitrated', !!plan], ['Chosen', !!plan?.chosen], ['Approved (hash-bound)', d.approvals.some((a: any) => a.status === 'recorded' && opt && a.subject_hash === opt.hash) || ['verified', 'failed', 'executing'].includes(plan?.status)], ['Executed (guarded)', ['verified', 'failed'].includes(plan?.status)], ['Verified', plan?.status === 'verified']];
   return <div>
     <div className="cd-stepper">{steps.map(([l, on], i) => <div key={l} className={`cd-step ${on ? 'on' : ''}`}><span>{i + 1}</span>{l}</div>)}</div>
+    {/* Shown outside the chosen-option card: after a replan the new plan has no chosen option yet, and the reason must stay visible. */}
+    {last && <Banner tone={last.outcome === 'verified' ? 'ok' : last.outcome === 'replanned' ? 'warn' : 'bad'} title={`Outcome: ${last.outcome}`}>{last.outcome === 'replanned' ? `The world changed after approval (${last.drift.join(', ')}). The approval bound to the old basis was rejected and a new plan was simulated — review it in Plan collision.` : last.outcome === 'verified' ? 'Every affected invariant was re-read and holds.' : 'Execution did not restore consistency; see findings.'}</Banner>}
     <div className="grid g2">
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Chosen resolution</h3>
@@ -295,7 +297,6 @@ function Resolution({ d, id, me, busy, act }: { d: any; id: string; me: Me; busy
             <button className="primary" disabled={!['owner', 'manager'].includes(me.user.role) || !!busy || plan.status !== 'awaiting_approval'} onClick={async () => { const r = await act('resolve', 'POST', `/crossdomain/campaigns/${id}/resolve`); if (r) setLast(r); }}>{busy === 'resolve' ? 'Revalidating · executing · verifying…' : 'Execute guarded resolution'}</button>
             {!canApprove && <span className="small muted">Needs {opt.approvalLevel === 'owner' ? 'an owner (sign in as Sam)' : 'a manager or owner'}.</span>}
           </div>
-          {last && <Banner tone={last.outcome === 'verified' ? 'ok' : last.outcome === 'replanned' ? 'warn' : 'bad'} title={`Outcome: ${last.outcome}`}>{last.outcome === 'replanned' ? `The world changed after approval (${last.drift.join(', ')}). The approval bound to the old basis was rejected and a new plan was simulated — review it in Plan collision.` : last.outcome === 'verified' ? 'Every affected invariant was re-read and holds.' : 'Execution did not restore consistency; see findings.'}</Banner>}
           {plan.result && <><h3>Result</h3><J v={plan.result} /></>}
         </>}
       </div>

@@ -1,0 +1,604 @@
+{
+ "bridge": "http://127.0.0.1:52042",
+ "rooms": "internal_only",
+ "human_channel": "local-console (labelled)",
+ "data": "synthetic",
+ "checks": [
+  {
+   "scenario": "A",
+   "check": "customer email ingested by resolve-comms (RESOLVE commitments + REDEEM safety)",
+   "passed": true,
+   "detail": "RPL-2026-0011"
+  },
+  {
+   "scenario": "A",
+   "check": "coordinator provisioned linked #ops-verification and #finance-approvals rooms",
+   "passed": true,
+   "detail": "create_room + link_rooms"
+  },
+  {
+   "scenario": "A",
+   "check": "Evidence Manifest written as a Switch room document in the Engineering room",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "A",
+   "check": "arbiter computed the payload deterministically and asked for hash-bound approval",
+   "passed": true,
+   "detail": "state AWAITING_APPROVAL, sha256 2ecb538ee4cf1e54\u2026"
+  },
+  {
+   "scenario": "A",
+   "check": "zero-LLM maths: $4,200.00 duplicate refund + $1,200.00 SLA credit (99.120% uptime, 10% tier)",
+   "passed": true,
+   "detail": "[('refund', '4200.00'), ('credit', '1200.00')]"
+  },
+  {
+   "scenario": "A",
+   "check": "forged approval posted by an agent is refused (Switch sender identity, wrong room)",
+   "passed": true,
+   "detail": "wrong room; sender resolve-comms is an agent; agents cannot approve payouts"
+  },
+  {
+   "scenario": "A",
+   "check": "approved \u2192 dispatched \u2192 verified by independent ledger read-back",
+   "passed": true,
+   "detail": "state COMPLETED; checks 7/7"
+  },
+  {
+   "scenario": "A",
+   "check": "exactly one refund of ch_9921 in the ledger",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "A",
+   "check": "Verified Resolution Receipt written as Switch room documents (finance + intake)",
+   "passed": true,
+   "detail": "a1244139-b2af-4b60-9201-cc1fc1229380"
+  },
+  {
+   "scenario": "A",
+   "check": "customer reply queued only after the verified receipt (COMMS-2.3), read back from the outbox",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "B",
+   "check": "customer email ingested by resolve-comms (RESOLVE commitments + REDEEM safety)",
+   "passed": true,
+   "detail": "RPL-2026-0012"
+  },
+  {
+   "scenario": "B",
+   "check": "coordinator provisioned linked #ops-verification and #finance-approvals rooms",
+   "passed": true,
+   "detail": "create_room + link_rooms"
+  },
+  {
+   "scenario": "B",
+   "check": "Evidence Manifest written as a Switch room document in the Engineering room",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "B",
+   "check": "arbiter computed the payload deterministically and asked for hash-bound approval",
+   "passed": true,
+   "detail": "state AWAITING_APPROVAL, sha256 10db9a0d9bf073a4\u2026"
+  },
+  {
+   "scenario": "B",
+   "check": "ledger timeout recorded as UNCERTAIN (never as success)",
+   "passed": true,
+   "detail": "AWAITING_APPROVAL \u2192 APPROVED \u2192 DISPATCHING \u2192 UNCERTAIN \u2192 VERIFYING \u2192 COMPLETED"
+  },
+  {
+   "scenario": "B",
+   "check": "read-back BEFORE any retry found the refund already committed",
+   "passed": true,
+   "detail": "[{'at': '2026-11-06T12:21:00.686054Z', 'kind': 'readback', 'case': 'RPL-2026-0012', 'op': 'refund', 'found': True}]"
+  },
+  {
+   "scenario": "B",
+   "check": "no double refund: ch_9921 refunded exactly once",
+   "passed": true,
+   "detail": "1 refund row(s)"
+  },
+  {
+   "scenario": "B",
+   "check": "case COMPLETED after verification",
+   "passed": true,
+   "detail": "COMPLETED"
+  },
+  {
+   "scenario": "C",
+   "check": "customer email ingested by resolve-comms (RESOLVE commitments + REDEEM safety)",
+   "passed": true,
+   "detail": "RPL-2026-0013"
+  },
+  {
+   "scenario": "C",
+   "check": "coordinator provisioned linked #ops-verification and #finance-approvals rooms",
+   "passed": true,
+   "detail": "create_room + link_rooms"
+  },
+  {
+   "scenario": "C",
+   "check": "Evidence Manifest written as a Switch room document in the Engineering room",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "C",
+   "check": "arbiter computed the payload deterministically and asked for hash-bound approval",
+   "passed": true,
+   "detail": "state AWAITING_APPROVAL, sha256 9df8702270f1a6c4\u2026"
+  },
+  {
+   "scenario": "C",
+   "check": "approval quoting a different payload hash is refused",
+   "passed": true,
+   "detail": "hash_mismatch"
+  },
+  {
+   "scenario": "C",
+   "check": "REJECT \u2192 state REJECTED",
+   "passed": true,
+   "detail": "REJECTED"
+  },
+  {
+   "scenario": "C",
+   "check": "no ledger write happened",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "C",
+   "check": "rejection recorded in the receipt room document",
+   "passed": true,
+   "detail": "credit exceeds what Finance will authorise this quarter; ref"
+  },
+  {
+   "scenario": "C",
+   "check": "customer reply held (nothing confirmed that the ledger does not show)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "D",
+   "check": "Engineering agent reading #finance-approvals history \u2192 403 from Switch",
+   "passed": true,
+   "detail": "HTTP 403"
+  },
+  {
+   "scenario": "D",
+   "check": "Engineering agent loading finance room documents \u2192 refused by Switch",
+   "passed": true,
+   "detail": "HTTP 400"
+  },
+  {
+   "scenario": "D",
+   "check": "Engineering token on the ledger API \u2192 403 from the backend",
+   "passed": true,
+   "detail": "HTTP 403 (department 'engineering' may not access ledger)"
+  }
+ ],
+ "events": [
+  {
+   "at": "2026-11-06T12:20:51.553526Z",
+   "kind": "intake_room_ready",
+   "room": "76d19d4a-5382-4083-a1ad-e15401a68d37",
+   "mode": "agent-only (internal_only)"
+  },
+  {
+   "at": "2026-11-06T12:20:51.911780Z",
+   "kind": "case_opened",
+   "case": "RPL-2026-0011",
+   "by": "resolve-comms",
+   "claimed": "4200.00",
+   "overdue_promise": true
+  },
+  {
+   "at": "2026-11-06T12:20:52.669222Z",
+   "kind": "rooms_provisioned",
+   "case": "RPL-2026-0011",
+   "ops": "5ed2bd99-4590-4042-ac71-2951c1d9a350",
+   "finance": "d858d7df-c3bc-4011-a7fb-0aaf7e60293f"
+  },
+  {
+   "at": "2026-11-06T12:20:54.130122Z",
+   "kind": "evidence_manifest",
+   "case": "RPL-2026-0011",
+   "doc": "7ee16da2-7da9-4b05-96f0-f534fd5c757c",
+   "sha256": "dcf34ea2993af2b5",
+   "uptime": "99.120"
+  },
+  {
+   "at": "2026-11-06T12:20:54.829447Z",
+   "kind": "decision_refused",
+   "case": "RPL-2026-0011",
+   "by": "resolve-comms",
+   "reason": "wrong room; sender resolve-comms is an agent; agents cannot approve payouts"
+  },
+  {
+   "at": "2026-11-06T12:20:55.278008Z",
+   "kind": "verified",
+   "case": "RPL-2026-0011",
+   "passed": true,
+   "checks": 7
+  },
+  {
+   "at": "2026-11-06T12:20:55.486925Z",
+   "kind": "approval_requested",
+   "case": "RPL-2026-0011",
+   "payload_sha256": "2ecb538ee4cf1e54",
+   "total": "5400.00",
+   "proposal_doc": "24bf8621-3a75-44b4-aedd-658f6e9e0b46"
+  },
+  {
+   "at": "2026-11-06T12:20:55.975234Z",
+   "kind": "receipt",
+   "case": "RPL-2026-0011",
+   "status": "COMPLETED",
+   "receipt_sha256": "a2923b08e3049655",
+   "intake_doc": "a1244139-b2af-4b60-9201-cc1fc1229380"
+  },
+  {
+   "at": "2026-11-06T12:20:56.210617Z",
+   "kind": "customer_reply",
+   "case": "RPL-2026-0011",
+   "outbox_id": "out_0001",
+   "readback_ok": true
+  },
+  {
+   "at": "2026-11-06T12:20:56.540519Z",
+   "kind": "case_opened",
+   "case": "RPL-2026-0012",
+   "by": "resolve-comms",
+   "claimed": "4200.00",
+   "overdue_promise": true
+  },
+  {
+   "at": "2026-11-06T12:20:57.143720Z",
+   "kind": "rooms_provisioned",
+   "case": "RPL-2026-0012",
+   "ops": "bc936a04-2e12-4c06-933a-0034340b1709",
+   "finance": "b208d5f6-742c-4fc1-a548-4e62c25cb207"
+  },
+  {
+   "at": "2026-11-06T12:20:58.357349Z",
+   "kind": "evidence_manifest",
+   "case": "RPL-2026-0012",
+   "doc": "d0ac89ba-be2c-40bf-9560-b7b653847744",
+   "sha256": "dcf34ea2993af2b5",
+   "uptime": "99.120"
+  },
+  {
+   "at": "2026-11-06T12:20:58.544789Z",
+   "kind": "fault_armed",
+   "cases": "RPL-2026-0012",
+   "by": "demo-runner (--simulate-timeout)"
+  },
+  {
+   "at": "2026-11-06T12:20:59.229704Z",
+   "kind": "approval_requested",
+   "case": "RPL-2026-0012",
+   "payload_sha256": "10db9a0d9bf073a4",
+   "total": "5400.00",
+   "proposal_doc": "7fe86e11-e4bd-4077-bf43-621e6f413238"
+  },
+  {
+   "at": "2026-11-06T12:21:00.490619Z",
+   "kind": "dispatch_timeout",
+   "case": "RPL-2026-0012",
+   "op": "refund",
+   "error": "POST /ledger/refunds?simulate=timeout timed out after 1.5s"
+  },
+  {
+   "at": "2026-11-06T12:21:00.686054Z",
+   "kind": "readback",
+   "case": "RPL-2026-0012",
+   "op": "refund",
+   "found": true
+  },
+  {
+   "at": "2026-11-06T12:21:00.736919Z",
+   "kind": "verified",
+   "case": "RPL-2026-0012",
+   "passed": true,
+   "checks": 7
+  },
+  {
+   "at": "2026-11-06T12:21:00.991636Z",
+   "kind": "receipt",
+   "case": "RPL-2026-0012",
+   "status": "COMPLETED",
+   "receipt_sha256": "ab7b7b0e3cc5fa23",
+   "intake_doc": "bed97e56-f020-40d4-8d6e-bd53b0a4b1dc"
+  },
+  {
+   "at": "2026-11-06T12:21:01.222031Z",
+   "kind": "case_opened",
+   "case": "RPL-2026-0013",
+   "by": "resolve-comms",
+   "claimed": "4200.00",
+   "overdue_promise": true
+  },
+  {
+   "at": "2026-11-06T12:21:01.348568Z",
+   "kind": "customer_reply",
+   "case": "RPL-2026-0012",
+   "outbox_id": "out_0001",
+   "readback_ok": true
+  },
+  {
+   "at": "2026-11-06T12:21:01.994816Z",
+   "kind": "rooms_provisioned",
+   "case": "RPL-2026-0013",
+   "ops": "67458a8e-3e6c-4585-a2c2-814a8bb6b425",
+   "finance": "de406208-7602-4657-ab8d-6ef3f769faea"
+  },
+  {
+   "at": "2026-11-06T12:21:03.226905Z",
+   "kind": "evidence_manifest",
+   "case": "RPL-2026-0013",
+   "doc": "795fa3a1-a8d1-431c-85c7-4747656065fb",
+   "sha256": "dcf34ea2993af2b5",
+   "uptime": "99.120"
+  },
+  {
+   "at": "2026-11-06T12:21:04.091069Z",
+   "kind": "decision_refused",
+   "case": "RPL-2026-0013",
+   "by": "nora",
+   "reason": "hash mismatch"
+  },
+  {
+   "at": "2026-11-06T12:21:04.660671Z",
+   "kind": "approval_requested",
+   "case": "RPL-2026-0013",
+   "payload_sha256": "9df8702270f1a6c4",
+   "total": "5400.00",
+   "proposal_doc": "15bea533-49ba-4938-8be3-5dce039c9e0e"
+  },
+  {
+   "at": "2026-11-06T12:21:05.104474Z",
+   "kind": "receipt",
+   "case": "RPL-2026-0013",
+   "status": "REJECTED",
+   "receipt_sha256": "9afaf911c4143f38",
+   "intake_doc": "7ace506f-a279-4f39-8a6c-f541e33145b7"
+  },
+  {
+   "at": "2026-11-06T12:21:05.314811Z",
+   "kind": "customer_reply_held",
+   "case": "RPL-2026-0013",
+   "status": "REJECTED"
+  },
+  {
+   "at": "2026-11-06T12:21:05.714899Z",
+   "kind": "access_probe",
+   "case": "RPL-2026-0011",
+   "switch_history": "HTTP 403",
+   "switch_documents": "HTTP 400",
+   "backend_ledger": "HTTP 403 (department 'engineering' may not access ledger)"
+  }
+ ],
+ "topology": {
+  "switch_export_error": "URLError: <urlopen error [WinError 10061] No connection could be made because the target machine actively refu (gateway route needs the gateway running and a signed-in user)",
+  "template_path": "out\\RPL-2026-0011.topology.template.yaml"
+ },
+ "receipts": {
+  "RPL-2026-0011": {
+   "receipt_id": "RPL-2026-0011-R",
+   "case_id": "RPL-2026-0011",
+   "status": "COMPLETED",
+   "issued_at": "2026-11-06T12:20:55.278076Z",
+   "payload_sha256": "2ecb538ee4cf1e54a53587a02853f9e658f244a8768547c349f1b0bc0810c222",
+   "approval": {
+    "by": "nora",
+    "sender": "local-console:nora",
+    "channel": "local-console",
+    "message_id": null,
+    "payload_sha256": "2ecb538ee4cf1e54a53587a02853f9e658f244a8768547c349f1b0bc0810c222",
+    "at": "2026-11-06T12:20:55.156667Z"
+   },
+   "rejection": null,
+   "actions": [
+    {
+     "op": "refund",
+     "charge_id": "ch_9921",
+     "invoice": "INV-5530",
+     "amount": "4200.00",
+     "currency": "USD",
+     "policy": "BILL-7.1",
+     "ledger_id": "rf_0001",
+     "committed_at": "2026-11-06T12:20:55.248807Z"
+    },
+    {
+     "op": "credit",
+     "account": "ACME-2231",
+     "amount": "1200.00",
+     "currency": "USD",
+     "policy": "SLA-4.2",
+     "ledger_id": "cr_0001",
+     "committed_at": "2026-11-06T12:20:55.260506Z"
+    }
+   ],
+   "verification": [
+    {
+     "check": "refund recorded exactly once",
+     "passed": true
+    },
+    {
+     "check": "refund amount equals approved $4200.00",
+     "passed": true
+    },
+    {
+     "check": "refund bound to the approved payload hash",
+     "passed": true
+    },
+    {
+     "check": "charge ch_9921 refunded exactly once (no double refund)",
+     "passed": true
+    },
+    {
+     "check": "credit recorded exactly once",
+     "passed": true
+    },
+    {
+     "check": "credit amount equals approved $1200.00",
+     "passed": true
+    },
+    {
+     "check": "credit bound to the approved payload hash",
+     "passed": true
+    }
+   ],
+   "evidence_manifest": {
+    "room": "5ed2bd99-4590-4042-ac71-2951c1d9a350",
+    "id": "7ee16da2-7da9-4b05-96f0-f534fd5c757c",
+    "sha256": "dcf34ea2993af2b5d380098bc206a69676beffc49f349259709261d02e42d884"
+   },
+   "proposal_document": {
+    "room": "d858d7df-c3bc-4011-a7fb-0aaf7e60293f",
+    "id": "24bf8621-3a75-44b4-aedd-658f6e9e0b46",
+    "sha256": "2ecb538ee4cf1e54a53587a02853f9e658f244a8768547c349f1b0bc0810c222"
+   },
+   "dispatch_attempts": 1,
+   "state_trail": [
+    "PLANNED->AWAITING_APPROVAL",
+    "AWAITING_APPROVAL->APPROVED",
+    "APPROVED->DISPATCHING",
+    "DISPATCHING->VERIFYING",
+    "VERIFYING->COMPLETED"
+   ],
+   "data_note": "Synthetic demo data; the ledger is a local test service; no money moved; no email was sent.",
+   "receipt_sha256": "a2923b08e3049655643a84396e8561c30bcd04f57a2d82aaf51c119d8d50919f"
+  },
+  "RPL-2026-0012": {
+   "receipt_id": "RPL-2026-0012-R",
+   "case_id": "RPL-2026-0012",
+   "status": "COMPLETED",
+   "issued_at": "2026-11-06T12:21:00.736991Z",
+   "payload_sha256": "10db9a0d9bf073a4865fdc96cd5699ed8d3b6523ad922b2dfb6213377cc8a5ad",
+   "approval": {
+    "by": "nora",
+    "sender": "local-console:nora",
+    "channel": "local-console",
+    "message_id": null,
+    "payload_sha256": "10db9a0d9bf073a4865fdc96cd5699ed8d3b6523ad922b2dfb6213377cc8a5ad",
+    "at": "2026-11-06T12:20:58.827321Z"
+   },
+   "rejection": null,
+   "actions": [
+    {
+     "op": "refund",
+     "charge_id": "ch_9921",
+     "invoice": "INV-5530",
+     "amount": "4200.00",
+     "currency": "USD",
+     "policy": "BILL-7.1",
+     "ledger_id": "rf_0001",
+     "committed_at": "2026-11-06T12:20:58.990319Z"
+    },
+    {
+     "op": "credit",
+     "account": "ACME-2231",
+     "amount": "1200.00",
+     "currency": "USD",
+     "policy": "SLA-4.2",
+     "ledger_id": "cr_0001",
+     "committed_at": "2026-11-06T12:21:00.505901Z"
+    }
+   ],
+   "verification": [
+    {
+     "check": "refund recorded exactly once",
+     "passed": true
+    },
+    {
+     "check": "refund amount equals approved $4200.00",
+     "passed": true
+    },
+    {
+     "check": "refund bound to the approved payload hash",
+     "passed": true
+    },
+    {
+     "check": "charge ch_9921 refunded exactly once (no double refund)",
+     "passed": true
+    },
+    {
+     "check": "credit recorded exactly once",
+     "passed": true
+    },
+    {
+     "check": "credit amount equals approved $1200.00",
+     "passed": true
+    },
+    {
+     "check": "credit bound to the approved payload hash",
+     "passed": true
+    }
+   ],
+   "evidence_manifest": {
+    "room": "bc936a04-2e12-4c06-933a-0034340b1709",
+    "id": "d0ac89ba-be2c-40bf-9560-b7b653847744",
+    "sha256": "dcf34ea2993af2b5d380098bc206a69676beffc49f349259709261d02e42d884"
+   },
+   "proposal_document": {
+    "room": "b208d5f6-742c-4fc1-a548-4e62c25cb207",
+    "id": "7fe86e11-e4bd-4077-bf43-621e6f413238",
+    "sha256": "10db9a0d9bf073a4865fdc96cd5699ed8d3b6523ad922b2dfb6213377cc8a5ad"
+   },
+   "dispatch_attempts": 1,
+   "state_trail": [
+    "PLANNED->AWAITING_APPROVAL",
+    "AWAITING_APPROVAL->APPROVED",
+    "APPROVED->DISPATCHING",
+    "DISPATCHING->UNCERTAIN",
+    "UNCERTAIN->VERIFYING",
+    "VERIFYING->COMPLETED"
+   ],
+   "data_note": "Synthetic demo data; the ledger is a local test service; no money moved; no email was sent.",
+   "receipt_sha256": "ab7b7b0e3cc5fa239bfb1405093e0868fb9fb0d3d51a4624b8ae2098decf5b1f"
+  },
+  "RPL-2026-0013": {
+   "receipt_id": "RPL-2026-0013-R",
+   "case_id": "RPL-2026-0013",
+   "status": "REJECTED",
+   "issued_at": "2026-11-06T12:21:04.379199Z",
+   "payload_sha256": "9df8702270f1a6c47eb9c495423ba6dfd507e211ce0ac2c460501d0bb64a665b",
+   "approval": null,
+   "rejection": {
+    "by": "nora",
+    "reason": "credit exceeds what Finance will authorise this quarter; refund separately",
+    "at": "2026-11-06T12:21:04.239512Z",
+    "channel": "local-console"
+   },
+   "actions": [],
+   "verification": [],
+   "evidence_manifest": {
+    "room": "67458a8e-3e6c-4585-a2c2-814a8bb6b425",
+    "id": "795fa3a1-a8d1-431c-85c7-4747656065fb",
+    "sha256": "dcf34ea2993af2b5d380098bc206a69676beffc49f349259709261d02e42d884"
+   },
+   "proposal_document": {
+    "room": "de406208-7602-4657-ab8d-6ef3f769faea",
+    "id": "15bea533-49ba-4938-8be3-5dce039c9e0e",
+    "sha256": "9df8702270f1a6c47eb9c495423ba6dfd507e211ce0ac2c460501d0bb64a665b"
+   },
+   "dispatch_attempts": 0,
+   "state_trail": [
+    "PLANNED->AWAITING_APPROVAL",
+    "AWAITING_APPROVAL->REJECTED"
+   ],
+   "data_note": "Synthetic demo data; the ledger is a local test service; no money moved; no email was sent.",
+   "receipt_sha256": "9afaf911c4143f3882a84f3d7f96d20b92db5eaed1a834196c2c84737047a0e7"
+  }
+ },
+ "passed": true
+}
