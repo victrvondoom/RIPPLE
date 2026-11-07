@@ -67,23 +67,32 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     deleteCookie(c, COOKIE, { path: '/' }); return c.json({ ok: true });
   });
 
-  // ---- everything below requires a session ----
-  app.use('/api/*', async (c, next) => {
-    if (c.req.path === '/api/health' || c.req.path.startsWith('/api/auth/login') || c.req.path === '/api/auth/logout') return next();
+  const sessionUser = (c: Context<Env>) => {
     const t = getCookie(c, COOKIE);
     const row = t ? db.get("SELECT u.*, s.expires_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?", hashToken(t)) : undefined;
-    if (!row || row.expires_at < nowIso()) return c.json({ error: { code: 'unauthenticated', message: 'Sign in required.' } }, 401);
+    return !row || row.expires_at < nowIso() ? null : row;
+  };
+  const mePayload = (userId: string, workspaceId: string) => {
+    const u = db.get('SELECT * FROM users WHERE id=?', userId)!;
+    const ws = db.get('SELECT * FROM workspaces WHERE id=?', workspaceId)!;
+    return { user: pub(u), workspace: { id: ws.id, name: ws.name }, collab: engine.collab.describe(), provider: { name: engine.provider.name, kind: engine.provider.kind } };
+  };
+  // Session 19: the web app's start-up probe. Signed out is a normal state, so it answers 200 {user: null} instead of a
+  // 401 that every browser logs as a console error. /api/auth/me keeps its 401 contract for API clients.
+  app.get('/api/auth/session', (c) => { const row = sessionUser(c); return c.json(row ? mePayload(row.id, row.workspace_id) : { user: null }); });
+
+  // ---- everything below requires a session ----
+  app.use('/api/*', async (c, next) => {
+    if (c.req.path === '/api/health' || c.req.path.startsWith('/api/auth/login') || c.req.path === '/api/auth/logout' || c.req.path === '/api/auth/session') return next();
+    const row = sessionUser(c);
+    if (!row) return c.json({ error: { code: 'unauthenticated', message: 'Sign in required.' } }, 401);
     c.set('actor', { id: row.id, name: row.name, role: row.role, workspaceId: row.workspace_id });
     await next();
   });
   const A = (c: Context<Env>) => c.get('actor');
   const json = async <T extends z.ZodTypeAny>(c: Context<Env>, s: T): Promise<z.infer<T>> => s.parse(await c.req.json());
 
-  app.get('/api/auth/me', (c) => {
-    const u = db.get('SELECT * FROM users WHERE id=?', A(c).id)!;
-    const ws = db.get('SELECT * FROM workspaces WHERE id=?', A(c).workspaceId)!;
-    return c.json({ user: pub(u), workspace: { id: ws.id, name: ws.name }, collab: engine.collab.describe(), provider: { name: engine.provider.name, kind: engine.provider.kind } });
-  });
+  app.get('/api/auth/me', (c) => c.json(mePayload(A(c).id, A(c).workspaceId)));
   app.get('/api/overview', (c) => c.json(overview(engine, A(c).workspaceId)));
   app.get('/api/packs', (c) => c.json({ packs: engine.packs.listings() }));
   app.get('/api/packs/:id', (c) => {

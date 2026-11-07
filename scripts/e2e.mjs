@@ -126,11 +126,12 @@ const mob = await session('maya@harborvine.example', { width: 390, height: 800 }
 const overflow = await mob.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2); assert(!overflow, 'no horizontal page overflow at 390px'); step('Mobile viewport (390px): no horizontal page overflow');
 
 await browser.close();
-// Expected, by design: 401 from the pre-login /auth/me probe, and the single 422 from the deliberately-refused early completion.
-const unexpected = consoleErrors.filter((e) => !/status of 401/.test(e));
+// Expected, by design: only the single 422 from the deliberately-refused early completion. (Session 19: the pre-login
+// probe now uses /api/auth/session, which answers 200 when signed out, so a 401 here is a regression.)
+const unexpected = consoleErrors;
 const n422 = unexpected.filter((e) => /status of 422/.test(e)).length;
 const other = unexpected.filter((e) => !/status of 422/.test(e));
 assert(other.length === 0 && n422 === 1, 'no unexpected browser console errors: ' + JSON.stringify(unexpected));
-step('No unexpected browser console errors (only the pre-login 401 probe and the 1 deliberate 422 refusal)');
+step('No unexpected browser console errors (only the 1 deliberate 422 refusal)');
 writeFileSync(`${OUT}/e2e-log.txt`, log.join('\n') + '\n');
 console.log('\nE2E PASSED');

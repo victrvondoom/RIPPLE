@@ -1,4 +1,4 @@
-Signed in as Event Manager; Control Center shows LOCAL mode label
+Signed in as Event Manager; Control Center shows collaboration mode: LOCAL mode (not Switch)
 Created mission from sample original plan (state: Draft)
 Approved baseline v1 (state: Baseline ready)
 Change submitted → mission BLOCKED, reason explains missing vegan count; no actions proposed

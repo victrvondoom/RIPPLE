@@ -129,7 +129,7 @@ function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
 
 export function App() {
   const [me, setMe] = useState<Me | null | undefined>(undefined);
-  const load = async () => { try { setMe(await api<Me>('GET', '/auth/me')); } catch { setMe(null); } };
+  const load = async () => { try { const s = await api<Me | { user: null }>('GET', '/auth/session'); setMe(s.user ? (s as Me) : null); } catch { setMe(null); } };
   useEffect(() => { load(); }, []);
   if (me === undefined) return <Loading />;
   return <ToastProvider>{me ? <Shell me={me} reloadMe={load} /> : <Landing><Login onDone={() => { go('#/control'); load(); }} /></Landing>}</ToastProvider>;

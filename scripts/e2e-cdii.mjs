@@ -12,7 +12,9 @@ const out = 'docs/evidence/reality/cross-domain';
 mkdirSync(out, { recursive: true });
 const require = createRequire(import.meta.url);
 let pw;
-try { pw = require('playwright-core'); } catch { pw = require(join(execSync('npm root -g').toString().trim(), 'playwright-core')); }
+// Same resolution order as the other e2e scripts: playwright, then playwright-core, then the global npm root.
+for (const load of [() => require('playwright'), () => require('playwright-core'), () => require(join(execSync('npm root -g').toString().trim(), 'playwright-core'))]) { try { pw = load(); break; } catch { /* try the next location */ } }
+if (!pw) throw new Error('playwright not found (install playwright or playwright-core)');
 
 const log = []; const say = (m) => { log.push(`${new Date().toISOString()} ${m}`); console.log(m); };
 const errors = [];

@@ -27,6 +27,15 @@ describe('HTTP API', () => {
     expect(JSON.stringify(ok.json)).not.toMatch(/scrypt|password/);
     expect((await call('GET', '/api/overview')).status).toBe(200);
   });
+  it('the start-up session probe answers 200 when signed out (no console 401), and the signed-in payload when signed in', async () => {
+    const { call, login } = client();
+    const out = await call('GET', '/api/auth/session');
+    expect(out.status).toBe(200); expect(out.json).toEqual({ user: null });
+    await login('maya@harborvine.example');
+    const inn = await call('GET', '/api/auth/session');
+    expect(inn.status).toBe(200); expect(inn.json.user.email).toBe('maya@harborvine.example');
+    expect((await call('GET', '/api/auth/me')).json).toEqual(inn.json);
+  });
   it('rejects cross-origin mutating requests (CSRF) and non-JSON bodies', async () => {
     const { call, login } = client(); await login('maya@harborvine.example');
     expect((await call('POST', '/api/missions', {}, { origin: 'https://evil.example' })).status).toBe(403);
