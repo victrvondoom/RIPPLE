@@ -200,6 +200,7 @@ function analyzeCoordinator(ctx: AnalysisContext): RoleResult {
 export const beoPack: WorkflowPack = {
   id: 'beo-rescue', name: 'BEO Rescue', domain: 'Event Operations', version: '1.0.0',
   description: 'Re-plan an approved catering Banquet Event Order when the client changes guests, menu needs or timing.',
+  agentLimit: 'Flags allergen risks; strictly forbidden from certifying food safety',
   roles: [
     { key: 'change', name: 'Change Agent', kind: 'agent', responsibility: 'Diffs the request against the approved baseline.' },
     { key: 'kitchen', name: 'Kitchen Agent', kind: 'agent', responsibility: 'Menu, quantities, prep, allergen flags, missing dietary info.', department: 'Kitchen' },

@@ -110,6 +110,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
       users: users.map((u) => ({ ...u, openWork: open.find((o) => o.uid === u.id)?.n ?? 0, roles: roles.filter((r) => r.user_id === u.id).map((r) => ({ pack: r.pack_id, key: r.key, name: r.name })) })),
       agents: roles.filter((r) => r.kind === 'agent').map((a) => ({
         ...a,
+        limit: engine.packs.get(a.pack_id)?.agentLimit ?? null,
         runs: runStats.filter((s) => s.role_key === a.key)
       }))
     });
