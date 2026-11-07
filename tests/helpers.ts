@@ -10,10 +10,10 @@ import { DeterministicProvider } from '../src/server/agents/provider.js';
 import { seedWorkspace } from '../src/server/seed.js';
 import type { CollabPort } from '../src/server/collab/port.js';
 
-export function makeEnv(collab: CollabPort = new LocalCollab(), packs: PackRegistry = defaultRegistry()) {
+export function makeEnv(collab: CollabPort = new LocalCollab(), packs: PackRegistry = defaultRegistry(), chatIdentities?: Record<string, string>) {
   const db = new Db(':memory:');
   const outbox = mkdtempSync(join(tmpdir(), 'ripple-'));
-  const engine = new Engine({ db, packs, collab, connectors: buildConnectors(outbox), provider: new DeterministicProvider(), today: () => '2026-11-09' });
+  const engine = new Engine({ db, packs, collab, connectors: buildConnectors(outbox), provider: new DeterministicProvider(), today: () => '2026-11-09', chatIdentities });
   const seeded = seedWorkspace(db, packs, { name: 'Test Catering', password: 'pw-test-123' });
   const actor = (email: string): Actor => {
     const u = db.get('SELECT * FROM users WHERE email=?', email)!;
