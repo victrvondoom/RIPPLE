@@ -1,8 +1,8 @@
+![RIPPLE sign-in page: a pixel meadow with the sign-in form and demo accounts](docs/evidence/landing-meadow-login.png)
+
 # RIPPLE: dispute & SLA resolution inside Switch
 
 **One company. Three departments. One customer dispute. Every payout computed by code, approved by a human, verified in the ledger, receipted in Switch.**
-
-![RIPPLE sign-in page: a pixel meadow with the sign-in form and demo accounts](docs/evidence/landing-meadow-login.png)
 
 *The sign-in page. Demo accounts sign in with one click; the shared password is set by `RIPPLE_SEED_PASSWORD`.*
 
