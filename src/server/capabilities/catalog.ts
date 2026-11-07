@@ -32,7 +32,7 @@ export const SYSTEMS: CapabilitySystem[] = [
 
 /** Implemented RIPPLE packs → the capability system whose workspace they appear in. */
 export const PACK_SYSTEM: Record<string, SystemId> = {
-  'crewpilot': 'engineering', 'deploy-gate': 'engineering',
+  'crewpilot': 'engineering', 'deploy-gate': 'engineering', 'flipside-review': 'engineering',
   'incident-sentinel': 'incident', 'shiftrelay': 'incident',
   'beo-rescue': 'commerce', 'scopeguard': 'commerce', 'invoiceguard': 'commerce', 'clearsend': 'commerce',
   'movemate': 'personal', 'submitready': 'personal', 'offerroom': 'personal',

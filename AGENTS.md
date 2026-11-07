@@ -7,7 +7,7 @@ RIPPLE is one centralized workflow & intervention platform: *one change → ever
 
 ## Architecture (one line each — details in docs/ARCHITECTURE.md)
 - `src/server/engine/` mission engine (state machine, baselines, changes, analysis orchestration, approvals, actions, verification, completion). **Pack-agnostic.**
-- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
+- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry) + `depgate` (id `deploy-gate`) and `flipside` (id `flipside-review`) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
 - `src/server/collab/` `CollabPort` boundary; `local.ts` (labelled local mode), `switch.ts` (Switch agent-protocol adapter).
 - `src/server/connectors/` file-backed local connectors (document store, internal outbox, email dry-run) with idempotency + read-back `observe()`.
 - `src/server/agents/provider.ts` model-provider abstraction (deterministic default; optional Anthropic wording-only).
@@ -30,6 +30,7 @@ npm run typecheck && npm run lint
 scripts/fresh-server.sh && node scripts/e2e.mjs            # BEO + SceneShift browser journey on a throw-away DB
 node scripts/e2e-packs.mjs <scopeguard|invoiceguard|shiftrelay|movemate|podflow|submitready>   # one pack's browser journey
 node scripts/e2e-crossdomain.mjs                           # all packs in one Control Center
+BASE_URL=http://localhost:8791 node scripts/e2e-flipside.mjs   # Flipside review journey (author answers, approves, proof OK / PROOF_FAIL)
 ```
 Dev users (password `RIPPLE_SEED_PASSWORD`, default `ripple-demo`): maya@ (manager), luis@ (chef), priya@, dan@, sam@ (owner), vera@ (viewer) `@harborvine.example`.
 
