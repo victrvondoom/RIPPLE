@@ -4,6 +4,7 @@ import { Engine } from './engine/engine.js';
 import { extendedRegistry } from './packs/registry.js';
 import { LocalCollab } from './collab/local.js';
 import { SwitchCollab, switchConfigFromEnv } from './collab/switch.js';
+import { parseChatIdentities } from './collab/chat.js';
 import { buildConnectors } from './connectors/index.js';
 import { providerFromEnv } from './agents/provider.js';
 import { createApp } from './api/app.js';
@@ -19,7 +20,7 @@ const db = new Db(process.env.RIPPLE_DB_PATH ?? 'data/ripple.db');
 const packs = extendedRegistry();
 const sw = switchConfigFromEnv(process.env);
 const collab = sw ? new SwitchCollab(sw) : new LocalCollab();
-const engine = new Engine({ db, packs, collab, connectors: buildConnectors(process.env.RIPPLE_OUTBOX ?? 'data/outbox'), provider: providerFromEnv(process.env) });
+const engine = new Engine({ db, packs, collab, connectors: buildConnectors(process.env.RIPPLE_OUTBOX ?? 'data/outbox'), provider: providerFromEnv(process.env), chatIdentities: parseChatIdentities(process.env.SWITCH_CHAT_IDENTITIES) });
 if (!db.get('SELECT 1 x FROM workspaces')) { seedWorkspace(db, packs, { name: 'Harbor & Vine Catering', password: pw ?? 'ripple-demo' }); console.log('Seeded development workspace "Harbor & Vine Catering".'); }
 syncDirectory(db, packs);
 // Restart recovery: work that was running when the previous process stopped is marked interrupted and the mission is

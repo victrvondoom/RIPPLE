@@ -4,7 +4,8 @@ import { assertTransition, STATE_LABEL } from './states.js';
 import { buildImpactGraph } from './graph.js';
 import { recordCausalEvent } from './causal.js';
 import type { PackRegistry } from '../packs/registry.js';
-import type { CollabPort, OutboundMessage, RoomInfo, CaseRoomRecord } from '../collab/port.js';
+import type { CollabPort, OutboundMessage, RoomInfo, CaseRoomRecord, InboundMessage } from '../collab/port.js';
+import { chatRef, parseChatCommand } from '../collab/chat.js';
 import type { Connector, Observation } from '../connectors/index.js';
 import type { TextProvider } from '../agents/provider.js';
 import { sanitizeAttachments } from '../capabilities/reclaim/attachments.js';
@@ -15,7 +16,7 @@ import { evaluateCompletion } from './completion.js';
 import { MAX_PASSES, ORCHESTRATOR, TASK_TIMEOUT_MS, depsOf, roleFingerprint, validateRoleResult } from './orchestrator.js';
 
 export interface Actor { id: string; name: string; role: 'owner' | 'manager' | 'member' | 'viewer'; workspaceId: string }
-export interface EngineDeps { db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider; today?: () => string }
+export interface EngineDeps { db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider; today?: () => string; /** Switch sender name (lower-case) -> RIPPLE user email. See collab/chat.ts. */ chatIdentities?: Record<string, string> }
 
 const isManager = (a: Actor) => a.role === 'owner' || a.role === 'manager';
 const AGENT_SENDER = 'ripple';
@@ -25,7 +26,11 @@ export class Engine {
   /** Session 16: suppresses repeated identical findings (see repeat.ts). */
   private repeats = new RepeatGuard();
   db: Db; packs: PackRegistry; collab: CollabPort; connectors: Record<string, Connector>; provider: TextProvider;
-  constructor(public deps: EngineDeps) { this.db = deps.db; this.packs = deps.packs; this.collab = deps.collab; this.connectors = deps.connectors; this.provider = deps.provider; }
+  private chatIdentities: Record<string, string> = {};
+  constructor(public deps: EngineDeps) {
+    this.db = deps.db; this.packs = deps.packs; this.collab = deps.collab; this.connectors = deps.connectors; this.provider = deps.provider;
+    this.chatIdentities = Object.fromEntries(Object.entries(deps.chatIdentities ?? {}).map(([k, v]) => [k.trim().toLowerCase(), v.trim().toLowerCase()]));
+  }
 
   // ---------- helpers ----------
   require(a: Actor, ...roles: Actor['role'][]) {
@@ -94,6 +99,8 @@ export class Engine {
         const guard = sanitizeAttachments(im.attachments ?? []);
         this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: 'status', sender_kind: 'external', sender_key: im.senderId, sender_name: im.senderName || im.senderId, to_key: null, body: im.body, data: JSON.stringify({ addressed: im.addressed, messageId: im.messageId, ...(guard.length ? { attachments: guard.map((g) => ({ safeLabel: g.safeLabel, guard: g.guard, quarantined: g.quarantined, findings: g.findings.map((f) => `${f.code}: ${f.detail}`) })) } : {}) }), ref_id: null, source: 'switch', created_at: nowIso() });
         // Session 16: the same untrusted-text scan used by packs. Flags are advisory: recorded for a human, never acted on.
+        // Session 19: a decision typed in the room counts only through the same authority checks as the RIPPLE UI (see chatDecision).
+        void this.chatDecision(m, im).catch(() => undefined);
         const flags = untrustedFindings(im.body ?? '');
         // Repeat suppression (session 16): the same flag from the same sender is not re-recorded within 5 minutes.
         if (flags.length && this.repeats.admit(`${m.id}|${im.senderId}|${flags.join('|')}`)) this.audit(m.workspace_id, m.id, 'system', 'switch', 'untrusted_content_flagged', `Inbound Switch message from ${im.senderName || im.senderId} flagged for human review (not acted on): ${flags.join('; ')}`, { messageId: im.messageId, flags });
@@ -116,6 +123,40 @@ export class Engine {
     }
     return { row, info };
   }
+  /**
+   * Session 19: a decision typed in a bridged Switch room. Identity is the Switch sender name, mapped by the operator
+   * (SWITCH_CHAT_IDENTITIES). Authority is NOT decided here: answerQuestion / decideApproval run the same checks as the
+   * RIPPLE UI (assignee-only, approver gate, four-eyes, manager role, expiry). Every refusal is audited and changes nothing.
+   */
+  private async chatDecision(m: Row, im: InboundMessage) {
+    const cmd = parseChatCommand(im.body);
+    if (!cmd) return;
+    const who = im.senderName || im.senderId;
+    const refuse = (why: string) => this.audit(m.workspace_id, m.id, 'system', 'switch', 'chat_decision_refused', `Chat "${cmd.verb} ${cmd.ref}" from ${who} refused: ${why}`, { messageId: im.messageId, ref: cmd.ref });
+    const email = this.chatIdentities[who.trim().toLowerCase()];
+    if (!email) return refuse('this Switch sender is not mapped to a RIPPLE user (SWITCH_CHAT_IDENTITIES)');
+    const u = this.db.get('SELECT * FROM users WHERE workspace_id=? AND lower(email)=lower(?)', m.workspace_id, email);
+    if (!u) return refuse('the mapped email is not a user of this workspace');
+    const actor: Actor = { id: u.id, name: u.name, role: u.role, workspaceId: u.workspace_id };
+    const qs = this.db.all("SELECT * FROM questions WHERE mission_id=? AND workspace_id=? AND status='open'", m.id, m.workspace_id).filter((q: Row) => chatRef('Q', q.id) === cmd.ref);
+    const aps = this.db.all("SELECT * FROM approvals WHERE mission_id=? AND workspace_id=? AND status='pending'", m.id, m.workspace_id).filter((a: Row) => chatRef('A', a.id) === cmd.ref);
+    if (qs.length + aps.length !== 1) return refuse(qs.length + aps.length === 0 ? 'no open question or pending approval has that reference' : 'the reference matches more than one item');
+    try {
+      if (qs.length) {
+        if (cmd.verb === 'decline' && cmd.rest.length < 3) return refuse('a decline needs a reason');
+        const text = cmd.verb === 'answer' ? cmd.rest : cmd.verb === 'approve' ? `approve${cmd.rest ? ` ${cmd.rest}` : ''}` : `decline ${cmd.rest}`;
+        await this.answerQuestion(actor, m.id, qs[0]!.id, text);
+        this.audit(m.workspace_id, m.id, 'user', u.name, 'chat_decision', `${u.name} answered ${cmd.ref} from Switch chat (sender ${who})`, { messageId: im.messageId, ref: cmd.ref, questionId: qs[0]!.id });
+        return;
+      }
+      if (cmd.verb === 'answer') return refuse('an approval is decided with approve or decline');
+      if (cmd.verb === 'decline' && cmd.rest.length < 3) return refuse('a decline needs a reason');
+      const decision = cmd.verb === 'approve' ? 'approved' : 'rejected';
+      await this.decideApproval(actor, m.id, aps[0]!.id, decision, cmd.rest);
+      this.audit(m.workspace_id, m.id, 'user', u.name, 'chat_decision', `${u.name} ${decision} ${cmd.ref} from Switch chat (sender ${who})`, { messageId: im.messageId, ref: cmd.ref, approvalId: aps[0]!.id });
+    } catch (e) { refuse(String((e as Error).message).slice(0, 200)); }
+  }
+
   async say(m: Row, msg: OutboundMessage & { senderKind: 'agent' | 'human' | 'system'; data?: unknown; refId?: string }) {
     const { row, info } = await this.ensureRoom(m);
     this.db.insert('messages', { id: uid('msg'), workspace_id: m.workspace_id, mission_id: m.id, room_id: row.id, kind: msg.kind, sender_kind: msg.senderKind, sender_key: msg.senderKey, sender_name: msg.senderName, to_key: msg.toKey ?? null, body: msg.body, data: JSON.stringify(msg.data ?? {}), ref_id: msg.refId ?? null, source: 'ripple', created_at: nowIso() });
@@ -311,7 +352,8 @@ export class Engine {
       }
       this.db.insert('actions', { ...base, status: 'proposed', attempts: 0, quiet_hours: spec.quietHours && validQuietWindow(spec.quietHours) ? JSON.stringify(spec.quietHours) : null });
       const gate = this.resolveApprover(ws, pack.id, pack, spec);
-      this.db.insert('approvals', { id: uid('apr'), workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: `Approve: ${spec.title}`, rationale: spec.rationale, required_role: spec.approvalRole, status: 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: gate?.userId ?? null, approver_label: gate?.label ?? null, separate_from_requester: spec.separateFromRequester ? 1 : 0, expires_at: spec.approvalTtlMinutes ? new Date(Date.now() + spec.approvalTtlMinutes * 60_000).toISOString() : null });
+      const aprId = uid('apr');
+      this.db.insert('approvals', { id: aprId, workspace_id: ws, mission_id: m.id, subject_kind: 'action', subject_id: aid, title: `Approve: ${spec.title}`, rationale: spec.rationale, required_role: spec.approvalRole, status: 'pending', baseline_version: change.baseline_version, change_seq: change.seq, analysis_rev: rev, created_at: nowIso(), approver_user_id: gate?.userId ?? null, approver_label: gate?.label ?? null, separate_from_requester: spec.separateFromRequester ? 1 : 0, expires_at: spec.approvalTtlMinutes ? new Date(Date.now() + spec.approvalTtlMinutes * 60_000).toISOString() : null });
       for (const rk of spec.ackRoles) {
         const u = this.roleUser(ws, pack.id, rk);
         if (u) this.db.insert('acknowledgements', { id: uid('ack'), workspace_id: ws, mission_id: m.id, action_id: aid, user_id: u.id, status: 'pending' });
@@ -320,7 +362,7 @@ export class Engine {
       const ak = Object.values(ctx.results).flatMap((r) => r.drafts).find((d) => d.kind === c.draftKind)?.artifactKey;
       if (ak && nodeIds.has(`artifact:${ak}`)) addEdge(`artifact:${ak}`, `action:${spec.key}`, 'produces');
       for (const d of pack.decisions) if (nodeIds.has(`decision:${d.key}`) && ak && d.gates.includes(ak)) addEdge(`decision:${d.key}`, `action:${spec.key}`, 'authorizes');
-      await this.say(m, { kind: 'approval_request', senderKey: 'coordinator', senderName: pack.roles.find((r) => r.key === 'coordinator')?.name ?? 'Coordinator', senderKind: 'agent', toKey: 'human_manager', toName: this.roleUser(ws, pack.id, 'human_manager')?.name ?? 'Event Manager', body: `Approval requested: ${spec.title}. ${spec.rationale} Nothing is sent until you approve.`, refId: aid });
+      await this.say(m, { kind: 'approval_request', senderKey: 'coordinator', senderName: pack.roles.find((r) => r.key === 'coordinator')?.name ?? 'Coordinator', senderKind: 'agent', toKey: 'human_manager', toName: this.roleUser(ws, pack.id, 'human_manager')?.name ?? 'Event Manager', body: `Approval requested: ${spec.title}. ${spec.rationale} Nothing is sent until you approve. Reply in this thread: approve ${chatRef('A', aprId)}, or decline ${chatRef('A', aprId)} <reason>.`, refId: aid });
     }
 
     const openBlocking = this.db.all("SELECT * FROM questions WHERE mission_id=? AND workspace_id=? AND status='open' AND blocking=1", m.id, ws);
@@ -425,7 +467,7 @@ export class Engine {
           if (!ex) {
             const qid = uid('q');
             this.db.insert('questions', { id: qid, workspace_id: ws, mission_id: m.id, analysis_rev: rev, key: q.key, asked_by_role: roleKey, assignee_user_id: assignee?.id ?? null, text: q.text, blocking: q.blocking, status: 'open', created_at: nowIso(), assignee_only: q.assigneeOnly ? 1 : 0 });
-            await this.say(m, { kind: 'question', senderKey: roleKey, senderName: roleName(roleKey), senderKind: 'agent', toKey: q.assigneeRole, toName: assignee?.name ?? roleName(q.assigneeRole), body: `${q.blocking ? '⛔ BLOCKING QUESTION' : 'Question'}: ${q.text}`, refId: qid });
+            await this.say(m, { kind: 'question', senderKey: roleKey, senderName: roleName(roleKey), senderKind: 'agent', toKey: q.assigneeRole, toName: assignee?.name ?? roleName(q.assigneeRole), body: `${q.blocking ? '⛔ BLOCKING QUESTION' : 'Question'}: ${q.text} Reply in this thread: answer ${chatRef('Q', qid)} <text>${q.blocking ? `, or approve ${chatRef('Q', qid)}, or decline ${chatRef('Q', qid)} <reason>` : ''}.`, refId: qid });
           } else if (ex.status === 'open') this.db.exec('UPDATE questions SET text=?, analysis_rev=? WHERE id=?', q.text, rev, ex.id);
         }
         for (const req of result.requests ?? []) requests.push({ from: roleKey, to: req.roleKey, reason: req.reason });

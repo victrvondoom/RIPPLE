@@ -34,7 +34,7 @@ export const SYSTEMS: CapabilitySystem[] = [
 export const PACK_SYSTEM: Record<string, SystemId> = {
   'crewpilot': 'engineering', 'deploy-gate': 'engineering', 'flipside-review': 'engineering',
   'incident-sentinel': 'incident', 'shiftrelay': 'incident',
-  'beo-rescue': 'commerce', 'scopeguard': 'commerce', 'invoiceguard': 'commerce', 'clearsend': 'commerce',
+  'beo-rescue': 'commerce', 'run-of-show': 'commerce', 'scopeguard': 'commerce', 'invoiceguard': 'commerce', 'clearsend': 'commerce',
   'movemate': 'personal', 'submitready': 'personal', 'offerroom': 'personal',
   'sceneshift': 'creative', 'podflow': 'creative',
   'schemacourt': 'data', 'revenue-recovery': 'data',
