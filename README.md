@@ -1,4 +1,5 @@
-![Uploading 2381e331-7d42-4c20-801c-05fcd5167f5e.jpg…]()
+<img width="1080" height="1440" alt="2381e331-7d42-4c20-801c-05fcd5167f5e" src="https://github.com/user-attachments/assets/1ba191c0-6fb7-42e5-b932-c63a6cf8ca89" />
+
 
 # RIPPLE
 
