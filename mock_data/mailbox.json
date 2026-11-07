@@ -1,0 +1,24 @@
+{
+  "_note": "SYNTHETIC demo data for the Harborvine billing-dispute demo. Not production; no real customer, bank or payment provider.",
+  "inbox": [
+    {
+      "id": "em-402-1",
+      "from": "Dana Whitfield <ap@acme-logistics.example>",
+      "to": "support@harborvine.example",
+      "sent_at": "2026-11-05T13:12:00Z",
+      "subject": "Double charge after your outage",
+      "body": "Our checkout failed during yesterday's outage, we were double-charged $4,200 for invoice INV-5530, and your promised refund still hasn't arrived.\nPlease refund the duplicate charge by Friday."
+    }
+  ],
+  "sent": [
+    {
+      "id": "sent-401-9",
+      "from": "support@harborvine.example",
+      "to": "ap@acme-logistics.example",
+      "sent_at": "2026-11-04T18:05:00Z",
+      "subject": "Re: Duplicate charge",
+      "body": "Thanks for flagging this. I will refund the duplicate charge by 9 pm today."
+    }
+  ],
+  "outbox": []
+}

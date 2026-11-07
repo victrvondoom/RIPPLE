@@ -1,0 +1,8 @@
+{
+  "_note": "SYNTHETIC demo data for the Harborvine billing-dispute demo. Not production; no real customer, bank or payment provider. Demo department tokens are not secrets; the mock service binds to 127.0.0.1.",
+  "tokens": {
+    "demo-finance-token": "finance",
+    "demo-engineering-token": "engineering",
+    "demo-support-token": "support"
+  }
+}

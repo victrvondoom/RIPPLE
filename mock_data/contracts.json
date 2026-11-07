@@ -1,0 +1,69 @@
+{
+  "_note": "SYNTHETIC demo data for the Harborvine billing-dispute demo. Not production; no real customer, bank or payment provider.",
+  "company": {
+    "name": "Harborvine",
+    "support_address": "support@harborvine.example",
+    "utc_offset_hours": -5
+  },
+  "customers": [
+    {
+      "account": "ACME-2231",
+      "name": "Acme Logistics",
+      "contact": "ap@acme-logistics.example",
+      "contact_name": "Dana Whitfield",
+      "plan": "Enterprise",
+      "monthly_fee": 12000.0,
+      "currency": "USD",
+      "sla": {
+        "service": "checkout-api",
+        "clause": "SLA-4.2",
+        "target_pct": 99.9,
+        "unavailable_if_error_rate_pct_at_least": 5.0,
+        "tiers": [
+          {
+            "below_pct": 99.9,
+            "credit_pct": 10
+          },
+          {
+            "below_pct": 99.0,
+            "credit_pct": 25
+          },
+          {
+            "below_pct": 95.0,
+            "credit_pct": 100
+          }
+        ],
+        "cap_pct": 100,
+        "min_payout": 1.0
+      }
+    }
+  ],
+  "policies": [
+    {
+      "id": "BILL-7.1",
+      "version": "3",
+      "text": "Where the same invoice is captured more than once, the duplicate capture is refunded in full to the original payment method. A refund is issued only after Finance verifies the duplicate in the payment ledger."
+    },
+    {
+      "id": "SLA-4.2",
+      "version": "5",
+      "text": "Monthly uptime is 100% minus the share of 5-minute intervals in the month in which at least 5% of checkout requests failed. Below 99.9% the customer receives a service credit of 10% of the monthly fee; below 99.0%, 25%; below 95.0%, 100%. Credits below 1 USD are not paid."
+    },
+    {
+      "id": "COMMS-2.3",
+      "version": "2",
+      "text": "Support must not confirm a refund or credit to a customer until Finance has executed it and the ledger shows it."
+    }
+  ],
+  "approvers": {
+    "finance": [
+      "nora"
+    ],
+    "support": [
+      "sofia"
+    ],
+    "engineering": [
+      "eli"
+    ]
+  }
+}

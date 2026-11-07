@@ -1,0 +1,477 @@
+{
+  "_note": "SYNTHETIC demo data for the Harborvine billing-dispute demo. Not production; no real customer, bank or payment provider. intervals_5min lists only the outage intervals; every other 5-minute interval in the month was healthy.",
+  "incidents": [
+    {
+      "id": "INC-402",
+      "service": "checkout-api",
+      "datacenter": "dc-1 (on-prem)",
+      "hosts": [
+        "chk-app-01",
+        "chk-app-02",
+        "pay-webhook-01"
+      ],
+      "start": "2026-11-04T09:30:00Z",
+      "end": "2026-11-04T15:50:00Z",
+      "root_cause": "payments webhook timed out; the billing retry job re-captured invoices whose first capture had already succeeded",
+      "defect": "BUG-1187",
+      "intervals_5min": [
+        {
+          "start": "2026-11-04T09:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 252,
+          "error_rate_pct": 6
+        },
+        {
+          "start": "2026-11-04T09:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 966,
+          "error_rate_pct": 23
+        },
+        {
+          "start": "2026-11-04T09:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 1680,
+          "error_rate_pct": 40
+        },
+        {
+          "start": "2026-11-04T09:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 2394,
+          "error_rate_pct": 57
+        },
+        {
+          "start": "2026-11-04T09:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 3108,
+          "error_rate_pct": 74
+        },
+        {
+          "start": "2026-11-04T09:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 3822,
+          "error_rate_pct": 91
+        },
+        {
+          "start": "2026-11-04T10:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 756,
+          "error_rate_pct": 18
+        },
+        {
+          "start": "2026-11-04T10:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 1470,
+          "error_rate_pct": 35
+        },
+        {
+          "start": "2026-11-04T10:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 2184,
+          "error_rate_pct": 52
+        },
+        {
+          "start": "2026-11-04T10:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 2898,
+          "error_rate_pct": 69
+        },
+        {
+          "start": "2026-11-04T10:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 3612,
+          "error_rate_pct": 86
+        },
+        {
+          "start": "2026-11-04T10:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 546,
+          "error_rate_pct": 13
+        },
+        {
+          "start": "2026-11-04T10:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 1260,
+          "error_rate_pct": 30
+        },
+        {
+          "start": "2026-11-04T10:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 1974,
+          "error_rate_pct": 47
+        },
+        {
+          "start": "2026-11-04T10:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 2688,
+          "error_rate_pct": 64
+        },
+        {
+          "start": "2026-11-04T10:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 3402,
+          "error_rate_pct": 81
+        },
+        {
+          "start": "2026-11-04T10:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 336,
+          "error_rate_pct": 8
+        },
+        {
+          "start": "2026-11-04T10:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 1050,
+          "error_rate_pct": 25
+        },
+        {
+          "start": "2026-11-04T11:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 1764,
+          "error_rate_pct": 42
+        },
+        {
+          "start": "2026-11-04T11:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 2478,
+          "error_rate_pct": 59
+        },
+        {
+          "start": "2026-11-04T11:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 3192,
+          "error_rate_pct": 76
+        },
+        {
+          "start": "2026-11-04T11:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 3906,
+          "error_rate_pct": 93
+        },
+        {
+          "start": "2026-11-04T11:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 840,
+          "error_rate_pct": 20
+        },
+        {
+          "start": "2026-11-04T11:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 1554,
+          "error_rate_pct": 37
+        },
+        {
+          "start": "2026-11-04T11:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 2268,
+          "error_rate_pct": 54
+        },
+        {
+          "start": "2026-11-04T11:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 2982,
+          "error_rate_pct": 71
+        },
+        {
+          "start": "2026-11-04T11:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 3696,
+          "error_rate_pct": 88
+        },
+        {
+          "start": "2026-11-04T11:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 630,
+          "error_rate_pct": 15
+        },
+        {
+          "start": "2026-11-04T11:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 1344,
+          "error_rate_pct": 32
+        },
+        {
+          "start": "2026-11-04T11:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 2058,
+          "error_rate_pct": 49
+        },
+        {
+          "start": "2026-11-04T12:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 2772,
+          "error_rate_pct": 66
+        },
+        {
+          "start": "2026-11-04T12:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 3486,
+          "error_rate_pct": 83
+        },
+        {
+          "start": "2026-11-04T12:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 420,
+          "error_rate_pct": 10
+        },
+        {
+          "start": "2026-11-04T12:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 1134,
+          "error_rate_pct": 27
+        },
+        {
+          "start": "2026-11-04T12:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 1848,
+          "error_rate_pct": 44
+        },
+        {
+          "start": "2026-11-04T12:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 2562,
+          "error_rate_pct": 61
+        },
+        {
+          "start": "2026-11-04T12:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 3276,
+          "error_rate_pct": 78
+        },
+        {
+          "start": "2026-11-04T12:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 3990,
+          "error_rate_pct": 95
+        },
+        {
+          "start": "2026-11-04T12:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 924,
+          "error_rate_pct": 22
+        },
+        {
+          "start": "2026-11-04T12:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 1638,
+          "error_rate_pct": 39
+        },
+        {
+          "start": "2026-11-04T12:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 2352,
+          "error_rate_pct": 56
+        },
+        {
+          "start": "2026-11-04T12:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 3066,
+          "error_rate_pct": 73
+        },
+        {
+          "start": "2026-11-04T13:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 3780,
+          "error_rate_pct": 90
+        },
+        {
+          "start": "2026-11-04T13:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 714,
+          "error_rate_pct": 17
+        },
+        {
+          "start": "2026-11-04T13:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 1428,
+          "error_rate_pct": 34
+        },
+        {
+          "start": "2026-11-04T13:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 2142,
+          "error_rate_pct": 51
+        },
+        {
+          "start": "2026-11-04T13:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 2856,
+          "error_rate_pct": 68
+        },
+        {
+          "start": "2026-11-04T13:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 3570,
+          "error_rate_pct": 85
+        },
+        {
+          "start": "2026-11-04T13:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 504,
+          "error_rate_pct": 12
+        },
+        {
+          "start": "2026-11-04T13:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 1218,
+          "error_rate_pct": 29
+        },
+        {
+          "start": "2026-11-04T13:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 1932,
+          "error_rate_pct": 46
+        },
+        {
+          "start": "2026-11-04T13:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 2646,
+          "error_rate_pct": 63
+        },
+        {
+          "start": "2026-11-04T13:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 3360,
+          "error_rate_pct": 80
+        },
+        {
+          "start": "2026-11-04T13:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 294,
+          "error_rate_pct": 7
+        },
+        {
+          "start": "2026-11-04T14:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 1008,
+          "error_rate_pct": 24
+        },
+        {
+          "start": "2026-11-04T14:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 1722,
+          "error_rate_pct": 41
+        },
+        {
+          "start": "2026-11-04T14:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 2436,
+          "error_rate_pct": 58
+        },
+        {
+          "start": "2026-11-04T14:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 3150,
+          "error_rate_pct": 75
+        },
+        {
+          "start": "2026-11-04T14:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 3864,
+          "error_rate_pct": 92
+        },
+        {
+          "start": "2026-11-04T14:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 798,
+          "error_rate_pct": 19
+        },
+        {
+          "start": "2026-11-04T14:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 1512,
+          "error_rate_pct": 36
+        },
+        {
+          "start": "2026-11-04T14:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 2226,
+          "error_rate_pct": 53
+        },
+        {
+          "start": "2026-11-04T14:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 2940,
+          "error_rate_pct": 70
+        },
+        {
+          "start": "2026-11-04T14:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 3654,
+          "error_rate_pct": 87
+        },
+        {
+          "start": "2026-11-04T14:50:00Z",
+          "requests": 4200,
+          "errors_5xx": 588,
+          "error_rate_pct": 14
+        },
+        {
+          "start": "2026-11-04T14:55:00Z",
+          "requests": 4200,
+          "errors_5xx": 1302,
+          "error_rate_pct": 31
+        },
+        {
+          "start": "2026-11-04T15:00:00Z",
+          "requests": 4200,
+          "errors_5xx": 2016,
+          "error_rate_pct": 48
+        },
+        {
+          "start": "2026-11-04T15:05:00Z",
+          "requests": 4200,
+          "errors_5xx": 2730,
+          "error_rate_pct": 65
+        },
+        {
+          "start": "2026-11-04T15:10:00Z",
+          "requests": 4200,
+          "errors_5xx": 3444,
+          "error_rate_pct": 82
+        },
+        {
+          "start": "2026-11-04T15:15:00Z",
+          "requests": 4200,
+          "errors_5xx": 378,
+          "error_rate_pct": 9
+        },
+        {
+          "start": "2026-11-04T15:20:00Z",
+          "requests": 4200,
+          "errors_5xx": 1092,
+          "error_rate_pct": 26
+        },
+        {
+          "start": "2026-11-04T15:25:00Z",
+          "requests": 4200,
+          "errors_5xx": 1806,
+          "error_rate_pct": 43
+        },
+        {
+          "start": "2026-11-04T15:30:00Z",
+          "requests": 4200,
+          "errors_5xx": 2520,
+          "error_rate_pct": 60
+        },
+        {
+          "start": "2026-11-04T15:35:00Z",
+          "requests": 4200,
+          "errors_5xx": 3234,
+          "error_rate_pct": 77
+        },
+        {
+          "start": "2026-11-04T15:40:00Z",
+          "requests": 4200,
+          "errors_5xx": 3948,
+          "error_rate_pct": 94
+        },
+        {
+          "start": "2026-11-04T15:45:00Z",
+          "requests": 4200,
+          "errors_5xx": 882,
+          "error_rate_pct": 21
+        }
+      ]
+    }
+  ]
+}
