@@ -1,0 +1,66 @@
+{
+  "engineVsOracle": {
+    "BREACH_CONFIRMED": {
+      "BREACH_CONFIRMED": 1077,
+      "BREACH_POSSIBLE": 0,
+      "NO_BREACH": 0,
+      "INDETERMINATE": 0,
+      "NOT_APPLICABLE": 0
+    },
+    "BREACH_POSSIBLE": {
+      "BREACH_CONFIRMED": 0,
+      "BREACH_POSSIBLE": 303,
+      "NO_BREACH": 1,
+      "INDETERMINATE": 0,
+      "NOT_APPLICABLE": 0
+    },
+    "NO_BREACH": {
+      "BREACH_CONFIRMED": 0,
+      "BREACH_POSSIBLE": 0,
+      "NO_BREACH": 1253,
+      "INDETERMINATE": 0,
+      "NOT_APPLICABLE": 0
+    },
+    "INDETERMINATE": {
+      "BREACH_CONFIRMED": 0,
+      "BREACH_POSSIBLE": 0,
+      "NO_BREACH": 0,
+      "INDETERMINATE": 216,
+      "NOT_APPLICABLE": 0
+    },
+    "NOT_APPLICABLE": {
+      "BREACH_CONFIRMED": 0,
+      "BREACH_POSSIBLE": 0,
+      "NO_BREACH": 0,
+      "INDETERMINATE": 0,
+      "NOT_APPLICABLE": 150
+    }
+  },
+  "engineVsTruth": {
+    "BREACH_CONFIRMED": {
+      "TRUE_BREACH": 1077,
+      "TRUE_NO_BREACH": 0,
+      "NOT_DECIDABLE": 0
+    },
+    "BREACH_POSSIBLE": {
+      "TRUE_BREACH": 169,
+      "TRUE_NO_BREACH": 135,
+      "NOT_DECIDABLE": 0
+    },
+    "NO_BREACH": {
+      "TRUE_BREACH": 0,
+      "TRUE_NO_BREACH": 1253,
+      "NOT_DECIDABLE": 0
+    },
+    "INDETERMINATE": {
+      "TRUE_BREACH": 10,
+      "TRUE_NO_BREACH": 14,
+      "NOT_DECIDABLE": 192
+    },
+    "NOT_APPLICABLE": {
+      "TRUE_BREACH": 0,
+      "TRUE_NO_BREACH": 0,
+      "NOT_DECIDABLE": 150
+    }
+  }
+}

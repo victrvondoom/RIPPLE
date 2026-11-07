@@ -1,0 +1,510 @@
+{
+  "config": {
+    "benchmark": "TCFB",
+    "engine": "1.0.0",
+    "seed": 20261107,
+    "casesPerCategory": 150,
+    "categories": 20,
+    "totalCases": 3000,
+    "mdeSamplesPerCategory": 10,
+    "policy": {
+      "authorityRanks": {
+        "SIGNED_MONITORING": 6,
+        "AUTHENTICATED_INFRASTRUCTURE": 5,
+        "SYNTHETIC_PROBE": 4,
+        "ENGINEERING_INCIDENT_REPORT": 3,
+        "SUPPORT_TICKET": 2,
+        "CUSTOMER_REPORT": 2,
+        "UNVERIFIED_MANUAL": 1
+      },
+      "resolveByAuthorityMinGap": 2,
+      "defaultClockUncertaintyMs": 60000,
+      "staleAfterMs": 900000,
+      "delayedIngestionAfterMs": 600000,
+      "maxBranchNodes": 800,
+      "maxUnconfirmedExclusions": 8
+    }
+  },
+  "metrics": {
+    "safety": {
+      "falseConfirmedBreachRate": {
+        "num": 0,
+        "den": 1402,
+        "rate": 0
+      },
+      "falseConfirmedBreachRate_honestEvidence": {
+        "num": 0,
+        "den": 1259,
+        "rate": 0
+      },
+      "falseConfirmedBreachRate_withFalsifiedEvidence": {
+        "num": 0,
+        "den": 143,
+        "rate": 0
+      },
+      "precisionOfConfirmedBreach": {
+        "num": 1077,
+        "den": 1077,
+        "rate": 1
+      },
+      "falseNoBreachRate": {
+        "num": 0,
+        "den": 1256,
+        "rate": 0
+      },
+      "falseNoBreachRate_honestEvidence": {
+        "num": 0,
+        "den": 1099,
+        "rate": 0
+      }
+    },
+    "classification": {
+      "agreementWithOracle": {
+        "num": 2999,
+        "den": 3000,
+        "rate": 0.9997
+      },
+      "correctConfirmed": {
+        "num": 1077,
+        "den": 1077,
+        "rate": 1
+      },
+      "correctNoBreach": {
+        "num": 1253,
+        "den": 1254,
+        "rate": 0.9992
+      },
+      "correctPossible": {
+        "num": 303,
+        "den": 303,
+        "rate": 1
+      },
+      "correctIndeterminate": {
+        "num": 216,
+        "den": 216,
+        "rate": 1
+      },
+      "correctNotApplicable": {
+        "num": 150,
+        "den": 150,
+        "rate": 1
+      },
+      "excessiveAbstention": {
+        "num": 1,
+        "den": 2331,
+        "rate": 0.0004
+      },
+      "abstentionRateOverall": {
+        "num": 520,
+        "den": 2850,
+        "rate": 0.1825
+      },
+      "decisiveRateOnDecidableTruth": {
+        "num": 2330,
+        "den": 2658,
+        "rate": 0.8766
+      }
+    },
+    "bounds": {
+      "soundAgainstHiddenTruth": {
+        "num": 2354,
+        "den": 2354,
+        "rate": 1
+      },
+      "containOracleBounds": {
+        "num": 2654,
+        "den": 2654,
+        "rate": 1
+      },
+      "exactBoundsEqualOracle": {
+        "num": 2654,
+        "den": 2654,
+        "rate": 1
+      },
+      "tightness_bothBoundsExact": {
+        "num": 2538,
+        "den": 2654,
+        "rate": 0.9563
+      },
+      "duplicateDurationPrevention": {
+        "num": 300,
+        "den": 300,
+        "rate": 1
+      }
+    },
+    "contractRules": {
+      "agreementWithOracle_ruleCategories": {
+        "num": 1199,
+        "den": 1200,
+        "rate": 0.9992
+      }
+    },
+    "evidenceGaps": {
+      "meanRecall": 1,
+      "meanPrecision": 1,
+      "casesWithGaps": 2654
+    },
+    "minimumDecisiveEvidence": {
+      "sampledUndecidedCases": 155,
+      "top1DecisiveAfterAcquisition": {
+        "num": 118,
+        "den": 155,
+        "rate": 0.7613
+      },
+      "top1CorrectAfterAcquisition": {
+        "num": 118,
+        "den": 155,
+        "rate": 0.7613
+      },
+      "randomRequestDecisiveAfterAcquisition": {
+        "num": 60,
+        "den": 155,
+        "rate": 0.3871
+      },
+      "randomRequestCorrectAfterAcquisition": {
+        "num": 59,
+        "den": 155,
+        "rate": 0.3806
+      },
+      "alwaysDecisiveGuaranteeHeld": {
+        "num": 2,
+        "den": 2,
+        "rate": 1
+      },
+      "topRequestKinds": {
+        "OBSERVE_INTERVAL": 150,
+        "RESOLVE_TIMESTAMP": 4,
+        "CONFIRM_EXCLUSION": 1
+      }
+    },
+    "dynamics": {
+      "updateConsistency": {
+        "num": 141,
+        "den": 141,
+        "rate": 1
+      },
+      "deterministicReproducibility": {
+        "num": 3000,
+        "den": 3000,
+        "rate": 1
+      },
+      "evidenceOrderInvariance": {
+        "num": 3000,
+        "den": 3000,
+        "rate": 1
+      }
+    },
+    "performance": {
+      "engineMsMean": 3.44,
+      "engineMsP95": 2.81,
+      "engineMsMax": 719.22,
+      "totalRunMs": 76370
+    }
+  },
+  "perCategory": {
+    "ACCURATE_TIMESTAMPS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 69,
+        "BREACH_POSSIBLE": 6,
+        "NO_BREACH": 75,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "CLOCK_DRIFT": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 73,
+        "BREACH_POSSIBLE": 14,
+        "NO_BREACH": 63,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "LARGE_CLOCK_OFFSET": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 56,
+        "BREACH_POSSIBLE": 18,
+        "NO_BREACH": 76,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 139,
+      "oracleExact": 150
+    },
+    "MISSING_RECOVERY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 34,
+        "BREACH_POSSIBLE": 76,
+        "NO_BREACH": 36,
+        "INDETERMINATE": 4,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 136,
+      "oracleExact": 150
+    },
+    "DUPLICATE_OUTAGE_EVENTS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 70,
+        "BREACH_POSSIBLE": 21,
+        "NO_BREACH": 59,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 137,
+      "oracleExact": 150
+    },
+    "LATE_ARRIVING_EVIDENCE": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 73,
+        "BREACH_POSSIBLE": 21,
+        "NO_BREACH": 56,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 134,
+      "oracleExact": 150
+    },
+    "OUT_OF_ORDER_EVENTS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 76,
+        "BREACH_POSSIBLE": 17,
+        "NO_BREACH": 57,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 141,
+      "oracleExact": 150
+    },
+    "PARTIAL_REGIONAL_OUTAGE": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 40,
+        "BREACH_POSSIBLE": 9,
+        "NO_BREACH": 101,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 147,
+      "oracleExact": 150
+    },
+    "OVERLAPPING_INCIDENTS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 73,
+        "BREACH_POSSIBLE": 17,
+        "NO_BREACH": 60,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "FLAPPING_RECOVERY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 56,
+        "BREACH_POSSIBLE": 13,
+        "NO_BREACH": 81,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "CONFLICTING_TELEMETRY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 70,
+        "BREACH_POSSIBLE": 8,
+        "NO_BREACH": 72,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 140,
+      "oracleExact": 150
+    },
+    "MAINTENANCE_EXCLUSIONS": {
+      "cases": 150,
+      "agreementWithOracle": 0.9933,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 48,
+        "BREACH_POSSIBLE": 35,
+        "NO_BREACH": 67,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 136,
+      "oracleExact": 150
+    },
+    "CONTRACT_VERSION_CHANGE": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 50,
+        "BREACH_POSSIBLE": 6,
+        "NO_BREACH": 52,
+        "INDETERMINATE": 42,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 101,
+      "oracleExact": 150
+    },
+    "WINDOW_BOUNDARY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 44,
+        "BREACH_POSSIBLE": 10,
+        "NO_BREACH": 96,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "TIMEZONE_BOUNDARY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 52,
+        "BREACH_POSSIBLE": 12,
+        "NO_BREACH": 86,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "THRESHOLD_EQUALITY": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 24,
+        "BREACH_POSSIBLE": 15,
+        "NO_BREACH": 111,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 150,
+      "oracleExact": 150
+    },
+    "MULTIPLE_OVERLAPPING_INTERVALS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 98,
+        "BREACH_POSSIBLE": 5,
+        "NO_BREACH": 47,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 133,
+      "oracleExact": 150
+    },
+    "MISSING_CONTRACT_FIELDS": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 0,
+        "BREACH_POSSIBLE": 0,
+        "NO_BREACH": 0,
+        "INDETERMINATE": 150,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 0,
+      "oracleExact": 150
+    },
+    "INCORRECT_SERVICE_SCOPE": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 0,
+        "BREACH_POSSIBLE": 0,
+        "NO_BREACH": 0,
+        "INDETERMINATE": 0,
+        "NOT_APPLICABLE": 150
+      },
+      "boundsExact": 0,
+      "oracleExact": 150
+    },
+    "DELIBERATE_CONTRADICTION": {
+      "cases": 150,
+      "agreementWithOracle": 1,
+      "falseConfirmed": 0,
+      "falseNoBreach": 0,
+      "classes": {
+        "BREACH_CONFIRMED": 71,
+        "BREACH_POSSIBLE": 1,
+        "NO_BREACH": 58,
+        "INDETERMINATE": 20,
+        "NOT_APPLICABLE": 0
+      },
+      "boundsExact": 144,
+      "oracleExact": 150
+    }
+  },
+  "failureCounts": {
+    "CLASS_MISMATCH_VS_ORACLE": 1,
+    "EXCESSIVE_ABSTENTION": 1
+  }
+}
