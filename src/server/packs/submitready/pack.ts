@@ -116,6 +116,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 }
 
 export const submitReadyPack: WorkflowPack = {
+  tier: 'core', system: 'personal',
   id: 'submitready', name: 'SubmitReady', domain: 'Education Workflows', version: '1.0.0',
   description: 'Map a strict rubric to deliverables and recorded evidence; every requirement is verified, incomplete, uncertain or not applicable — never "satisfied" without evidence.',
   labels: { baseline: 'Rubric & deliverables', change: 'Progress update', changeVerb: 'Submit progress update', plan: 'rubric & deliverables', mission: 'Submission readiness', blurb: 'Evidence-backed rubric compliance' },

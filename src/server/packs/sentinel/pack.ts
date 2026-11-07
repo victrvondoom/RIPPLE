@@ -71,6 +71,7 @@ export function correlate(plan: Plan, inc: Incident, answers: Answers = {}): Cor
 }
 
 export const sentinelPack: WorkflowPack = {
+  tier: 'extended', system: 'incident',
   id: 'incident-sentinel',
   name: 'Incident Sentinel',
   domain: 'SRE & Cloud Infrastructure',

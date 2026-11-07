@@ -100,6 +100,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 }
 
 export const shiftRelayPack: WorkflowPack = {
+  tier: 'core', system: 'incident',
   id: 'shiftrelay', name: 'ShiftRelay', domain: 'Field Operations', version: '1.0.0',
   description: 'Shift handover: reconcile the open job board with what was reported, catch omissions, classify urgency, assign owners and deadlines, and require acknowledgement of the transfer.',
   labels: { baseline: 'Open job board', change: 'Shift handover', changeVerb: 'Submit handover', plan: 'job board', mission: 'Shift handover', blurb: 'Nothing gets lost between shifts' },

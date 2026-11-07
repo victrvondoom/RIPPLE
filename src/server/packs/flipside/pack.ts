@@ -63,6 +63,7 @@ export function parseDisclosure(text: string): Disclosure | undefined {
 export const proofResult = (plan: Plan, d: Disclosure) => { const r = verifyStep(plan.seal.root, plan.seal.leafCount, d.index, d.content, d.proof as ProofStep[]); return { verdict: r.ok ? 'OK' as const : 'PROOF_FAIL' as const, reason: r.reason }; };
 
 export const flipsidePack: WorkflowPack = {
+  tier: 'extended', system: 'engineering',
   id: 'flipside-review',
   name: 'Flipside Review',
   domain: 'Code Review',

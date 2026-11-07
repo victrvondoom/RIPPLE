@@ -43,6 +43,7 @@ export function confirmedHits(plan: Plan, c: Change, a: AnalysisContext['answers
 export const outstandingChecks = (hits: Hit[], c: Change) => hits.filter((h) => !c.shelfChecks.some((k) => k.storeId === h.storeId && norm(k.batchRead) === norm(h.recalled)));
 
 export const recallPack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'recall-desk', name: 'Recall Desk', domain: 'Pharmacy Compliance', version: '1.0.0',
   description: 'A drug-batch recall desk: match a regulator\'s failed batches to each store\'s stock, treat look-alike batch numbers as questions for a person, draft supplier and patient notices (never sent), and close only when every store has a recorded shelf check. Only the QA Head approves the stop-sale order.',
   labels: { baseline: 'Chain & Store Stock', change: 'Regulator List', changeVerb: 'Open recall', plan: 'Stock Baseline', mission: 'Recall', blurb: 'Matches failed batches to store stock. A letter-O versus zero look-alike is never auto-matched: the QA Head decides. Nothing is sent; completion needs a shelf check per store.' },

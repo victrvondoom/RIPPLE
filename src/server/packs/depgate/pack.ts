@@ -44,6 +44,7 @@ export function gate(plan: Plan, change: Change, answers: AnalysisContext['answe
 }
 
 export const depgatePack: WorkflowPack = {
+  tier: 'extended', system: 'engineering',
   id: 'deploy-gate',
   name: 'Deploy Gate',
   domain: 'Release Engineering',

@@ -198,6 +198,7 @@ function analyzeCoordinator(ctx: AnalysisContext): RoleResult {
 }
 
 export const beoPack: WorkflowPack = {
+  tier: 'core', system: 'commerce',
   id: 'beo-rescue', name: 'BEO Rescue', domain: 'Event Operations', version: '1.0.0',
   description: 'Re-plan an approved catering Banquet Event Order when the client changes guests, menu needs or timing.',
   agentLimit: 'Flags allergen risks; strictly forbidden from certifying food safety',

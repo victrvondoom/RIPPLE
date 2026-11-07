@@ -7,6 +7,8 @@
  * `integration` is 'pack-backed' only when an implemented RIPPLE pack exercises the capability, otherwise
  * 'catalogued' (idea recorded, not ported) or 'pending' (insufficient information to classify).
  */
+import { extendedRegistry } from '../packs/registry.js';
+
 export type SystemId = 'engineering' | 'incident' | 'commerce' | 'knowledge' | 'personal' | 'creative' | 'data';
 
 export interface CapabilitySystem { id: SystemId; no: string; name: string; short: string; promise: string; workspace: string }
@@ -30,16 +32,11 @@ export const SYSTEMS: CapabilitySystem[] = [
   { id: 'data', no: '07', name: 'Data Governance & Constraint-Based Planning', short: 'Data', workspace: 'Data & governance', promise: 'Schema and contract changes are impact-checked, planned against constraints and verified after execution.' },
 ];
 
-/** Implemented RIPPLE packs → the capability system whose workspace they appear in. */
-export const PACK_SYSTEM: Record<string, SystemId> = {
-
-  'incident-sentinel': 'incident', 'shiftrelay': 'incident',
-  'beo-rescue': 'commerce', 'run-of-show': 'commerce', 'scopeguard': 'commerce', 'invoiceguard': 'commerce', 'clearsend': 'commerce',
-  'movemate': 'personal', 'submitready': 'personal', 'offerroom': 'personal',
-  'sceneshift': 'creative', 'podflow': 'creative',
-  'schemacourt': 'data', 'revenue-recovery': 'data',
-  'consumer-resolution': 'commerce', 'billing-dispute': 'commerce',
-};
+/** Implemented RIPPLE packs → the capability system whose workspace they appear in. Derived from each pack's own
+ *  `system` declaration (session 19), so a new pack appears in its dashboard without editing this file. */
+export const PACK_SYSTEM: Record<string, SystemId> = Object.fromEntries(
+  extendedRegistry().all().filter((p) => p.system).map((p) => [p.id, p.system as SystemId]),
+);
 
 const P = (id: string, name: string, system: SystemId, contributes: string[], extra: Partial<SourceProject> = {}): SourceProject =>
   ({ id, name, system, contributes, integration: 'catalogued', ...extra });

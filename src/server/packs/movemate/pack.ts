@@ -108,6 +108,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 const LEGAL = /\b(legally (required|obliged|entitled)|by law|you are obliged|we are entitled|breach of (the )?lease|the lease (requires|states|obliges) us)\b/i;
 
 export const moveMatePack: WorkflowPack = {
+  tier: 'core', system: 'personal',
   id: 'movemate', name: 'MoveMate', domain: 'Personal Administration', version: '1.0.0',
   description: 'Move-out planning for shared housing: deadlines with notice lead times, dependency-propagated due dates, shared ownership, evidence for the deposit, and uncertain lease points flagged for humans — never legal conclusions.',
   labels: { baseline: 'Lease & move-out plan', change: 'Check-in update', changeVerb: 'Submit check-in', plan: 'move-out plan', mission: 'Move-out', blurb: 'Deadlines, bills, inspection, deposit evidence' },

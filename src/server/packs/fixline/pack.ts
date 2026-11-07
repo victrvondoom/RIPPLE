@@ -49,6 +49,7 @@ export function gates(c: Change): Gates {
 const ticketId = (m: string) => `FX-${(Math.abs([...m].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 7)) % 900) + 100}`;
 
 export const fixlinePack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'fixline-bugfix', name: 'Fixline', domain: 'Customer Support Engineering', version: '1.0.0',
   description: 'From a customer\'s bug report to a proven, cross-reviewed, human-approved fix and a customer-safe reply. Duplicates answered from known issues; no fix without a failing repro; the proof test is locked; a different vendor reviews; only the engineering lead approves. Dry-run merge record: nothing is merged.',
   labels: { baseline: 'Product & Known Issues', change: 'Customer Report', changeVerb: 'Report bug', plan: 'Known Issues', mission: 'Bug Fix', blurb: 'Support types the problem in plain words. Fixline files it once, requires a failing test before any fix, locks that test, has a different vendor review, and waits for the engineering lead.' },

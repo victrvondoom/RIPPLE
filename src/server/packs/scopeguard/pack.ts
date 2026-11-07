@@ -141,6 +141,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 void pending;
 
 export const scopeGuardPack: WorkflowPack = {
+  tier: 'core', system: 'commerce',
   id: 'scopeguard', name: 'ScopeGuard', domain: 'Agency Operations', version: '1.0.0',
   description: 'Compare a client request with the approved scope, classify included / out-of-scope / uncertain work, estimate effort, and draft a change order without promising price or dates.',
   labels: { baseline: 'Approved scope', change: 'Client request', changeVerb: 'Submit client request', plan: 'proposal / scope', mission: 'Scope request', blurb: 'Included vs out-of-scope vs uncertain' },

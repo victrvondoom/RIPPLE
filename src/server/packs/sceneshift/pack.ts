@@ -94,6 +94,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 }
 
 export const sceneShiftPack: WorkflowPack = {
+  tier: 'core', system: 'creative',
   id: 'sceneshift', name: 'SceneShift', domain: 'Creative Production', version: '0.1.0',
   description: 'A script revision lands after scenes are shot: find invalidated takes, continuity breaks and department work.',
   roles: [

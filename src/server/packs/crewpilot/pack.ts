@@ -79,6 +79,7 @@ export function triage(plan: Plan, issue: Issue, answers: Answers = {}): Triage 
 }
 
 export const crewpilotPack: WorkflowPack = {
+  tier: 'extended', system: 'engineering',
   id: 'crewpilot',
   name: 'PR-Pilot & Issue Triage',
   domain: 'Software Engineering & Issue Triage',

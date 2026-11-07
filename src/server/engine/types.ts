@@ -107,6 +107,14 @@ export interface WorkflowPack {
   completionChecks?(ctx: CompletionContext): CompletionCheck[];
   /** Domain wording for generic UI labels. */
   labels?: PackLabels;
+  /**
+   * Registry tier (session 19). 'core' packs form the default registry; every other pack is 'extended'. Packs are
+   * discovered from src/server/packs/<folder>/pack.ts, so a pack registers itself by existing: there is no central list
+   * for a merge to lose.
+   */
+  tier?: 'core' | 'extended';
+  /** Capability system whose dashboard workspace shows this pack (catalog.ts). Declared by the pack itself. */
+  system?: 'engineering' | 'incident' | 'commerce' | 'knowledge' | 'personal' | 'creative' | 'data';
   /** Session 18: what this pack's agents are forbidden to do, shown on the People & Agents page (replaces a pack-id switch in the UI). */
   agentLimit?: string;
   /**

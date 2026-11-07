@@ -109,6 +109,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 }
 
 export const invoiceGuardPack: WorkflowPack = {
+  tier: 'core', system: 'commerce',
   id: 'invoiceguard', name: 'InvoiceGuard', domain: 'Financial Reconciliation', version: '1.0.0',
   description: 'Reconcile an invoice against the approved quote, milestones, deliverable acceptance and worklog evidence; classify discrepancies and draft a neutral clarification. Never moves money.',
   labels: { baseline: 'Approved quote & records', change: 'Invoice', changeVerb: 'Submit invoice', plan: 'quote / contract', mission: 'Invoice reconciliation', blurb: 'Quote vs invoice vs evidence' },

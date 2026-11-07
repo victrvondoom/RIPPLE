@@ -66,6 +66,7 @@ export function evaluate(plan: Plan, sub: Sub): Evaluation {
 }
 
 export const clearsendPack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'clearsend',
   name: 'ClearSend Escrow Guard',
   domain: 'Financial Escrow & Milestone Governance',

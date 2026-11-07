@@ -135,6 +135,7 @@ function analyze(role: string, ctx: AnalysisContext): RoleResult {
 }
 
 export const podFlowPack: WorkflowPack = {
+  tier: 'core', system: 'creative',
   id: 'podflow', name: 'PodFlow', domain: 'Creator Production', version: '1.0.0',
   description: 'Turn an episode transcript into a reviewable content kit: highlight candidates, clip approval, platform-limited titles and captions, fact-check flags and a publishing checklist. Transcript-text only — no audio/video processing.',
   labels: { baseline: 'Episode & sources', change: 'Transcript intake', changeVerb: 'Submit transcript', plan: 'episode', mission: 'Content kit', blurb: 'Transcript → clips → captions → checklist' },

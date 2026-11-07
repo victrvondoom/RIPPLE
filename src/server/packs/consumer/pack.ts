@@ -203,6 +203,7 @@ const referencesOf = (c: string) => { const m = /References:\n((?:- .*\n?)+)/.ex
 const corpusText = (d: Domain) => kb().rows.filter((r) => r.domain === d).map((r) => r.text);
 
 export const consumerPack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'consumer-resolution', name: 'Consumer Resolution', domain: 'Consumer Dispute Resolution', version: '1.0.0',
   description: 'One consumer problem across several organisations (airline + bank): REDEEM intake and confirmed memory, RESOLVE commitment ledger, RECLAIM rights and evidence, consumer-approved follow-ups with exact-content read-back. Never claims a refund without the consumer\'s confirmation.',
   labels: { baseline: 'Case file', change: 'Consumer report', changeVerb: 'Report the problem', plan: 'case file', mission: 'Consumer dispute', blurb: 'One problem → every organisation → verified follow-through' },

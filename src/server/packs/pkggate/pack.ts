@@ -115,6 +115,7 @@ export const reviewHealth = (plan: Plan, as: PkgAssessment[]) => {
 };
 
 export const pkggatePack: WorkflowPack = {
+  tier: 'extended', system: 'engineering',
   id: 'package-gate',
   name: 'Package Gate',
   domain: 'Software Supply Chain',

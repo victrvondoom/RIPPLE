@@ -138,6 +138,7 @@ const STATE_LABEL: Record<Evaluation['state'], string> = {
 };
 
 export const runOfShowPack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'run-of-show',
   name: 'Run of Show',
   domain: 'Event Operations',

@@ -202,6 +202,7 @@ const PROMISE = /\b(guarantee[ds]?|will never happen again|legally (?:obliged|re
 const header = (c: string, h: string) => new RegExp(`^${h}: (.*)$`, 'm').exec(c)?.[1]?.trim() ?? null;
 
 export const billingPack: WorkflowPack = {
+  tier: 'extended', system: 'commerce',
   id: 'billing-dispute', name: 'Billing & SLA Dispute', domain: 'Customer Billing Resolution', version: '1.0.0',
   description: 'One company, internal departments: a customer\'s duplicate-charge dispute after an outage becomes an obligation graph (Ops → Engineering → Finance → Policy → Support). Refunds and credits run against a labelled sandbox ledger with read-back; the customer reply is engine-blocked until its obligations are verified.',
   labels: { baseline: 'Account & systems record', change: 'Customer email', changeVerb: 'Receive customer email', plan: 'account record', mission: 'Billing dispute', blurb: 'Dispute → obligation graph → approved, verified resolution' },

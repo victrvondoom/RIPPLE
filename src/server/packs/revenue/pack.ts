@@ -65,6 +65,7 @@ export function review(read: WarehouseRead, c: Change, field: string, hyps: Hyp[
 }
 
 export const revenuePack: WorkflowPack = {
+  tier: 'extended', system: 'data',
   id: 'revenue-recovery',
   name: 'Revenue Recovery',
   domain: 'Data Incident & Revenue Integrity',

@@ -74,6 +74,7 @@ function resumeMarkdown(p: Profile, t: Tailored, job: Job, fit: Fit) {
 }
 
 export const offerroomPack: WorkflowPack = {
+  tier: 'extended', system: 'personal',
   id: 'offerroom',
   name: 'OfferRoom',
   domain: 'Career & Talent Operations',

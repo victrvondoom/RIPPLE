@@ -87,6 +87,7 @@ export function audit(plan: Plan, drift: Drift, answers: AnalysisContext['answer
 }
 
 export const schemacourtPack: WorkflowPack = {
+  tier: 'extended', system: 'data',
   id: 'schemacourt',
   name: 'Schema Court',
   domain: 'Data Contracts & Analytics Governance',
