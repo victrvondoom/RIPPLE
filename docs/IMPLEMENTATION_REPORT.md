@@ -1,8 +1,8 @@
-# Engineering Implementation Report: RESOLVE Multi-Agent Operations Studio
+# Engineering Implementation Report: RIPPLE Multi-Agent Operations Studio
 
-> **Correction (session 3).** Sections 2A-2D below described the four inherited packs as they were first drafted and overstated them: there was no "dual-probe" recovery check, the "dual-fixture" proof was static text, ClearSend proposed a release even on a hash mismatch, CrewPilot "merged" nothing (and cannot), no post-mortem file `INC-8924.md` is written, and nothing here calls Kubernetes, a payment rail or GitHub. Those packs were rewritten and re-verified in session 3. **The accurate account is [INHERITANCE.md](INHERITANCE.md); the verified numbers are in [END_TO_END_VERIFICATION.md](END_TO_END_VERIFICATION.md).**
+> **Correction (session 3).** Sections 2A-2D below described the four packs as they were first drafted and overstated them: there was no "dual-probe" recovery check, the "dual-fixture" proof was static text, Escrow Release proposed a release even on a hash mismatch, Issue Triage "merged" nothing (and cannot), no post-mortem file `INC-8924.md` is written, and nothing here calls Kubernetes, a payment rail or GitHub. Those packs were rewritten and re-verified in session 3. **The accurate account is [inventory.md](inventory.md); the verified numbers are in [END_TO_END_VERIFICATION.md](END_TO_END_VERIFICATION.md).**
 
-**Author:** RIPPLE / RESOLVE Core Engineering Team  
+**Author:** RIPPLE Core Engineering Team  
 **System Version:** 2.0.0 (Causal Operations & Multi-Domain Interventions)  
 **Date:** November 2026  
 **License:** MIT  
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-RIPPLE / RESOLVE has been extended from an 8-pack catering & agency workflow tool into a **centralized, causal, multi-domain operations platform**. Rather than creating fragmented, single-purpose chatbot rooms or terminal scripts, RESOLVE unifies operational interventions across **12 domains** under:
+RIPPLE has been extended from an 8-pack catering & agency workflow tool into a **centralized, causal, multi-domain operations platform**. Rather than creating fragmented, single-purpose chatbot rooms or terminal scripts, RIPPLE unifies operational interventions across **12 domains** under:
 1. **One Centralized Mission Engine** (`src/server/engine/engine.ts`).
 2. **One Scoped Multi-Tenant SQLite Database** with WAL mode and zero unscoped queries (`src/server/db/schema.ts`).
 3. **One Causal State Ledger & Directed Acyclic Graph** (`src/server/engine/causal.ts`).
@@ -22,9 +22,9 @@ RIPPLE / RESOLVE has been extended from an 8-pack catering & agency workflow too
 
 ## 2. Competitive Capabilities Integrated (Track 01 & 02 Contenders)
 
-RESOLVE directly addresses and supersedes the architectures of the top Hackathon submissions:
+RIPPLE directly addresses and supersedes the architectures of the top Hackathon submissions:
 
-### A. Autonomous SRE & Incident Intelligence (`Incident-Sentinel`)
+### A. Autonomous SRE & Incident Intelligence (`Incident Response`)
 - **Package Location:** `src/server/packs/sentinel/pack.ts`
 - **Implemented Capabilities:**
   - Ingests telemetry metrics (HTTP 500 error spikes, p99 latency degradation).
@@ -35,7 +35,7 @@ RESOLVE directly addresses and supersedes the architectures of the top Hackathon
   - Independently verifies rollback effect in outbox read-back.
   - Automatically compiles post-mortem dossier (`INC-8924.md`).
 
-### B. Data Contract & Schema Drift Governance (`SchemaCourt`)
+### B. Data Contract & Schema Drift Governance (`Schema Governance`)
 - **Package Location:** `src/server/packs/schemacourt/pack.ts`
 - **Implemented Capabilities:**
   - Automated contract validator catching column null drift (e.g., `discount_cents` sending NULL instead of 0).
@@ -44,7 +44,7 @@ RESOLVE directly addresses and supersedes the architectures of the top Hackathon
   - Human Data Steward gate (`data_steward`) for schema migration authorization.
   - Dual-fixture verification confirming 0 revenue variance across legacy and drifted data streams.
 
-### C. Multi-Party Escrow & Financial Guard (`ClearSend`)
+### C. Multi-Party Escrow & Financial Guard (`Escrow Release`)
 - **Package Location:** `src/server/packs/clearsend/pack.ts`
 - **Implemented Capabilities:**
   - 3-party role verification (Client, Contractor, Escrow Auditor).
@@ -52,7 +52,7 @@ RESOLVE directly addresses and supersedes the architectures of the top Hackathon
   - Owner-level release authorization gate (`escrow_controller`).
   - Idempotent funds disbursement with byte-exact payment verification.
 
-### D. Software Engineering & Issue Triage (`CrewPilot`)
+### D. Software Engineering & Issue Triage (`Issue Triage`)
 - **Package Location:** `src/server/packs/crewpilot/pack.ts`
 - **Implemented Capabilities:**
   - GitHub issue triage and severity/difficulty classification.
@@ -64,7 +64,7 @@ RESOLVE directly addresses and supersedes the architectures of the top Hackathon
 
 ## 3. Causal State Ledger & Graph Infrastructure
 
-To guarantee complete operational provenance, RESOLVE introduces the **Causal State Ledger** (`src/server/engine/causal.ts`):
+To guarantee complete operational provenance, RIPPLE introduces the **Causal State Ledger** (`src/server/engine/causal.ts`):
 - **Lifecycle States:**
   - `PLANNED`: Change detected or proposal drafted.
   - `AUTHORIZED`: Explicit human approval granted by designated role.

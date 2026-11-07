@@ -1,6 +1,6 @@
-# Implementation Roadmap: RESOLVE Multi-Agent Operations Studio
+# Implementation Roadmap: RIPPLE Multi-Agent Operations Studio
 
-This roadmap details the engineering execution plan for expanding RIPPLE/RESOLVE into the centralized, multi-domain, causal operations platform.
+This roadmap details the engineering execution plan for expanding RIPPLE/RIPPLE into the centralized, multi-domain, causal operations platform.
 
 ---
 
@@ -8,7 +8,7 @@ This roadmap details the engineering execution plan for expanding RIPPLE/RESOLVE
 - [x] Unify directory structure directly under `SWITCH/` (eliminated nested directory redundancies).
 - [x] Verify 100% test pass rate across all 13 test files (89 tests).
 - [x] Document existing features and invariants in `docs/FEATURE_PRESERVATION_INVENTORY.md`.
-- [x] Analyze competitor architectures and gap analysis in `docs/COMPETITIVE_GAP_ANALYSIS.md`.
+- [x] Competitive analysis (document retired; see progress.md).
 
 ---
 
@@ -23,7 +23,7 @@ This roadmap details the engineering execution plan for expanding RIPPLE/RESOLVE
 
 ---
 
-## Phase 3: Pack Integration (Incident-Sentinel, SchemaCourt, CrewPilot, ClearSend, OfferRoom)
+## Phase 3: Pack Integration (Incident Response, Schema Governance, Issue Triage, Escrow Release, Candidate Fit)
 - [ ] **Incident Sentinel Pack (`src/server/packs/sentinel/index.ts`):**
   - Anomaly detection (HTTP 500 spike, p99 latency surge).
   - Git commit correlation (v2.14.0 culprit isolation).
@@ -35,16 +35,16 @@ This roadmap details the engineering execution plan for expanding RIPPLE/RESOLVE
   - Dual-fixture SQL runner calculating revenue variance.
   - `COALESCE` patch proposal with `@maya_data` authorization gate.
   - Verification: 0 revenue variance across legacy & drifted fixtures.
-- [ ] **ClearSend Financial Guard Pack (`src/server/packs/clearsend/index.ts`):**
+- [ ] **Escrow Release Financial Guard Pack (`src/server/packs/clearsend/index.ts`):**
   - 3-party escrow lifecycle (create → fund → submit → verify → release).
   - Milestone verification with SHA-256 evidence hashing.
   - Dual human approval gate (Client + Escrow Auditor).
   - Idempotent funds release with read-back verification.
-- [ ] **CrewPilot PR & Issue Triage Pack (`src/server/packs/crewpilot/index.ts`):**
+- [ ] **Issue Triage PR & Issue Triage Pack (`src/server/packs/crewpilot/index.ts`):**
   - Issue classification & structured fix plan generator.
   - Codebase blast radius calculation.
   - Requester-only approval gate.
-- [ ] **Career Sentinel / OfferRoom Pack (`src/server/packs/offerroom/index.ts`):**
+- [ ] **Career Sentinel / Candidate Fit Pack (`src/server/packs/offerroom/index.ts`):**
   - Candidate profile ingestion & role matching.
   - Truth-guard verification preventing unverified resume claims.
 - [ ] **Registry & Seed Integration:**
@@ -67,7 +67,6 @@ This roadmap details the engineering execution plan for expanding RIPPLE/RESOLVE
 - [ ] Author remaining Hackathon deliverables:
   - `docs/IMPLEMENTATION_REPORT.md`
   - `docs/END_TO_END_VERIFICATION.md`
-  - `docs/COMPETITIVE_POSITIONING.md`
   - `docs/DEMO_RUNBOOK.md`
 - [ ] Rebuild production bundle and verify running server at `http://localhost:8787`.
 

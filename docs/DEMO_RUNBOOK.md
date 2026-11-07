@@ -1,6 +1,6 @@
-# Demo Runbook: Exploring the RESOLVE Operations Platform
+# Demo Runbook: Exploring the RIPPLE Operations Platform
 
-Welcome to **RESOLVE** — the centralized, causal, multi-agent operations platform. Follow this runbook to explore every feature, workflow pack, and dynamic canvas capability.
+Welcome to **RIPPLE** — the centralized, causal, multi-agent operations platform. Follow this runbook to explore every feature, workflow pack, and dynamic canvas capability.
 
 ---
 
@@ -37,10 +37,10 @@ Once logged in, click **"Studio"** in the top navigation bar.
 ### B. Dynamic Workflow Switching
 At the top left of the Studio, click the workflow selector dropdown to switch between multi-agent operational domains:
 1. **GPU Cloud Billing Discrepancy** (FinOps & Infrastructure Audit)
-2. **Autonomous SRE Incident War Room** (`Incident-Sentinel`)
-3. **Data Contract & Revenue Invariant Review** (`SchemaCourt`)
-4. **Cross-Border Escrow & Milestone Payment Guard** (`ClearSend`)
-5. **Software Engineering & Issue Triage** (`PR-Pilot / CrewPilot`)
+2. **Autonomous SRE Incident War Room** (`Incident Response`)
+3. **Data Contract & Revenue Invariant Review** (`Schema Governance`)
+4. **Cross-Border Escrow & Milestone Payment Guard** (`Escrow Release`)
+5. **Software Engineering & Issue Triage** (`Issue Triage / Issue Triage`)
 6. **Multi-Agent Refund Orchestrator** (E-Commerce Operations)
 7. **Telecom Network Incident Remediation** (Telco Infrastructure)
 8. **Clinical Shift Relay & Patient Safety** (Healthcare Handoff)

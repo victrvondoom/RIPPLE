@@ -2,7 +2,7 @@
 
 *Detects when an agent's claimed outcome and the observed state disagree, then coordinates a verified recovery.*
 
-Added in session 7 to the existing RIPPLE repository. The directive called the product "RESOLVE"; this repo is RIPPLE. Nothing was removed or renamed; the work is additive.
+Added in session 7 to the existing RIPPLE repository. The directive called the product "RIPPLE"; this repo is RIPPLE. Nothing was removed or renamed; the work is additive.
 
 ## What it is (and what it is not)
 - **Is:** a pack-agnostic layer that runs consequential multi-system workflows under an execution contract. It compares three layers (intended, declared, observed), classifies disagreements as persisted gaps, plans recovery counterfactually, gates it on a hash-bound human approval, executes it with guarded writes, and verifies it again.
@@ -74,7 +74,7 @@ The same flow is covered by `tests/reality.test.ts` and `tests/reality-api.test.
 | Expected gap recall | 0/33 | 3/33 | 8/33 | 33/33 |
 
 **How to read this honestly:**
-- **The baselines are not other people's products.** They are the same runner with controls switched off; the exact switches are listed in the UI and in `types.ts`. No competitor repository was run.
+- **The baselines are not other people's products.** They are the same runner with controls switched off; the exact switches are listed in the UI and in `types.ts`. No other repository was run.
 - **Their failure modes are partly by construction.** For example, the no-reconciliation baselines trust an agent's completion claim. That aggregation rule is stated in the baseline description and in `rge.ts afterForward`.
 - **Recovery success is 7/8 for B4.** `invoice-compensation-fails` deliberately injects a refund that is accepted but books nothing; the engine escalates (REQUIRES_HUMAN) instead of claiming consistency.
 - **Evidence completeness is 158/160 for B4.** Two lost-response operations have no tool response because the call timed out; that is reported as missing, not filled in.

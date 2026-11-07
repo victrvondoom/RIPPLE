@@ -1,6 +1,6 @@
 # Feature Preservation Inventory & Invariant Catalog
 
-This document guarantees that **every existing capability, pack, route, page, and invariant in RIPPLE/RESOLVE is cataloged, maintained, and verified without regression**. No existing code, workflow pack, or test is deleted, broken, or disabled.
+This document guarantees that **every existing capability, pack, route, page, and invariant in RIPPLE/RIPPLE is cataloged, maintained, and verified without regression**. No existing code, workflow pack, or test is deleted, broken, or disabled.
 
 ---
 

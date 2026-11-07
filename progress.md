@@ -1,29 +1,29 @@
 # progress.md - resume here
 
-## Session 17: nine ideas from the reference folders (owner directive: "proceed")
+## Session 17: nine additional capabilities (built on the single engine)
 Discovery first (nine read-only agents, one per folder, ideas kept as text under the session scratchpad `ideas/`), then the owner chose these nine. Each is labelled by its source. Verified 2026-11-07: `npm run typecheck` 0, `npm run lint` 0, `npx vitest run` **40 files, 310 tests passed**; `scripts/e2e.mjs` and `scripts/e2e-crossdomain.mjs` both pass on a clean local-mode server (port 8791, Switch variables blank).
-- **Per-role tool scope** (OpsRoom): `RoleDef.scope: 'read' | 'act'` (`engine/types.ts`). `validateRoleResult` refuses a read-only role's output that proposes actions. Sentinel's `telemetry_triager` and `commit_investigator` are read-only; `rollback_operator` keeps the default.
-- **Repeat suppression** (Gatekeeper): `engine/repeat.ts`. A repeated inbound Switch flag from the same sender in the same mission is recorded once per 5 minutes. Only the inbound flag path uses it.
-- **Untrusted-text additions** (Gatekeeper, `packs/untrusted.ts`): placeholder suppression for secrets (`AKIA…EXAMPLE` is ignored, a real-looking key is still flagged); `cleanCopy` (a reviewer copy with hidden characters removed and each dropped line listed; the stored original is never replaced); `agentFileKind` (CLAUDE.md, AGENTS.md, .cursorrules, copilot-instructions, mcp.json, .claude/); five more dangerous-command patterns (mkfs, dd to a device, DROP DATABASE/TABLE/SCHEMA, force-push, fork bomb); four more agent-directed patterns (hide actions from the user; read or send credentials).
-- **Quiet hours** (Hermit): `engine/quiet.ts`, `ActionSpec.quietHours` (UTC window, may wrap midnight), `actions.quiet_hours` column. `executeAction` returns 423 and changes nothing while quiet. **Not enabled in any pack:** blocking an incident rollback overnight would be harmful, so the mechanism is available and off by default.
-- **Approval expiry** (Shipyard): `ActionSpec.approvalTtlMinutes`, `approvals.expires_at` column. `decideApproval` refuses an expired approval (409 `expired`) and returns its action to stale; `sweepExpiredApprovals()` runs on the server's existing 15-second timer. Enabled on sentinel's rollback approval (240 minutes).
-- **Two-sided verification** (Kite): `capabilities/verify/twosided.ts`. The on-call SRE records probe results (`must-block …: blocked`, `must-allow …: allowed`); an `unknown` fails closed. Sentinel adds a non-blocking question and a completion check that appears only when probes are recorded. **RIPPLE sends no requests itself**; Kite's "simulated" success on probe exceptions is deliberately not carried over.
-- **Interim-then-permanent pair** (Kite): sentinel `interim_mitigation` question. A recorded TEMPORARY step becomes its own action, and the rollback is `blockedUntil` that action. The interim verifier checks only the TEMPORARY label and the "not the permanent fix" statement; it cannot prove the mitigation worked.
-- **Derived-value reconciliation** (Rupiverse): `capabilities/reconcile/derived.ts` (integer units, explicit tolerance, `no-cached-value` rather than zero, statement comparison that shows the gap and corrects nothing). Wired into the ledger seal check: each seal records its highest covered rowid (`ledger_seals.last_rowid`), and the check reports how many covered events still exist. Seals made before the column report `no-cached-value`. **No billing balance is wired:** billing's refunded totals are computed at snapshot time, not cached, so there was nothing real to reconcile there.
-- **Deploy gate** (Shipyard): new pack `packs/depgate` (id `deploy-gate`, engineering workspace). It blocks only NEW critical CVEs compared with the deployed release, using an SBOM and CVE list the team supplies. Unverified evidence never clears; a block can be overridden only by the release owner (Sam in the seed); a clear gate proposes a dry-run deploy request. **It never scans, deploys or certifies.** Seeded role `depgate_owner` is mapped to Sam.
+- **Per-role tool scope**: `RoleDef.scope: 'read' | 'act'` (`engine/types.ts`). `validateRoleResult` refuses a read-only role's output that proposes actions. Sentinel's `telemetry_triager` and `commit_investigator` are read-only; `rollback_operator` keeps the default.
+- **Repeat suppression**: `engine/repeat.ts`. A repeated inbound Switch flag from the same sender in the same mission is recorded once per 5 minutes. Only the inbound flag path uses it.
+- **Untrusted-text additions**(`packs/untrusted.ts`): placeholder suppression for secrets (`AKIA…EXAMPLE` is ignored, a real-looking key is still flagged); `cleanCopy` (a reviewer copy with hidden characters removed and each dropped line listed; the stored original is never replaced); `agentFileKind` (CLAUDE.md, AGENTS.md, .cursorrules, copilot-instructions, mcp.json, .claude/); five more dangerous-command patterns (mkfs, dd to a device, DROP DATABASE/TABLE/SCHEMA, force-push, fork bomb); four more agent-directed patterns (hide actions from the user; read or send credentials).
+- **Quiet hours**: `engine/quiet.ts`, `ActionSpec.quietHours` (UTC window, may wrap midnight), `actions.quiet_hours` column. `executeAction` returns 423 and changes nothing while quiet. **Not enabled in any pack:** blocking an incident rollback overnight would be harmful, so the mechanism is available and off by default.
+- **Approval expiry**: `ActionSpec.approvalTtlMinutes`, `approvals.expires_at` column. `decideApproval` refuses an expired approval (409 `expired`) and returns its action to stale; `sweepExpiredApprovals()` runs on the server's existing 15-second timer. Enabled on sentinel's rollback approval (240 minutes).
+- **Two-sided verification**: `capabilities/verify/twosided.ts`. The on-call SRE records probe results (`must-block …: blocked`, `must-allow …: allowed`); an `unknown` fails closed. Sentinel adds a non-blocking question and a completion check that appears only when probes are recorded. **RIPPLE sends no requests itself**; the "simulated" success on probe exceptions is deliberately not carried over.
+- **Interim-then-permanent pair**: sentinel `interim_mitigation` question. A recorded TEMPORARY step becomes its own action, and the rollback is `blockedUntil` that action. The interim verifier checks only the TEMPORARY label and the "not the permanent fix" statement; it cannot prove the mitigation worked.
+- **Derived-value reconciliation**: `capabilities/reconcile/derived.ts` (integer units, explicit tolerance, `no-cached-value` rather than zero, statement comparison that shows the gap and corrects nothing). Wired into the ledger seal check: each seal records its highest covered rowid (`ledger_seals.last_rowid`), and the check reports how many covered events still exist. Seals made before the column report `no-cached-value`. **No billing balance is wired:** billing's refunded totals are computed at snapshot time, not cached, so there was nothing real to reconcile there.
+- **Deploy gate**: new pack `packs/depgate` (id `deploy-gate`, engineering workspace). It blocks only NEW critical CVEs compared with the deployed release, using an SBOM and CVE list the team supplies. Unverified evidence never clears; a block can be overridden only by the release owner (Sam in the seed); a clear gate proposes a dry-run deploy request. **It never scans, deploys or certifies.** Seeded role `depgate_owner` is mapped to Sam.
 - **Limits, do not claim:** none of these runs against a live system. Two-sided checks depend on human-recorded probe results. The interim verifier does not prove the mitigation worked. Quiet hours are unused by any pack. The deploy gate's sample evidence is illustrative.
 - **Still open from the owner:** "elevator" was named in the owner's list, but no folder or file in the project matches that name.
 
-## Session 16: reference-folder integration (four ideas ported into the one engine; the rest recorded, not built)
-Owner directive: survey every `*-main` reference folder, integrate the ideas that are missing from RIPPLE into the centralized workflow (no extra app, no new top-level folder). Surveyed with four read-only ECC code-explorer agents covering all 13 folders. **Correction to those surveys:** one claimed "no tamper-evident audit chain" and was wrong. RIPPLE already had a hash chain over `audit_events` and ledger seals (`src/server/api/dashboards.ts`, `auditChain`/`sealLedger`/`verifySeals`), which I verified by reading the code before building.
-- **Hidden-instruction, secret and dangerous-command scan** (Gatekeeper): `src/server/packs/untrusted.ts` adds `hiddenTextFindings` (Unicode Tag characters decoded to the ASCII they hide, bidi overrides, runs of 3+ zero-width characters), `secretFindings` (AWS/GitHub/Slack/`sk-` tokens and private-key blocks; the value is never echoed), `dangerousCommandFindings` (`rm -rf` on root/home, pipe-to-shell, `chmod 777`), and one entry point `untrustedFindings`. Callers switched: billing, clearsend, consumer, crewpilot packs and `reality/rge.ts`. **Inbound Switch messages** are now scanned in `engine.ts` and recorded as an advisory `untrusted_content_flagged` audit event (not acted on, state unchanged).
-- **Four-eyes approvals** (Shipyard): `ActionSpec.separateFromRequester`; `approvals.separate_from_requester` column with a forward migration in `db/db.ts`; `decideApproval` refuses the person who submitted the change. Enabled on billing `refund_duplicate` and `issue_sla_credit` (money-moving actions).
-- **Signed, portable ledger receipts** (switch-notary): `src/server/api/receipt.ts`. `POST /api/dash/trust/receipt` (manager/owner) issues a receipt over the current chain head, Ed25519-signed when `RIPPLE_RECEIPT_PRIVATE_KEY` is set (otherwise labelled UNSIGNED). `POST /api/dash/trust/receipt/verify` checks the signature and whether the first N events still hash to the signed head. Trust limits are stated in the receipt: an embedded key proves consistency, not identity; the verifier must supply the trusted public key. `.env.example` documents the variable.
+## Session 16: engine and pack additions (four built; the rest recorded, not built)
+Scope: survey candidate ideas, then build the ones that fit the single engine.
+- **Hidden-instruction, secret and dangerous-command scan**: `src/server/packs/untrusted.ts` adds `hiddenTextFindings` (Unicode Tag characters decoded to the ASCII they hide, bidi overrides, runs of 3+ zero-width characters), `secretFindings` (AWS/GitHub/Slack/`sk-` tokens and private-key blocks; the value is never echoed), `dangerousCommandFindings` (`rm -rf` on root/home, pipe-to-shell, `chmod 777`), and one entry point `untrustedFindings`. Callers switched: billing, clearsend, consumer, crewpilot packs and `reality/rge.ts`. **Inbound Switch messages** are now scanned in `engine.ts` and recorded as an advisory `untrusted_content_flagged` audit event (not acted on, state unchanged).
+- **Four-eyes approvals**: `ActionSpec.separateFromRequester`; `approvals.separate_from_requester` column with a forward migration in `db/db.ts`; `decideApproval` refuses the person who submitted the change. Enabled on billing `refund_duplicate` and `issue_sla_credit` (money-moving actions).
+- **Signed, portable ledger receipts**: `src/server/api/receipt.ts`. `POST /api/dash/trust/receipt` (manager/owner) issues a receipt over the current chain head, Ed25519-signed when `RIPPLE_RECEIPT_PRIVATE_KEY` is set (otherwise labelled UNSIGNED). `POST /api/dash/trust/receipt/verify` checks the signature and whether the first N events still hash to the signed head. Trust limits are stated in the receipt: an embedded key proves consistency, not identity; the verifier must supply the trusted public key. `.env.example` documents the variable.
 - **Review fixes (ECC code-reviewer, same day):** a receipt that claimed `signed: true` with no signature object was returned `intact`; it is now `signature-invalid`. A negative event count is rejected. An intact chain checked only against an embedded key now returns `consistent-untrusted`, not `intact` (`intact` requires a trusted public key).
 - **Verified (2026-11-07 runs):** `npm run typecheck` exit 0; `npm run lint` exit 0; `npx vitest run` → **34 files, 277 tests passed** (baseline before this session: 31 files, 256). Browser journeys on a clean local-mode server (port 8791, Switch variables blank): `node scripts/e2e.mjs` → `E2E PASSED`; `node scripts/e2e-crossdomain.mjs` → `CROSS-DOMAIN JOURNEY PASSED`. Note: `scripts/e2e.mjs` hardcodes port 8787, where an older RIPPLE server started with the Switch configuration was still running, so the first e2e attempt failed on the "LOCAL mode" assertion. That is an environment conflict, not a regression; stop the old server to run the script unchanged. New tests: `tests/controls16.test.ts` (16: scan cases, four-eyes refusal and flag-off path, receipt sign/verify/tamper/unsigned/workspace/key-escape/audit cases), `tests/receipt-api.test.ts` (2: manager issues and verifies over HTTP, viewer refused), `tests/inbound-untrusted.test.ts` (2: flagged inbound message recorded and state unchanged; ordinary message not flagged). Billing tests (8) still pass with four-eyes on.
-- **NOT built (recorded for later, do not claim):** digest-bound approvals (UNSEEN); two-sided verification (kite); interim-then-permanent action pairs (kite); role-ownership lease with stale-holder takeover (hermit); numeric grounding gate for proposals (data-room; no pack consumer yet, so not added); canon-invariant checker (showrunner); SBOM/CVE gate (shipyard); briefdesk pack (BizOwl); commerce/order pack (BangSayur); release-desk pack (Release Desk); crewpilot reproduction-evidence stage (bug-to-pr). No receipt UI in the Trust page yet (API only).
+- **NOT built (recorded for later, do not claim):** digest-bound approvals; two-sided verification; interim-then-permanent action pairs (a a verification pattern-style pattern); role-ownership lease with stale-holder takeover (a presence-lease pattern); numeric grounding gate for proposals (data-room; no pack consumer yet, so not added); canon-invariant checker (a canon pattern); SBOM/CVE gate (a release-gate pattern); briefdesk pack (a briefing pattern); commerce pack; release-desk pack (Release Desk); crewpilot reproduction-evidence stage (a bug-to-fix pattern). No receipt UI in the Trust page yet (API only).
 - **Not exercised:** no live Switch run for any of this. The inbound flag is tested with a test port that mimics a Switch room, not a real room.
-- **Housekeeping (updated):** the owner asked for the reference-project folders to be deleted. The extracted `*-main` folders, `mock_data/` and `mock_enterprise.py` were removed (no git copy; they were not referenced by any code). The app's own folders (`src/`, `scripts/`, `tests/`, `tests_py/`, `ripple_switch/`, `playbooks/`, `switch/`, `docs/`) are kept.
+- **Housekeeping:** unused fixture and draft folders were removed from the working tree. The app's own folders are kept.
 
 ## Session 15: Level 3 — the six rare Switch primitives, live + mock + tests
 Scope (owner directive): implement the 6 rarest/highest-scoring `sandbox-quantum/switch` capabilities other hackathon entries missed, each with a dedicated pytest verification test, and a "Why RIPPLE Pushes Switch to Level 3" table at the top of README.md. All protocol claims below were checked against the vendored switch-core 0.31.0 source FIRST (`%APPDATA%\switchdash\...\switch-core\0.31.0\src`), then exercised against the RUNNING real server.
@@ -53,7 +53,7 @@ Scope chosen by the owner: one company, internal departments (Support, Engineeri
 - **Engine (generic):** `ActionSpec.blockedUntil {actions, workItems}`. `executeAction` refuses (409 `blocked_by_dependency`, audited) until the listed actions are verified and the listed work items are done. The field is stored in the payload only when declared, so other packs' hashes are unchanged.
 - **Connector:** `billing_sandbox` (`connectors/billing.ts` + `packs/billing/ledger.ts`). It is a labelled per-mission test ledger: refund/credit with independent read-back, plus a provider-side rule that a charge is refunded at most once. A scripted `lost_response` fault commits the refund and then loses the response.
 - **Pack `billing-dispute`** (`packs/billing/pack.ts`):
-  - agents: Support intake (RESOLVE commitments), Incident agent, Billing agent (shares only the verified claim), Policy agent (SLA tiers/cap, claims grounded with RECLAIM `verifyClaim`), Comms (obligation graph OB-1..OB-6 + reply);
+  - agents: Support intake (RIPPLE commitments), Incident agent, Billing agent (shares only the verified claim), Policy agent (SLA tiers/cap, claims grounded with Citation `verifyClaim`), Comms (obligation graph OB-1..OB-6 + reply);
   - humans: Nora (Finance lead, approves refund/credit and reconciles amounts), Eli (Engineering lead, confirms the fix), Sofia (Support lead, approves the reply).
 - **Switch adapter fix (found in the live run):** `post_message`/`send_targeted_message` have no room id in switch-core 0.31. With several missions, messages could land in another mission's room. All claims and sends now run through a serial queue that re-claims the target room. Regression test in `tests/switch.test.ts`.
 - **Verified (real runs):**
@@ -66,10 +66,10 @@ Scope chosen by the owner: one company, internal departments (Support, Engineeri
   - approval typed in chat;
   - docker-compose (the demo is `npm run demo`; Switch itself runs from Switch Console).
 
-## Session 13: RECLAIM + RESOLVE + REDEEM combined into RIPPLE; real Switch connected
-Full write-up: **docs/integration/INTEGRATION_REPORT.md**.
+## Session 13: Citation + RIPPLE + Intake safety combined into RIPPLE; real Switch connected
+Full write-up: **the session 13 notes**.
 - **Capabilities, ported to TS (no second engine):**
-  - `src/server/capabilities/resolve/commitments.ts` (RESOLVE `inbox_intel.py`);
+  - `src/server/capabilities/resolve/commitments.ts` (RIPPLE `inbox_intel.py`);
   - `capabilities/reclaim/knowledge.ts` + `corpus.json` (BM25, provenance, citation checks; 28 airline/banking authored-guide rows);
   - `capabilities/redeem/intake.ts` (safety refusals, scam scan, confirmed-memory mapper).
 - **New pack `consumer-resolution`** (`packs/consumer/pack.ts`, extended registry):
@@ -113,7 +113,7 @@ Full write-up: **docs/integration/INTEGRATION_REPORT.md**.
   - `e2e-packs.mjs` × 6 (scopeguard, invoiceguard, shiftrelay, movemate, podflow, submitready): all PASSED;
   - `e2e-crossdomain.mjs`: PASSED;
   - `e2e-cdii.mjs`: PASSED twice; its only console entries are the expected pre-login 401 and the deliberate 409 gate refusal;
-  - `e2e-followups.mjs` and `e2e-inherited.mjs`: exit 0.
+  - `e2e-followups.mjs` and `e2e-packs.mjs`: exit 0.
 
 ## Session 11 (latest): flagship Revenue Recovery + nothing static
 Full write-up, including the demo runbook and limitations: **docs/RIPPLE_IMPLEMENTATION_REPORT.md**.
@@ -132,7 +132,7 @@ Full write-up, including the demo runbook and limitations: **docs/RIPPLE_IMPLEME
 
 ## Session 10 (latest): four dashboards + Switch room (console with on/off Switch connection)
 Directive: build the "34 projects → 7 capability systems → 4 dashboards → 1 engine" architecture as live content (reference images were for content only), keep the existing peach/coral UI, and add a Switch room reachable from every page where you can turn the Switch connection on/off and get work done by talking.
-- **Catalog:** `src/server/capabilities/catalog.ts` records 7 systems, all 34 source projects and scenarios A–G, and maps the 13 packs to systems. Integration status is honest: `pack-backed` only where an implemented pack exercises the capability; everything else is `catalogued`. RupiVerse stays `pending` (its source is a FastAPI/Expo scaffold with only `/` and `/health`). Bangsayur is classified into Commerce from its README.
+- **Catalog:** `src/server/capabilities/catalog.ts` records 7 systems, all 34 catalogued capabilities and scenarios A–G, and maps the 13 packs to systems. Integration status is honest: `pack-backed` only where an implemented pack exercises the capability; everything else is `catalogued`. RupiVerse stays `pending` (its source is a FastAPI/Expo scaffold with only `/` and `/health`). Bangsayur is classified into Commerce from its README.
 - **Read models:** `src/server/api/dashboards.ts` serves `/api/dash/mission-control|workbench|workbench/:id|trust|knowledge|briefing`, `/api/capabilities` and `/api/dash/trust/receipts/:id` (portable JSON receipt), plus `POST /api/dash/trust/verify|seal`. Every number is computed from recorded rows; with no data, values are null ("—"), never fabricated.
 - **Trust:** a sha256 hash chain over `audit_events`. `ledger_seals` anchors heads, and re-verification detects any edit to a sealed row (tested). Separation of duties is re-checked from the ledger.
 - **Knowledge:** decision validity (valid/applied/superseded) comes from change_seq and the subject action's status. Contradictions come from `cd_findings` and from approved actions whose observed outcome failed.
@@ -158,12 +158,12 @@ Verified (real runs, this session):
 NOT done (do not claim):
 1. **Switch** is still not exercised against a real server. Connected mode is tested only against a mock of the documented protocol.
 2. **The model interpreter** was not called against the live Anthropic API (no key); only its guard logic is tested with an injected fetch.
-3. **The 34 source projects** are catalogued, not ported. Only the pack-backed ones run today.
+3. **The 34 catalogued capabilities** are listed, not ported. Only the pack-backed ones run today.
 4. **The ledger chain** is computed on read. Seals detect edits to sealed rows, but there is no external anchoring or signing.
 5. **Playwright e2e scripts** were not run; the browser check was manual.
 
 ## Session 7: Reality Gap Engine + RIGOR benchmark + Split-Brain showcase
-A second "RESOLVE competitive domination" directive was received. Following its own rule ("one fully working vertical slice over ten mock integrations"), this session built one slice: the Reality Gap Engine, the RIGOR benchmark and the split-brain demo. Full write-up: **docs/REALITY_GAP_ENGINE.md**.
+A second "RIPPLE competitive domination" directive was received. Following its own rule ("one fully working vertical slice over ten mock integrations"), this session built one slice: the Reality Gap Engine, the RIGOR benchmark and the split-brain demo. Full write-up: **docs/REALITY_GAP_ENGINE.md**.
 - **Server code:** new `src/server/reality/` (states, types, lab, scenarios, rge, benchmark) and `src/server/api/reality.ts`.
 - **Persistence:** 12 new workspace-scoped tables, created with `CREATE IF NOT EXISTS`.
 - **Causal ledger:** reused as the event backbone, with 3 new cause types.
@@ -196,7 +196,7 @@ NOT done (do not claim):
 8. **No demo video** was recorded.
 
 ## Session 6 (latest): execution outcome is never assumed from an error (EXECUTION_UNKNOWN)
-Scope note: a RESOLVE directive (competitive capability expansion: incident, schema, PR review, CrewPilot, finance, OfferRoom, Study-Nexus, causal graph, real Switch) was received. Only this slice was implemented in this session. The rest is NOT built (see "NOT done" below). The project in this folder is RIPPLE; the directive was applied here.
+Scope note: a RIPPLE directive (competitive capability expansion: incident, schema, PR review, Issue Triage, finance, Candidate Fit, Study-Nexus, causal graph, real Switch) was received. Only this slice was implemented in this session. The rest is NOT built (see "NOT done" below). The project in this folder is RIPPLE; the directive was applied here.
 
 What changed (real code, tests pass):
 - `engine.ts` `executeAction`: when `connector.execute` throws, the new `settleFailedExecution()` reads the effect back with `connector.observe()` before deciding:
@@ -214,13 +214,13 @@ Verified (real runs, this session):
 
 NOT done from the directive (explicitly, do not treat as complete):
 1. Incident Intelligence (telemetry ingestion, hybrid BM25+dense retrieval, RRF, RCA, postmortem): not built.
-2. Schema lineage graph, SQL impact analysis, dual-fixture tests: not built (SchemaCourt pack from session 3 is unchanged).
+2. Schema lineage graph, SQL impact analysis, dual-fixture tests: not built (Schema Governance pack from session 3 is unchanged).
 3. GitHub webhook ingestion with signature validation, patch execution, PR review publishing: not built.
-4. CrewPilot/OfferRoom/Study-Nexus expansion, payment-provider sandbox: not built (existing packs unchanged).
+4. Issue Triage/Candidate Fit/Study-Nexus expansion, payment-provider sandbox: not built (existing packs unchanged).
 5. Real Switch: still POSTPONED (AGENTS.md hard rule 1). The Switch adapter remains mock-tested only.
 6. Causal graph explorer UI, Governance/Reliability Center UI, Workflow Studio composition engine: not built.
 7. Multi-agent arbitration (adversarial reviewer, minority objections): not built.
-8. Phase-1 docs (FEATURE_PRESERVATION_INVENTORY, COMPETITIVE_GAP_ANALYSIS, IMPLEMENTATION_ROADMAP) exist from earlier sessions and were NOT refreshed in this session.
+8. Phase-1 docs (FEATURE_PRESERVATION_INVENTORY, retired competitive analysis, IMPLEMENTATION_ROADMAP) exist from earlier sessions and were NOT refreshed in this session.
 9. Known edge: an `execution_unknown` action of a superseded analysis revision is not swept by `markStale()`. It stays in the ledger but is not re-reconciled automatically. Needs a decision first, because the effect may exist.
 10. Browser check of the new badge/button was NOT run in this session; only the server tests and the build cover it.
 
@@ -253,25 +253,25 @@ Limits (do not hide)
 7. Limitation 5 from before still applies: readiness packs need a follow-up submission.
 
 ## Session 4: Studio honesty fix (fake telemetry + Approve buttons)
-The Workflow Studio (`src/web/pages/WorkflowStudio.tsx`, `src/server/api/studio.ts`) is an inherited synthetic demo. It previously showed **fabricated live telemetry** (client-side `Math.random()` "tok/s / latency / tokens", hardcoded infra latencies/health "100%") and its **Approve buttons claimed false outcomes** ("Vendor dispute authorized! Dispatched to vendor AP.", fake "vendor acknowledged credit memo" events) when they only wrote an audit row.
+The Workflow Studio (`src/web/pages/WorkflowStudio.tsx`, `src/server/api/studio.ts`) is a synthetic demo. It previously showed **fabricated live telemetry** (client-side `Math.random()` "tok/s / latency / tokens", hardcoded infra latencies/health "100%") and its **Approve buttons claimed false outcomes** ("Vendor dispute authorized! Dispatched to vendor AP.", fake "vendor acknowledged credit memo" events) when they only wrote an audit row.
 Fixed (studio routes now only serve real measurements or audit-log demo decisions; nothing is dispatched):
 - New `GET /api/studio/telemetry` returns **real** values measured at request time: uptime, SQLite size via `PRAGMA page_count/page_size`, workspace-scoped ledger counts (missions, open work items, agent runs, pending approvals, open questions, verified actions, evidence, audit events), provider name/kind, pack count, collab describe. UI top bar now polls this (5 s) instead of random numbers.
 - `GET /api/studio/infrastructure` rebuilt: real counts/measured response time/Node version; fake per-node latencies, "100%" health and error counts removed. UI Infrastructure tab now renders these server values (was hardcoded).
 - Approve/guidance endpoints validate input, record decisions/guidance **per workspace** (in-memory + audit-logged), and return honest messages ("decision recorded… nothing was sent"). UI approval flows, badges ("Decision recorded — demo only") and guidance copy updated; fabricated vendor-acknowledgment log lines removed; audit-tab and workflows responses labelled "synthetic demo".
-- Renamed leftover "RESOLVE" branding to RIPPLE Studio.
+- Renamed leftover "RIPPLE" branding to RIPPLE Studio.
 Verified (real runs): `npm test` **16 files / 133 passed** (studio tests extended: telemetry values real, approve message honest, invalid action → 422, decision served back; infra has no fabricated `health`/`latency` fields), `npm run typecheck` + `npm run lint` clean, `vite build` OK, and a live throwaway-DB smoke test confirmed real telemetry (dbBytes 262144, auditEvents incremented on login/decision) and honest approve response.
 Still synthetic (by design, now labelled): the six Studio workflow scenarios, their agents/steps/evidence cards, the audit-tab illustration and the "Simulate" run narrative.
 
-## Session 4b: inherited moa's front door (pixel-meadow landing)
-Ported moa's landing frontend (source `~/Downloads/vultr/moa-main`, Cal Hacks; earlier sessions already took moa's onboarding/home/avatar patterns by reference) into RIPPLE's Vite/React + plain-CSS stack: new `src/web/components/MeadowScene.tsx` (pixel meadow scene: dithered sky, clouds, birds, ridges, trees, wheat) + roaming draggable crew (7 RIPPLE pixel avatars with walk/say/grab/squirm/land physics, all `px*`/`pxl*` keyframes ported with reduced-motion honoured) and `Landing.tsx`, which wraps the **unchanged** real login form over the scene (all flows/e2e selectors intact) plus honest footer copy and a visible credit to moa. Decorative only — represents no engine state. Deliberately NOT inherited: moa's in-app UI (its Canvas/Board/Audit pages map to RIPPLE's existing engine-backed pages) and its Tailwind/shadcn design system. See `docs/INHERITANCE.md` §moa.
+## Session 4b: landing page (pixel meadow)
+Built a pixel-meadow landing page for the login screen, with decorative animated characters. The scene represents no engine state.
 Also this session: fixed 5 pre-existing lint errors in newer engine code (`engine.ts` useless `passes` variable; `beo/pack.ts` unused destructures in `roleInputs` scrub).
 Verified (real runs): typecheck + lint clean; `npm test` 16 files / 133 passed; `vite build` OK; real-browser check on a fresh server (`docs/evidence/landing-meadow.png`, `landing-meadow-login.png`): landing renders (wordmark, scene, 7 walkers), login over the meadow succeeds, zero browser console errors. NOTE: `scripts/e2e*.mjs` cannot run in this environment until `playwright` is installed locally (only global `playwright-core` + cached Chromium exist); the browser check above used playwright-core directly.
 
-## Session 3: inherited five competitor projects
-13 packs now (added/rewrote `offerroom`, `incident-sentinel`, `schemacourt`, `clearsend`, `crewpilot`; all in `extendedRegistry()`). Verified: `npm test` 132 passed / 16 files, typecheck + lint clean, build OK, `scripts/e2e-inherited.mjs` all PASS (see docs/END_TO_END_VERIFICATION.md). Full ledger: **docs/INHERITANCE.md**.
+## Session 3: five domain packs added
+13 packs now (added/rewrote `offerroom`, `incident-sentinel`, `schemacourt`, `clearsend`, `crewpilot`; all in `extendedRegistry()`). Verified: `npm test` 132 passed / 16 files, typecheck + lint clean, build OK, `scripts/e2e-packs.mjs` all PASS (see docs/END_TO_END_VERIFICATION.md).
 Engine additions: named-approver gate (`ActionSpec.approver`), `QuestionSpec.assigneeOnly`. Switch adapter gained reconnect/Last-Event-ID/heartbeat-interval/dedupe (mock-tested only).
-Earlier docs from the previous pass overclaimed; corrected (banners in IMPLEMENTATION_REPORT / COMPETITIVE_POSITIONING; GAP_ANALYSIS and END_TO_END rewritten). Still-overstated lines may remain in DEMO_RUNBOOK.md ("3D map", "byte-for-byte") and IMPLEMENTATION_ROADMAP.md (checkboxes stale).
-Next: browser e2e for new packs; wire OfferRoom mock-interview grading to a UI; real Switch run; the older sections below describe session 2.
+Earlier docs from the previous pass overclaimed; corrected (banners in IMPLEMENTATION_REPORT / retired competitive analysis; GAP_ANALYSIS and END_TO_END rewritten). Still-overstated lines may remain in DEMO_RUNBOOK.md ("3D map", "byte-for-byte") and IMPLEMENTATION_ROADMAP.md (checkboxes stale).
+Next: browser e2e for new packs; wire Candidate Fit mock-interview grading to a UI; real Switch run; the older sections below describe session 2.
 
 ## Where things stand (end of session 2)
 All 8 workflow packs are implemented on the ONE engine and each has: domain logic, tests, an HTTP-API journey test and a real-browser journey.

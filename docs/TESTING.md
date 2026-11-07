@@ -44,7 +44,7 @@ See `docs/evidence/test-output.txt` (vitest/tsc/eslint) and `docs/evidence/e2e-l
   PASS  conflicting assume_role refused while the exclusive seat is held — HTTP 400 "Role 'conflict-signer' is exclusive and currently held by another agent"
   PASS  addressing introspection + APPROVE authority announcement — get_my_context: who_can_talk=owner_and_owner_agents; owner=agent-bootstrap@switch.local; announced in #finance-settle
   PASS  follow-ups bootstrap posted; server feature flag read back — server.features: …, follow_the_conversation, …
-  PASS  RECLAIM #908 guardrail (live check of the same deterministic code) — guard 3/3; quarantined: true; llmCalls 0
+  PASS  Citation #908 guardrail (live check of the same deterministic code) — guard 3/3; quarantined: true; llmCalls 0
   PASS  create_room_document + load_internal_documents read-back — document_id ff103f5f-…; read back 1 document(s)
   PASS  GET /rooms/{id}/yaml attempted; local fallback playbook written — local_fallback: playbooks\resolved-l3-393738be.template.yaml
   ```

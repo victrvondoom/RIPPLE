@@ -7,7 +7,7 @@ RIPPLE is one centralized workflow & intervention platform: *one change → ever
 
 ## Architecture (one line each — details in docs/ARCHITECTURE.md)
 - `src/server/engine/` mission engine (state machine, baselines, changes, analysis orchestration, approvals, actions, verification, completion). **Pack-agnostic.**
-- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry, inherited from competitor projects; see `docs/INHERITANCE.md`) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
+- `src/server/packs/` thirteen workflow packs: `beo`, `sceneshift`, `scopeguard`, `invoiceguard`, `shiftrelay`, `movemate`, `podflow`, `submitready` (default registry) + `sentinel` (id `incident-sentinel`), `schemacourt`, `clearsend`, `crewpilot`, `offerroom` (extended registry) + `common.ts`, `untrusted.ts` helpers + `registry.ts`. Role keys must be globally unique (seed maps people by key). Use `ActionSpec.approver` for who-specific approvals and `QuestionSpec.assigneeOnly` for questions only one person may answer.
 - `src/server/collab/` `CollabPort` boundary; `local.ts` (labelled local mode), `switch.ts` (Switch agent-protocol adapter).
 - `src/server/connectors/` file-backed local connectors (document store, internal outbox, email dry-run) with idempotency + read-back `observe()`.
 - `src/server/agents/provider.ts` model-provider abstraction (deterministic default; optional Anthropic wording-only).
@@ -69,16 +69,16 @@ See `progress.md` (authoritative) and `docs/IMPLEMENTATION_PLAN.md`.
 - `billing_sandbox` is a test ledger and must always be labelled as such. It never moves money.
 - One Switch connection serves all rooms. Never call `post_message` without going through the adapter's serial room claim (`SwitchCollab.send`).
 
-## Consumer resolution (session 13) — RECLAIM + RESOLVE + REDEEM, read docs/integration/
+## Consumer resolution (session 13) — Citation + RIPPLE + Intake safety, read progress.md
 - The three source products were integrated as CAPABILITIES ported to TypeScript, not as apps: `src/server/capabilities/reclaim` (retrieval, provenance, citation checks), `capabilities/resolve` (commitment ledger), `capabilities/redeem` (intake safety, scam scan, confirmed memory). They are pure functions; the only orchestrator is RIPPLE's engine.
 - The `consumer-resolution` pack (`packs/consumer/`) uses all three. Only the consumer (`cr_consumer`) may answer their questions or approve messages sent on their behalf. A refund counts only when the consumer confirms it; never write "refunded" from a provider message.
-- The bundled corpus rows are `authored_guide` (RECLAIM authors, not official regulator text). Keep that label everywhere, and only cite claims `verifyClaim` finds in the corpus.
+- The bundled corpus rows are `authored_guide` (Citation authors, not official regulator text). Keep that label everywhere, and only cite claims `verifyClaim` finds in the corpus.
 - The original Python repos (RESEOLVE, Open-Agent/reclaim, redeem) are outside this folder and must not be modified from here.
 
 ## Dashboards, Switch console, flagship (sessions 10–11), see docs/RIPPLE_IMPLEMENTATION_REPORT.md
 - Feature preservation is the minimum bar: never remove a page, route, API, pack or nav destination. Extend instead.
 - `src/server/api/dashboards.ts` has the read models for the 4 dashboards. Every number comes from rows. When there is no data, return null and the UI shows "—"; never fabricate a metric. UI pages must not hardcode content; add a read model instead.
-- `src/server/capabilities/catalog.ts` is configuration. A source project is `pack-backed` only when an implemented pack exercises the capability.
+- `src/server/capabilities/catalog.ts` is configuration. A catalogued capability is `pack-backed` only when an implemented pack exercises the capability.
 - `src/server/console/`:
   - every state change is a proposal that a signed-in human confirms;
   - it then runs through the normal Engine method under that user's identity;

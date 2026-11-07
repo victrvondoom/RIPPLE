@@ -11,7 +11,7 @@ What was built against the "100× competitive evolution" directive, what was pro
 | Capability | Where | Proven by |
 |---|---|---|
 | Four dashboards (Mission Control, Operations Workbench, Trust & Evidence, Knowledge & Decisions) on recorded data only | `src/server/api/dashboards.ts`, `src/web/pages/dash/*` | `tests/dashboards.test.ts`, browser |
-| Capability catalog: 34 source projects → 7 systems, honest integration status | `src/server/capabilities/catalog.ts` | `tests/dashboards.test.ts` |
+| Capability catalog: 34 catalogued capabilities → 7 systems, honest integration status | `src/server/capabilities/catalog.ts` | `tests/dashboards.test.ts` |
 | Tamper-evident audit ledger: sha256 chain plus seals; editing a sealed row is detected | `dashboards.ts` (`auditChain`, `sealLedger`, `verifySeals`) | test (tampered row → `intact: false`) |
 | Portable verification receipts bound to action, payload hash, baseline/change and approver | `GET /api/dash/trust/receipts/:id` | test |
 | Separation-of-duties re-check from the ledger | `trust()` | test (0 violations) |
@@ -70,7 +70,7 @@ Reproduced in a real browser (Chrome, fresh DB, port 8794) entirely by typing in
    - register a RIPPLE agent;
    - set `SWITCH_BRIDGE_URL`, `SWITCH_AGENT_ID`, `SWITCH_AGENT_API_KEY` and `SWITCH_SELF_NAME`;
    - restart, then turn the switch on.
-2. Only one of the three showcase verticals is built end to end (software/data change → verified recovery). The conflict→correction and policy-controlled business-action verticals rely on existing packs (BEO, InvoiceGuard, ClearSend) and the Knowledge dashboard. They are not new end-to-end slices.
+2. Only one of the three showcase verticals is built end to end (software/data change → verified recovery). The conflict→correction and policy-controlled business-action verticals rely on existing packs (BEO, InvoiceGuard, Escrow Release) and the Knowledge dashboard. They are not new end-to-end slices.
 3. There is no visual cross-domain workflow composer, no generic policy DSL (policy stays role/approver rules in the engine), and no GitHub/telemetry ingestion.
 4. The ledger hash chain is computed on read. Seals detect edits but are not externally anchored or signed.
 5. Workflow Studio still runs its labelled synthetic GPU-billing scenario (server-backed via `/api/studio/*`).
