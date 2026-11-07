@@ -16,6 +16,9 @@ import { revenuePack } from './revenue/pack.js';
 import { consumerPack } from './consumer/pack.js';
 import { billingPack } from './billing/pack.js';
 import { depgatePack } from './depgate/pack.js';
+import { flipsidePack } from './flipside/pack.js';
+import { fixlinePack } from './fixline/pack.js';
+import { recallPack } from './recall/pack.js';
 
 export interface PackListing { id: string; name: string; domain: string; status: 'implemented' | 'planned'; tagline: string }
 const PLANNED: PackListing[] = [];
@@ -53,5 +56,7 @@ export function extendedRegistry() {
     .register(consumerPack)
     .register(billingPack)
     .register(depgatePack)
-
+    .register(flipsidePack)
+    .register(fixlinePack)
+    .register(recallPack);
 }
