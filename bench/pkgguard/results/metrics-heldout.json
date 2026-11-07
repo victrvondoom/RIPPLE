@@ -1,6 +1,6 @@
 {
  "split": "heldout",
- "generatedAt": "2026-11-07T09:53:56.798Z",
+ "generatedAt": "2026-11-07T11:02:39.439Z",
  "rules": {
   "META_RULES": {
    "newDays": 7,
@@ -54,18 +54,18 @@
  },
  "E1_names": {
   "npm": {
-   "malicious": 13960,
-   "controls": 84165,
-   "excludedBecauseInReference": 0,
+   "malicious": 13958,
+   "controls": 157405,
+   "excludedBecauseInReference": 2,
    "lookalike": {
     "TP": 20,
-    "FN": 13940,
-    "FP": 556,
-    "TN": 83609,
-    "precision": 0.035,
+    "FN": 13938,
+    "FP": 930,
+    "TN": 156475,
+    "precision": 0.021,
     "recall": 0.001,
     "f1": 0.003,
-    "fpr": 0.007,
+    "fpr": 0.006,
     "fnr": 0.999,
     "recallCI95": [
      0.1,
@@ -73,17 +73,17 @@
     ],
     "fprCI95": [
      0.6,
-     0.7
+     0.6
     ]
    },
    "combosquat": {
-    "TP": 3,
-    "FN": 13957,
-    "FP": 63,
-    "TN": 84102,
-    "precision": 0.045,
+    "TP": 4,
+    "FN": 13954,
+    "FP": 171,
+    "TN": 157234,
+    "precision": 0.023,
     "recall": 0,
-    "f1": 0,
+    "f1": 0.001,
     "fpr": 0.001,
     "fnr": 1,
     "recallCI95": [
@@ -96,40 +96,40 @@
     ]
    },
    "lookalikeOrCombo": {
-    "TP": 23,
-    "FN": 13937,
-    "FP": 619,
-    "TN": 83546,
-    "precision": 0.036,
+    "TP": 24,
+    "FN": 13934,
+    "FP": 1101,
+    "TN": 156304,
+    "precision": 0.021,
     "recall": 0.002,
     "f1": 0.003,
     "fpr": 0.007,
     "fnr": 0.998,
     "recallCI95": [
      0.1,
-     0.2
+     0.3
     ],
     "fprCI95": [
      0.7,
-     0.8
+     0.7
     ]
    },
    "byKind": {
     "typo-distance": {
      "malicious": 20,
-     "control": 492
+     "control": 831
     },
     "combosquat": {
-     "malicious": 3,
-     "control": 63
+     "malicious": 4,
+     "control": 171
     },
     "separator-confusion": {
      "malicious": 0,
-     "control": 34
+     "control": 66
     },
     "scope-confusion": {
      "malicious": 0,
-     "control": 29
+     "control": 31
     },
     "homoglyph": {
      "malicious": 0,
@@ -137,10 +137,6 @@
     }
    },
    "topTargets": [
-    [
-     "bs-logger",
-     2
-    ],
     [
      "ansi-escapes",
      1
@@ -174,10 +170,6 @@
      1
     ],
     [
-     "socket.io",
-     1
-    ],
-    [
      "fdir",
      1
     ],
@@ -194,43 +186,51 @@
      1
     ],
     [
-     "untildify",
+     "react",
+     1
+    ],
+    [
+     "clone",
+     1
+    ],
+    [
+     "remark-parse",
      1
     ]
    ],
    "controlFalseAlarmExamples": [
+    "one-time ~ onetime (separator-confusion)",
+    "buffers ~ buffer (typo-distance)",
+    "to-buffer ~ is-buffer (typo-distance)",
+    "bare-os ~ bare-fs (typo-distance)",
+    "es6-error ~ es-errors (typo-distance)",
+    "generate-function ~ generator-function (typo-distance)",
+    "npm ~ pnpm (typo-distance)",
+    "isstream ~ is-stream (separator-confusion)",
+    "obuf ~ obug (typo-distance)",
+    "uid ~ uuid (typo-distance)",
     "eventemitter2 ~ eventemitter3 (typo-distance)",
-    "wbuf ~ obuf (typo-distance)",
     "ulid ~ uuid (typo-distance)",
     "sockjs ~ socks (typo-distance)",
+    "ip-regex ~ is-regex (typo-distance)",
     "touch ~ youch (typo-distance)",
     "ts-loader ~ css-loader (typo-distance)",
+    "xlsx ~ clsx (typo-distance)",
     "split ~ split2 (typo-distance)",
     "simple-git ~ simple-get (typo-distance)",
-    "xmlbuilder2 ~ xmlbuilder (typo-distance)",
-    "xml-js ~ xml2js (typo-distance)",
-    "neotraverse ~ estraverse (typo-distance)",
-    "event-emitter ~ eventemitter3 (typo-distance)",
-    "dargs ~ yargs (typo-distance)",
-    "eta ~ etag (typo-distance)",
-    "hast-util-to-string ~ mdast-util-to-string (typo-distance)",
-    "yargs-unparser ~ yargs-parser (typo-distance)",
-    "echarts ~ recharts (typo-distance)",
-    "piccolore ~ picocolors (typo-distance)",
-    "just-diff ~ jest-diff (typo-distance)",
-    "p-is-promise ~ is-promise (typo-distance)"
+    "xmlbuilder2 ~ xmlbuilder (typo-distance)"
    ]
   },
   "pypi": {
    "malicious": 8390,
-   "controls": 34849,
+   "controls": 35239,
    "excludedBecauseInReference": 0,
    "lookalike": {
     "TP": 555,
     "FN": 7835,
-    "FP": 132,
-    "TN": 34717,
-    "precision": 0.808,
+    "FP": 133,
+    "TN": 35106,
+    "precision": 0.807,
     "recall": 0.066,
     "f1": 0.122,
     "fpr": 0.004,
@@ -247,9 +247,9 @@
    "combosquat": {
     "TP": 11,
     "FN": 8379,
-    "FP": 11,
-    "TN": 34838,
-    "precision": 0.5,
+    "FP": 7,
+    "TN": 35232,
+    "precision": 0.611,
     "recall": 0.001,
     "f1": 0.003,
     "fpr": 0,
@@ -260,15 +260,15 @@
     ],
     "fprCI95": [
      0,
-     0.1
+     0
     ]
    },
    "lookalikeOrCombo": {
     "TP": 566,
     "FN": 7824,
-    "FP": 143,
-    "TN": 34706,
-    "precision": 0.798,
+    "FP": 140,
+    "TN": 35099,
+    "precision": 0.802,
     "recall": 0.067,
     "f1": 0.124,
     "fpr": 0.004,
@@ -285,19 +285,11 @@
    "byKind": {
     "typo-distance": {
      "malicious": 555,
-     "control": 130
+     "control": 133
     },
     "combosquat": {
      "malicious": 11,
-     "control": 11
-    },
-    "separator-confusion": {
-     "malicious": 0,
-     "control": 1
-    },
-    "homoglyph": {
-     "malicious": 0,
-     "control": 1
+     "control": 7
     }
    },
    "topTargets": [
@@ -363,26 +355,26 @@
     ]
    ],
    "controlFalseAlarmExamples": [
-    "authlib ~ oauthlib (typo-distance)",
-    "swipy ~ scipy (typo-distance)",
-    "tmock ~ mock (typo-distance)",
-    "fake ~ faker (typo-distance)",
-    "zippy ~ zipp (typo-distance)",
-    "fattools ~ fonttools (typo-distance)",
-    "apiconfig ~ iniconfig (typo-distance)",
-    "fakear ~ faker (typo-distance)",
-    "anvio ~ anyio (typo-distance)",
-    "doblib ~ joblib (typo-distance)",
-    "pytest-mcp ~ pytest-mock (typo-distance)",
-    "zscryptography ~ cryptography (typo-distance)",
-    "nqdm ~ tqdm (typo-distance)",
-    "zorch ~ torch (typo-distance)",
-    "aisible ~ ansible (typo-distance)",
-    "cisort ~ isort (typo-distance)",
-    "patsi ~ patsy (typo-distance)",
-    "jupytercore ~ jupyter-core (separator-confusion)",
-    "fling-core ~ flit-core (typo-distance)",
-    "llmlite ~ llvmlite (typo-distance)"
+    "sbuild ~ build (typo-distance)",
+    "scilpy ~ scipy (typo-distance)",
+    "monk ~ mock (typo-distance)",
+    "py4f ~ py4j (typo-distance)",
+    "wheelr ~ wheel (typo-distance)",
+    "pyyz ~ pytz (typo-distance)",
+    "setuptools-shim ~ setuptools-scm (typo-distance)",
+    "weba ~ web3 (typo-distance)",
+    "brack ~ black (typo-distance)",
+    "jnltk ~ nltk (typo-distance)",
+    "skipy ~ scipy (typo-distance)",
+    "dotplotlib ~ matplotlib (typo-distance)",
+    "stride ~ stripe (typo-distance)",
+    "trapt ~ wrapt (typo-distance)",
+    "packaging2 ~ packaging (typo-distance)",
+    "decorate ~ decorator (typo-distance)",
+    "kerasn ~ keras (typo-distance)",
+    "pyty ~ pytz (typo-distance)",
+    "pipeclip ~ pyperclip (typo-distance)",
+    "yard ~ yarl (typo-distance)"
    ]
   }
  },
@@ -398,9 +390,9 @@
     "error": 0
    },
    "controls": {
-    "popular": 673,
-    "longtail": 872,
-    "fresh": 311
+    "popular": 672,
+    "longtail": 825,
+    "fresh": 367
    }
   },
   "signals": {
@@ -442,8 +434,8 @@
     },
     "lookalike_name": {
      "known": 1973,
-     "hit": 20,
-     "pct": 1
+     "hit": 18,
+     "pct": 0.9
     },
     "combosquat_name": {
      "known": 1973,
@@ -509,8 +501,8 @@
     },
     "lookalike_name": {
      "known": 1973,
-     "hit": 20,
-     "pct": 1
+     "hit": 18,
+     "pct": 0.9
     },
     "combosquat_name": {
      "known": 1973,
@@ -540,203 +532,203 @@
    },
    "control_popular": {
     "new_package": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "young_package": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "few_versions": {
-     "known": 673,
-     "hit": 15,
-     "pct": 2.2
+     "known": 672,
+     "hit": 20,
+     "pct": 3
     },
     "install_script": {
-     "known": 673,
+     "known": 672,
      "hit": 2,
      "pct": 0.3
     },
     "low_downloads": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "dependency_confusion_version": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "dormant_revival": {
-     "known": 669,
-     "hit": 134,
-     "pct": 20
+     "known": 668,
+     "hit": 144,
+     "pct": 21.6
     },
     "lookalike_name": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "combosquat_name": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 673,
+     "known": 672,
      "hit": 2,
      "pct": 0.3
     },
     "young_and_few_versions": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "young_and_install_script": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     },
     "COMPOSITE": {
-     "known": 673,
+     "known": 672,
      "hit": 0,
      "pct": 0
     }
    },
    "control_longtail": {
     "new_package": {
-     "known": 872,
-     "hit": 0,
-     "pct": 0
+     "known": 825,
+     "hit": 7,
+     "pct": 0.8
     },
     "young_package": {
-     "known": 872,
-     "hit": 39,
-     "pct": 4.5
+     "known": 825,
+     "hit": 31,
+     "pct": 3.8
     },
     "few_versions": {
-     "known": 872,
-     "hit": 86,
-     "pct": 9.9
+     "known": 825,
+     "hit": 138,
+     "pct": 16.7
     },
     "install_script": {
-     "known": 872,
-     "hit": 13,
+     "known": 825,
+     "hit": 12,
      "pct": 1.5
     },
     "low_downloads": {
-     "known": 872,
-     "hit": 117,
-     "pct": 13.4
+     "known": 825,
+     "hit": 250,
+     "pct": 30.3
     },
     "dependency_confusion_version": {
-     "known": 872,
-     "hit": 0,
-     "pct": 0
-    },
-    "dormant_revival": {
-     "known": 829,
-     "hit": 88,
-     "pct": 10.6
-    },
-    "lookalike_name": {
-     "known": 872,
-     "hit": 8,
-     "pct": 0.9
-    },
-    "combosquat_name": {
-     "known": 872,
-     "hit": 0,
-     "pct": 0
-    },
-    "no_repository": {
-     "known": 872,
-     "hit": 89,
-     "pct": 10.2
-    },
-    "young_and_few_versions": {
-     "known": 872,
-     "hit": 8,
-     "pct": 0.9
-    },
-    "young_and_install_script": {
-     "known": 872,
+     "known": 825,
      "hit": 2,
      "pct": 0.2
     },
+    "dormant_revival": {
+     "known": 745,
+     "hit": 67,
+     "pct": 9
+    },
+    "lookalike_name": {
+     "known": 825,
+     "hit": 6,
+     "pct": 0.7
+    },
+    "combosquat_name": {
+     "known": 825,
+     "hit": 2,
+     "pct": 0.2
+    },
+    "no_repository": {
+     "known": 825,
+     "hit": 122,
+     "pct": 14.8
+    },
+    "young_and_few_versions": {
+     "known": 825,
+     "hit": 11,
+     "pct": 1.3
+    },
+    "young_and_install_script": {
+     "known": 825,
+     "hit": 0,
+     "pct": 0
+    },
     "COMPOSITE": {
-     "known": 872,
-     "hit": 17,
-     "pct": 1.9
+     "known": 825,
+     "hit": 18,
+     "pct": 2.2
     }
    },
    "control_fresh": {
     "new_package": {
-     "known": 311,
-     "hit": 21,
-     "pct": 6.8
+     "known": 367,
+     "hit": 23,
+     "pct": 6.3
     },
     "young_package": {
-     "known": 311,
-     "hit": 311,
+     "known": 367,
+     "hit": 367,
      "pct": 100
     },
     "few_versions": {
-     "known": 311,
-     "hit": 42,
-     "pct": 13.5
+     "known": 367,
+     "hit": 67,
+     "pct": 18.3
     },
     "install_script": {
-     "known": 311,
+     "known": 367,
      "hit": 7,
-     "pct": 2.3
+     "pct": 1.9
     },
     "low_downloads": {
-     "known": 311,
-     "hit": 51,
-     "pct": 16.4
+     "known": 367,
+     "hit": 100,
+     "pct": 27.2
     },
     "dependency_confusion_version": {
-     "known": 311,
-     "hit": 3,
-     "pct": 1
+     "known": 367,
+     "hit": 5,
+     "pct": 1.4
     },
     "dormant_revival": {
-     "known": 311,
+     "known": 367,
      "hit": 0,
      "pct": 0
     },
     "lookalike_name": {
-     "known": 311,
+     "known": 367,
      "hit": 0,
      "pct": 0
     },
     "combosquat_name": {
-     "known": 311,
+     "known": 367,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 311,
-     "hit": 40,
-     "pct": 12.9
+     "known": 367,
+     "hit": 58,
+     "pct": 15.8
     },
     "young_and_few_versions": {
-     "known": 311,
-     "hit": 42,
-     "pct": 13.5
+     "known": 367,
+     "hit": 67,
+     "pct": 18.3
     },
     "young_and_install_script": {
-     "known": 311,
+     "known": 367,
      "hit": 7,
-     "pct": 2.3
+     "pct": 1.9
     },
     "COMPOSITE": {
-     "known": 311,
-     "hit": 48,
-     "pct": 15.4
+     "known": 367,
+     "hit": 72,
+     "pct": 19.6
     }
    }
   },
@@ -744,46 +736,46 @@
    "atPublish_vs_allControls": {
     "TP": 1853,
     "FN": 120,
-    "FP": 65,
-    "TN": 1791,
-    "precision": 0.966,
+    "FP": 90,
+    "TN": 1774,
+    "precision": 0.954,
     "recall": 0.939,
-    "f1": 0.952,
-    "fpr": 0.035,
+    "f1": 0.946,
+    "fpr": 0.048,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     2.8,
-     4.4
+     3.9,
+     5.9
     ]
    },
    "atReport_vs_allControls": {
     "TP": 806,
     "FN": 1167,
-    "FP": 65,
-    "TN": 1791,
-    "precision": 0.925,
+    "FP": 90,
+    "TN": 1774,
+    "precision": 0.9,
     "recall": 0.409,
-    "f1": 0.567,
-    "fpr": 0.035,
+    "f1": 0.562,
+    "fpr": 0.048,
     "fnr": 0.591,
     "recallCI95": [
      38.7,
      43
     ],
     "fprCI95": [
-     2.8,
-     4.4
+     3.9,
+     5.9
     ]
    },
    "atPublish_vs_popular": {
     "TP": 1853,
     "FN": 120,
     "FP": 0,
-    "TN": 673,
+    "TN": 672,
     "precision": 1,
     "recall": 0.939,
     "f1": 0.969,
@@ -801,96 +793,96 @@
    "atPublish_vs_longtail": {
     "TP": 1853,
     "FN": 120,
-    "FP": 17,
-    "TN": 855,
-    "precision": 0.991,
+    "FP": 18,
+    "TN": 807,
+    "precision": 0.99,
     "recall": 0.939,
     "f1": 0.964,
-    "fpr": 0.019,
+    "fpr": 0.022,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     1.2,
-     3.1
+     1.4,
+     3.4
     ]
    },
    "atPublish_vs_fresh": {
     "TP": 1853,
     "FN": 120,
-    "FP": 48,
-    "TN": 263,
-    "precision": 0.975,
+    "FP": 72,
+    "TN": 295,
+    "precision": 0.963,
     "recall": 0.939,
-    "f1": 0.957,
-    "fpr": 0.154,
+    "f1": 0.951,
+    "fpr": 0.196,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     11.8,
-     19.9
+     15.9,
+     24
     ]
    },
    "atPublish_vs_popular_atLatestRelease": {
     "TP": 1853,
     "FN": 120,
-    "FP": 9,
-    "TN": 664,
+    "FP": 10,
+    "TN": 662,
     "precision": 0.995,
     "recall": 0.939,
     "f1": 0.966,
-    "fpr": 0.013,
+    "fpr": 0.015,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     0.7,
-     2.5
+     0.8,
+     2.7
     ]
    },
    "atPublish_vs_longtail_atLatestRelease": {
     "TP": 1853,
     "FN": 120,
-    "FP": 91,
-    "TN": 781,
-    "precision": 0.953,
+    "FP": 132,
+    "TN": 693,
+    "precision": 0.934,
     "recall": 0.939,
-    "f1": 0.946,
-    "fpr": 0.104,
+    "f1": 0.936,
+    "fpr": 0.16,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     8.6,
-     12.6
+     13.7,
+     18.7
     ]
    },
    "atPublish_vs_fresh_atLatestRelease": {
     "TP": 1853,
     "FN": 120,
-    "FP": 56,
-    "TN": 255,
-    "precision": 0.971,
+    "FP": 82,
+    "TN": 285,
+    "precision": 0.958,
     "recall": 0.939,
-    "f1": 0.955,
-    "fpr": 0.18,
+    "f1": 0.948,
+    "fpr": 0.223,
     "fnr": 0.061,
     "recallCI95": [
      92.8,
      94.9
     ],
     "fprCI95": [
-     14.1,
-     22.7
+     18.4,
+     26.9
     ]
    }
   },
@@ -1017,20 +1009,20 @@
    "confusion_midWindow_vs_allControls": {
     "TP": 1122,
     "FN": 851,
-    "FP": 65,
-    "TN": 1791,
-    "precision": 0.945,
+    "FP": 90,
+    "TN": 1774,
+    "precision": 0.926,
     "recall": 0.569,
-    "f1": 0.71,
-    "fpr": 0.035,
+    "f1": 0.705,
+    "fpr": 0.048,
     "fnr": 0.431,
     "recallCI95": [
      54.7,
      59
     ],
     "fprCI95": [
-     2.8,
-     4.4
+     3.9,
+     5.9
     ]
    }
   },
@@ -1063,24 +1055,29 @@
   },
   "controlFlagRateByAge": {
    ">1 year": {
-    "n": 1349,
-    "flagged": 8,
-    "pct": 0.6
+    "n": 1301,
+    "flagged": 6,
+    "pct": 0.5
    },
    "30-365 days": {
-    "n": 157,
-    "flagged": 0,
-    "pct": 0
+    "n": 165,
+    "flagged": 1,
+    "pct": 0.6
    },
    "7-30 days": {
-    "n": 329,
-    "flagged": 56,
-    "pct": 17
+    "n": 368,
+    "flagged": 82,
+    "pct": 22.3
+   },
+   "<1 day": {
+    "n": 3,
+    "flagged": 1,
+    "pct": 33.3
    },
    "1-7 days": {
-    "n": 21,
-    "flagged": 1,
-    "pct": 4.8
+    "n": 27,
+    "flagged": 0,
+    "pct": 0
    }
   },
   "detectionByVersionsAtPublish": {
@@ -1275,63 +1272,63 @@
    "controls": {
     "popular": {
      ">=5,000": {
-      "n": 673,
+      "n": 672,
       "flagged": 0,
       "pct": 0
      }
     },
     "longtail": {
      ">=5,000": {
-      "n": 310,
-      "flagged": 4,
+      "n": 223,
+      "flagged": 3,
       "pct": 1.3
      },
-     "10-49": {
+     "50-499": {
+      "n": 181,
+      "flagged": 6,
+      "pct": 3.3
+     },
+     "<10": {
       "n": 99,
       "flagged": 4,
       "pct": 4
      },
+     "10-49": {
+      "n": 151,
+      "flagged": 3,
+      "pct": 2
+     },
      "500-4,999": {
-      "n": 225,
+      "n": 171,
       "flagged": 2,
-      "pct": 0.9
-     },
-     "50-499": {
-      "n": 220,
-      "flagged": 6,
-      "pct": 2.7
-     },
-     "<10": {
-      "n": 18,
-      "flagged": 1,
-      "pct": 5.6
+      "pct": 1.2
      }
     },
     "fresh": {
      "500-4,999": {
-      "n": 121,
-      "flagged": 8,
-      "pct": 6.6
-     },
-     "50-499": {
-      "n": 110,
-      "flagged": 19,
-      "pct": 17.3
+      "n": 123,
+      "flagged": 3,
+      "pct": 2.4
      },
      "10-49": {
-      "n": 41,
-      "flagged": 11,
-      "pct": 26.8
+      "n": 78,
+      "flagged": 18,
+      "pct": 23.1
+     },
+     "50-499": {
+      "n": 117,
+      "flagged": 33,
+      "pct": 28.2
      },
      ">=5,000": {
-      "n": 29,
-      "flagged": 2,
-      "pct": 6.9
+      "n": 27,
+      "flagged": 0,
+      "pct": 0
      },
      "<10": {
-      "n": 10,
-      "flagged": 8,
-      "pct": 80
+      "n": 22,
+      "flagged": 18,
+      "pct": 81.8
      }
     }
    }
@@ -1339,32 +1336,32 @@
   "falseAlarmExamples": {
    "popular": [],
    "longtail": [
-    "debounced: name edit distance 1 from debounce",
-    "cwm-assistant: 15 day(s) old and runs an install script",
-    "it-glob: name edit distance 1 from is-glob",
-    "react-wow: name edit distance 2 from react-dom",
-    "babel-helper-annotate-as-pure: name unscoped copy of @babel/helper-annotate-as-pure",
-    "aruing-darwin-x64: 23 day(s) old with 2 release(s); 23 day(s) old and runs an install script",
-    "bower: name edit distance 1 from bowser",
-    "@turystack/nestjs-i18n: 12 day(s) old with 2 release(s)",
-    "@calca/format-html-tailwind: 14 day(s) old with 2 release(s)",
-    "@almadar/orb-shell-chrome-darwin-x64: 26 day(s) old with 2 release(s)",
-    "vue-server-renderer: name unscoped copy of @vue/server-renderer",
-    "@ohos-ports/formatjs-intl-enumerator: 8 day(s) old with 2 release(s)"
+    "pure-cron: 7 day(s) old with 2 release(s)",
+    "fractal-memory-cli: 0 day(s) old with 2 release(s)",
+    "jest-html: name edit distance 2 from jest-util",
+    "joi-form-i18n: 10 day(s) old with 2 release(s)",
+    "@ohos-ports/constants-float64-sqrt-two-pi: 9 day(s) old with 2 release(s)",
+    "getport: name differs from get-port only by - _ . separators",
+    "ast-equal: name edit distance 2 from fast-equals",
+    "resolver: name edit distance 1 from resolve",
+    "@haybarn/ext-mongo-h1-5-6-darwin-x64: version 202608.x on a package with 2 release(s) (dependency-confusion pattern); 23 day(s) old with 2 release(s)",
+    "tnw-metro-api-client: 19 day(s) old with 2 release(s)",
+    "@slates-integrations/baselinker: 22 day(s) old with 2 release(s)",
+    "@glyphui/viewers: 20 day(s) old with 2 release(s)"
    ],
    "fresh": [
-    "@unabandoned/postcss-css-variables: 29 day(s) old with 2 release(s)",
-    "@app-vitals/agent-admin: 14 day(s) old and runs an install script",
-    "@voila.dev/live: 21 day(s) old with 2 release(s)",
-    "dmk-queue: 10 day(s) old with 2 release(s)",
-    "@ohos-ports-electron/fs-extra: 5 day(s) old with 2 release(s)",
-    "@tsc-rs/typescript: 16 day(s) old and runs an install script",
-    "@ohos-ports/math: 8 day(s) old with 2 release(s)",
-    "store-review-check: 21 day(s) old with 2 release(s)",
-    "bansur-router: 18 day(s) old and runs an install script",
-    "prism-guard: 28 day(s) old with 2 release(s)",
-    "@mary-ext/array-fns: 28 day(s) old with 2 release(s)",
-    "@1adybug/tanstack-query: 9 day(s) old with 2 release(s)"
+    "@deploybaseline/square: 15 day(s) old with 2 release(s)",
+    "@skeu/preact: 14 day(s) old with 2 release(s)",
+    "dsh-overlay: 28 day(s) old with 2 release(s)",
+    "bun-plugin-n2b: 15 day(s) old with 2 release(s)",
+    "@haybarn/ext-toml-h1-5-6-linux-x64: version 202607.x on a package with 2 release(s) (dependency-confusion pattern); 22 day(s) old with 2 release(s)",
+    "@iriscat/mini-electron: 26 day(s) old and runs an install script",
+    "nexus-rmm-agent-client: 16 day(s) old with 2 release(s)",
+    "pi-session-role: 7 day(s) old with 2 release(s)",
+    "n8n-nodes-chh-imap: 26 day(s) old with 2 release(s)",
+    "ls-why-primary-sources-matter-and-how-to-find-them-mvjbsn90: 16 day(s) old with 2 release(s)",
+    "@ohos-ports/yauzl: 27 day(s) old with 2 release(s)",
+    "@slates-integrations/cloudlayer: 22 day(s) old with 2 release(s)"
    ]
   },
   "missedExamples": [
@@ -1454,24 +1451,24 @@
    },
    "random": {
     "new_package": {
-     "known": 991,
+     "known": 1019,
      "hit": 8,
      "pct": 0.8
     },
     "young_package": {
-     "known": 991,
-     "hit": 30,
-     "pct": 3
+     "known": 1019,
+     "hit": 32,
+     "pct": 3.1
     },
     "few_versions": {
-     "known": 991,
-     "hit": 422,
-     "pct": 42.6
+     "known": 1019,
+     "hit": 429,
+     "pct": 42.1
     },
     "install_script": {
-     "known": 991,
-     "hit": 197,
-     "pct": 19.9
+     "known": 1019,
+     "hit": 204,
+     "pct": 20
     },
     "low_downloads": {
      "known": 0,
@@ -1479,66 +1476,66 @@
      "pct": null
     },
     "dependency_confusion_version": {
-     "known": 991,
+     "known": 1019,
      "hit": 2,
      "pct": 0.2
     },
     "dormant_revival": {
-     "known": 716,
-     "hit": 54,
-     "pct": 7.5
+     "known": 739,
+     "hit": 51,
+     "pct": 6.9
     },
     "lookalike_name": {
-     "known": 994,
-     "hit": 6,
-     "pct": 0.6
+     "known": 1033,
+     "hit": 4,
+     "pct": 0.4
     },
     "combosquat_name": {
-     "known": 994,
+     "known": 1033,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 994,
-     "hit": 323,
-     "pct": 32.5
+     "known": 1033,
+     "hit": 329,
+     "pct": 31.8
     },
     "young_and_few_versions": {
-     "known": 991,
-     "hit": 15,
-     "pct": 1.5
+     "known": 1019,
+     "hit": 19,
+     "pct": 1.9
     },
     "young_and_install_script": {
-     "known": 991,
-     "hit": 0,
-     "pct": 0
+     "known": 1019,
+     "hit": 1,
+     "pct": 0.1
     },
     "COMPOSITE": {
-     "known": 994,
-     "hit": 23,
-     "pct": 2.3
+     "known": 1033,
+     "hit": 25,
+     "pct": 2.4
     }
    },
    "fresh": {
     "new_package": {
-     "known": 368,
-     "hit": 210,
-     "pct": 57.1
+     "known": 343,
+     "hit": 208,
+     "pct": 60.6
     },
     "young_package": {
-     "known": 368,
-     "hit": 368,
+     "known": 343,
+     "hit": 343,
      "pct": 100
     },
     "few_versions": {
-     "known": 368,
-     "hit": 161,
-     "pct": 43.8
+     "known": 343,
+     "hit": 170,
+     "pct": 49.6
     },
     "install_script": {
-     "known": 368,
-     "hit": 2,
-     "pct": 0.5
+     "known": 343,
+     "hit": 3,
+     "pct": 0.9
     },
     "low_downloads": {
      "known": 0,
@@ -1546,44 +1543,44 @@
      "pct": null
     },
     "dependency_confusion_version": {
-     "known": 368,
-     "hit": 1,
-     "pct": 0.3
+     "known": 343,
+     "hit": 2,
+     "pct": 0.6
     },
     "dormant_revival": {
-     "known": 257,
+     "known": 239,
      "hit": 0,
      "pct": 0
     },
     "lookalike_name": {
-     "known": 368,
+     "known": 343,
      "hit": 1,
      "pct": 0.3
     },
     "combosquat_name": {
-     "known": 368,
+     "known": 343,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 368,
-     "hit": 117,
+     "known": 343,
+     "hit": 109,
      "pct": 31.8
     },
     "young_and_few_versions": {
-     "known": 368,
-     "hit": 161,
-     "pct": 43.8
+     "known": 343,
+     "hit": 170,
+     "pct": 49.6
     },
     "young_and_install_script": {
-     "known": 368,
-     "hit": 2,
-     "pct": 0.5
+     "known": 343,
+     "hit": 3,
+     "pct": 0.9
     },
     "COMPOSITE": {
-     "known": 368,
-     "hit": 161,
-     "pct": 43.8
+     "known": 343,
+     "hit": 171,
+     "pct": 49.9
     }
    }
   },
@@ -1657,43 +1654,43 @@
   "confusion_liveMalicious_vs_allControls": {
    "TP": 18,
    "FN": 14,
-   "FP": 169,
-   "TN": 1384,
-   "precision": 0.096,
+   "FP": 177,
+   "TN": 1388,
+   "precision": 0.092,
    "recall": 0.563,
-   "f1": 0.164,
-   "fpr": 0.109,
+   "f1": 0.159,
+   "fpr": 0.113,
    "fnr": 0.438,
    "recallCI95": [
     39.3,
     71.8
    ],
    "fprCI95": [
-    9.4,
-    12.5
+    9.8,
+    13
    ]
   }
  },
  "E3_code": {
   "npm": {
-   "attempted": 1129,
-   "scanned": 1118,
+   "attempted": 1159,
+   "scanned": 1151,
    "sizes": {
     "malicious": 185,
-    "popular": 332,
-    "longtail": 293,
-    "fresh": 308
+    "popular": 330,
+    "longtail": 270,
+    "fresh": 366
    },
    "atReview": {
     "vsAllBenign": {
      "TP": 6,
      "FN": 179,
      "FP": 14,
-     "TN": 919,
+     "TN": 952,
      "precision": 0.3,
      "recall": 0.032,
      "f1": 0.059,
-     "fpr": 0.015,
+     "fpr": 0.014,
      "fnr": 0.968,
      "recallCI95": [
       1.5,
@@ -1701,34 +1698,34 @@
      ],
      "fprCI95": [
       0.9,
-      2.5
+      2.4
      ]
     },
     "fpr_popular": {
-     "n": 332,
-     "hits": 2,
-     "pct": 0.6,
+     "n": 330,
+     "hits": 3,
+     "pct": 0.9,
      "ci95": [
-      0.2,
-      2.2
+      0.3,
+      2.6
      ]
     },
     "fpr_longtail": {
-     "n": 293,
-     "hits": 4,
-     "pct": 1.4,
+     "n": 270,
+     "hits": 3,
+     "pct": 1.1,
      "ci95": [
-      0.5,
-      3.5
+      0.4,
+      3.2
      ]
     },
     "fpr_fresh": {
-     "n": 308,
+     "n": 366,
      "hits": 8,
-     "pct": 2.6,
+     "pct": 2.2,
      "ci95": [
-      1.3,
-      5
+      1.1,
+      4.3
      ]
     }
    },
@@ -1736,47 +1733,47 @@
     "vsAllBenign": {
      "TP": 2,
      "FN": 183,
-     "FP": 4,
-     "TN": 929,
-     "precision": 0.333,
+     "FP": 6,
+     "TN": 960,
+     "precision": 0.25,
      "recall": 0.011,
      "f1": 0.021,
-     "fpr": 0.004,
+     "fpr": 0.006,
      "fnr": 0.989,
      "recallCI95": [
       0.3,
       3.9
      ],
      "fprCI95": [
-      0.2,
-      1.1
+      0.3,
+      1.3
      ]
     },
     "fpr_popular": {
-     "n": 332,
-     "hits": 2,
-     "pct": 0.6,
+     "n": 330,
+     "hits": 3,
+     "pct": 0.9,
      "ci95": [
-      0.2,
-      2.2
+      0.3,
+      2.6
      ]
     },
     "fpr_longtail": {
-     "n": 293,
-     "hits": 1,
-     "pct": 0.3,
+     "n": 270,
+     "hits": 0,
+     "pct": 0,
      "ci95": [
-      0.1,
-      1.9
+      0,
+      1.4
      ]
     },
     "fpr_fresh": {
-     "n": 308,
-     "hits": 1,
-     "pct": 0.3,
+     "n": 366,
+     "hits": 3,
+     "pct": 0.8,
      "ci95": [
-      0.1,
-      1.8
+      0.3,
+      2.4
      ]
     }
    },
@@ -1794,38 +1791,36 @@
     "npm_hook_runs_remote": 1
    },
    "benignRuleFrequency": {
-    "js_network": 93,
-    "credential_paths": 12,
-    "npm_install_hook": 10,
+    "js_network": 95,
+    "npm_install_hook": 13,
+    "credential_paths": 11,
+    "js_fingerprint": 7,
+    "py_network": 6,
     "js_shell_tools": 4,
-    "js_fingerprint": 3,
-    "collect_and_send": 3,
-    "py_network": 3,
-    "download_and_run": 3,
-    "powershell_hidden": 3,
-    "js_fetch_eval": 2,
-    "browser_data": 1,
-    "exfil_endpoint": 1,
-    "raw_ip_url": 1,
+    "download_and_run": 4,
+    "js_fetch_eval": 3,
+    "collect_and_send": 2,
+    "browser_data": 2,
+    "persistence": 2,
+    "messaging_api": 1,
     "npm_hook_inline_code": 1,
-    "persistence": 1,
-    "js_obfuscator": 1
+    "py_fetch_exec": 1
    },
    "benignFlaggedExamples": [
+    "popular/pnpm@12.18.0: 8 [npm_install_hook,js_network,credential_paths,js_fingerprint,py_network]",
     "popular/vite@8.3.6: 12 [credential_paths,js_shell_tools,js_fingerprint,js_network,collect_and_send]",
     "popular/playwright-core@1.65.0: 11 [js_network,browser_data,js_fetch_eval,collect_and_send]",
-    "longtail/momentic@3.72.0: 7 [exfil_endpoint,credential_paths,js_network]",
-    "longtail/@ohos-ports/canvas@3.2.3-beta.4: 5 [npm_install_hook,npm_hook_inline_code]",
-    "longtail/@namespacelabs/sdk@1.5.3: 4 [download_and_run]",
-    "longtail/@axway/api-builder-orm@3.0.0: 4 [js_fetch_eval]",
-    "fresh/bansur-router@1.0.9: 19 [npm_install_hook,js_network,download_and_run,powershell_hidden,credential_paths,js_shell_tools,js_fingerprint]",
-    "fresh/dsh-session-navigator@1.1.3: 5 [js_network,js_shell_tools]",
-    "fresh/@majapisoftwares/router@0.2.1: 6 [js_fingerprint,js_network,collect_and_send]",
-    "fresh/@yhuangsh/adbmcp@0.7.0: 5 [download_and_run,js_network]",
-    "fresh/shot-canvas@0.2.1: 4 [js_network,persistence]",
-    "fresh/@ezychat/desktop@0.1.79: 5 [js_network,powershell_hidden]",
-    "fresh/@hypit/runtime-local@0.1.1: 4 [js_shell_tools]",
-    "fresh/dsh-biocore@0.5.1: 5 [py_network,powershell_hidden]"
+    "longtail/3d-force-graph-vr@3.1.2: 4 [js_fetch_eval]",
+    "longtail/tr-plugin-auth@1.2.6: 5 [messaging_api,persistence]",
+    "longtail/browser-cookie-bridge@1.5.10: 4 [js_network,browser_data]",
+    "fresh/pocket-terminal@7.3.0: 12 [js_shell_tools,js_network,persistence,download_and_run]",
+    "fresh/@petercjl/competitor-visual-canvas@0.1.7: 6 [npm_install_hook,npm_hook_inline_code,js_network]",
+    "fresh/selecle-cli@0.1.7: 5 [js_network,download_and_run]",
+    "fresh/cdk-github-runner-switch@0.3.0: 4 [download_and_run]",
+    "fresh/@raultov/browser-control-mcp@0.12.0-beta.22: 7 [npm_install_hook,js_shell_tools,js_network]",
+    "fresh/aish-terminal@1.1.0: 6 [js_fingerprint,js_shell_tools]",
+    "fresh/@ngodeai/coding-agent@1.0.8: 15 [credential_paths,js_network,download_and_run,js_fingerprint,py_fetch_exec,py_network]",
+    "fresh/wasm-quickjs-dom@1.0.13: 4 [js_fetch_eval]"
    ],
    "maliciousMissedExamples": [
     "css-hell@1.0.0: score 0, files 2 []",
@@ -1885,31 +1880,31 @@
    }
   },
   "pypi": {
-   "attempted": 525,
-   "scanned": 517,
+   "attempted": 547,
+   "scanned": 533,
    "sizes": {
     "malicious": 32,
     "popular": 217,
-    "random": 268
+    "random": 284
    },
    "atReview": {
     "vsAllBenign": {
      "TP": 16,
      "FN": 16,
-     "FP": 17,
-     "TN": 468,
-     "precision": 0.485,
+     "FP": 24,
+     "TN": 477,
+     "precision": 0.4,
      "recall": 0.5,
-     "f1": 0.492,
-     "fpr": 0.035,
+     "f1": 0.444,
+     "fpr": 0.048,
      "fnr": 0.5,
      "recallCI95": [
       33.6,
       66.4
      ],
      "fprCI95": [
-      2.2,
-      5.5
+      3.2,
+      7
      ]
     },
     "fpr_popular": {
@@ -1922,12 +1917,12 @@
      ]
     },
     "fpr_random": {
-     "n": 268,
-     "hits": 5,
-     "pct": 1.9,
+     "n": 284,
+     "hits": 12,
+     "pct": 4.2,
      "ci95": [
-      0.8,
-      4.3
+      2.4,
+      7.2
      ]
     }
    },
@@ -1935,20 +1930,20 @@
     "vsAllBenign": {
      "TP": 3,
      "FN": 29,
-     "FP": 3,
-     "TN": 482,
-     "precision": 0.5,
+     "FP": 7,
+     "TN": 494,
+     "precision": 0.3,
      "recall": 0.094,
-     "f1": 0.158,
-     "fpr": 0.006,
+     "f1": 0.143,
+     "fpr": 0.014,
      "fnr": 0.906,
      "recallCI95": [
       3.2,
       24.2
      ],
      "fprCI95": [
-      0.2,
-      1.8
+      0.7,
+      2.9
      ]
     },
     "fpr_popular": {
@@ -1961,12 +1956,12 @@
      ]
     },
     "fpr_random": {
-     "n": 268,
-     "hits": 1,
-     "pct": 0.4,
+     "n": 284,
+     "hits": 5,
+     "pct": 1.8,
      "ci95": [
-      0.1,
-      2.1
+      0.8,
+      4.1
      ]
     }
    },
@@ -1984,22 +1979,25 @@
     "download_and_run": 1
    },
    "benignRuleFrequency": {
-    "py_network": 194,
-    "py_setup_runs": 13,
-    "credential_paths": 11,
-    "download_and_run": 5,
-    "py_startfile": 4,
-    "py_fingerprint": 4,
+    "py_network": 193,
+    "credential_paths": 13,
+    "py_setup_runs": 12,
+    "download_and_run": 9,
+    "py_setup_override": 7,
+    "py_startfile": 5,
+    "py_fingerprint": 5,
     "py_pth_import": 3,
-    "persistence": 3,
-    "js_network": 3,
-    "py_setup_override": 2,
     "py_fetch_exec": 2,
+    "collect_and_send": 2,
+    "persistence": 2,
     "messaging_api": 2,
-    "collect_and_send": 1,
+    "wallet_files": 2,
+    "js_network": 2,
+    "reverse_shell": 2,
     "raw_ip_url": 1,
     "js_fetch_eval": 1,
-    "wallet_files": 1
+    "powershell_hidden": 1,
+    "browser_data": 1
    },
    "benignFlaggedExamples": [
     "popular/pandas@3.1.1: 4 [py_startfile,py_network]",
@@ -2014,11 +2012,18 @@
     "popular/spacy@3.8.18: 5 [download_and_run,py_network]",
     "popular/bitcoinlib@0.7.10: 4 [wallet_files,py_network]",
     "popular/bokeh@3.10.2: 4 [py_setup_runs,py_network,js_network]",
-    "random/ign8vault@2.0.10: 4 [py_network,persistence]",
-    "random/pymworks@2.0.1: 5 [credential_paths,py_network,py_setup_runs]",
-    "random/cheap-search@2026.5.17: 4 [download_and_run]",
-    "random/remdb@0.3.285: 7 [download_and_run,credential_paths,py_network]",
-    "random/janis-pipelines-runner@0.13.0: 5 [py_network,download_and_run]"
+    "random/aiosmb@0.4.14: 7 [powershell_hidden,persistence]",
+    "random/pramaana@1.9.0: 4 [py_network,py_startfile]",
+    "random/agentwall@0.3.6: 9 [download_and_run,reverse_shell]",
+    "random/aimux@0.3.75: 6 [py_network,py_fingerprint,collect_and_send]",
+    "random/nlsh-cli@0.2.1: 4 [download_and_run]",
+    "random/project-board@2026.11.6.1119: 4 [py_network,browser_data]",
+    "random/fxtest@0.0.6: 4 [download_and_run]",
+    "random/cerebrate@0.0.11: 4 [py_setup_override,py_setup_runs]",
+    "random/cafitac-hermit-agent@0.4.2: 5 [py_network,download_and_run]",
+    "random/hound-tracer@0.9.0: 7 [download_and_run,py_network,credential_paths]",
+    "random/boman-cli@2.6.10: 10 [py_network,reverse_shell,download_and_run]",
+    "random/email-tool-mcp@5.6.0: 10 [credential_paths,wallet_files,py_network,download_and_run]"
    ],
    "maliciousMissedExamples": [
     "bioql@3.0.1: score 1, files 83 [py_network]",
@@ -2080,63 +2085,63 @@
     "n": 185
    },
    "benign": {
-    "metadataOnly": 49,
-    "codeOnly": 13,
-    "both": 1,
-    "neither": 870,
-    "n": 933
+    "metadataOnly": 76,
+    "codeOnly": 12,
+    "both": 2,
+    "neither": 876,
+    "n": 966
    },
    "benignByGroup": {
     "popular": {
      "metadataOnly": 0,
-     "codeOnly": 2,
+     "codeOnly": 3,
      "both": 0,
-     "neither": 330,
-     "n": 332
+     "neither": 327,
+     "n": 330
     },
     "longtail": {
-     "metadataOnly": 3,
-     "codeOnly": 4,
+     "metadataOnly": 6,
+     "codeOnly": 3,
      "both": 0,
-     "neither": 286,
-     "n": 293
+     "neither": 261,
+     "n": 270
     },
     "fresh": {
-     "metadataOnly": 46,
-     "codeOnly": 7,
-     "both": 1,
-     "neither": 254,
-     "n": 308
+     "metadataOnly": 70,
+     "codeOnly": 6,
+     "both": 2,
+     "neither": 288,
+     "n": 366
     }
    },
    "metadataOnly": {
     "TP": 175,
     "FN": 10,
-    "FP": 50,
-    "TN": 883,
-    "precision": 0.778,
+    "FP": 78,
+    "TN": 888,
+    "precision": 0.692,
     "recall": 0.946,
-    "f1": 0.854,
-    "fpr": 0.054,
+    "f1": 0.799,
+    "fpr": 0.081,
     "fnr": 0.054,
     "recallCI95": [
      90.3,
      97
     ],
     "fprCI95": [
-     4.1,
-     7
+     6.5,
+     10
     ]
    },
    "codeOnly": {
     "TP": 6,
     "FN": 179,
     "FP": 14,
-    "TN": 919,
+    "TN": 952,
     "precision": 0.3,
     "recall": 0.032,
     "f1": 0.059,
-    "fpr": 0.015,
+    "fpr": 0.014,
     "fnr": 0.968,
     "recallCI95": [
      1.5,
@@ -2144,45 +2149,45 @@
     ],
     "fprCI95": [
      0.9,
-     2.5
+     2.4
     ]
    },
    "either": {
     "TP": 179,
     "FN": 6,
-    "FP": 63,
-    "TN": 870,
-    "precision": 0.74,
+    "FP": 90,
+    "TN": 876,
+    "precision": 0.665,
     "recall": 0.968,
-    "f1": 0.838,
-    "fpr": 0.068,
+    "f1": 0.789,
+    "fpr": 0.093,
     "fnr": 0.032,
     "recallCI95": [
      93.1,
      98.5
     ],
     "fprCI95": [
-     5.3,
-     8.5
+     7.6,
+     11.3
     ]
    },
    "both": {
     "TP": 2,
     "FN": 183,
-    "FP": 1,
-    "TN": 932,
-    "precision": 0.667,
+    "FP": 2,
+    "TN": 964,
+    "precision": 0.5,
     "recall": 0.011,
     "f1": 0.021,
-    "fpr": 0.001,
+    "fpr": 0.002,
     "fnr": 0.989,
     "recallCI95": [
      0.3,
      3.9
     ],
     "fprCI95": [
-     0,
-     0.6
+     0.1,
+     0.8
     ]
    }
   },
@@ -2195,97 +2200,97 @@
     "n": 185
    },
    "benign": {
-    "metadataOnly": 49,
-    "codeOnly": 3,
+    "metadataOnly": 77,
+    "codeOnly": 5,
     "both": 1,
-    "neither": 880,
-    "n": 933
+    "neither": 883,
+    "n": 966
    },
    "benignByGroup": {
     "popular": {
      "metadataOnly": 0,
-     "codeOnly": 2,
+     "codeOnly": 3,
      "both": 0,
-     "neither": 330,
-     "n": 332
+     "neither": 327,
+     "n": 330
     },
     "longtail": {
-     "metadataOnly": 3,
-     "codeOnly": 1,
+     "metadataOnly": 6,
+     "codeOnly": 0,
      "both": 0,
-     "neither": 289,
-     "n": 293
+     "neither": 264,
+     "n": 270
     },
     "fresh": {
-     "metadataOnly": 46,
-     "codeOnly": 0,
+     "metadataOnly": 71,
+     "codeOnly": 2,
      "both": 1,
-     "neither": 261,
-     "n": 308
+     "neither": 292,
+     "n": 366
     }
    },
    "metadataOnly": {
     "TP": 175,
     "FN": 10,
-    "FP": 50,
-    "TN": 883,
-    "precision": 0.778,
+    "FP": 78,
+    "TN": 888,
+    "precision": 0.692,
     "recall": 0.946,
-    "f1": 0.854,
-    "fpr": 0.054,
+    "f1": 0.799,
+    "fpr": 0.081,
     "fnr": 0.054,
     "recallCI95": [
      90.3,
      97
     ],
     "fprCI95": [
-     4.1,
-     7
+     6.5,
+     10
     ]
    },
    "codeOnly": {
     "TP": 2,
     "FN": 183,
-    "FP": 4,
-    "TN": 929,
-    "precision": 0.333,
+    "FP": 6,
+    "TN": 960,
+    "precision": 0.25,
     "recall": 0.011,
     "f1": 0.021,
-    "fpr": 0.004,
+    "fpr": 0.006,
     "fnr": 0.989,
     "recallCI95": [
      0.3,
      3.9
     ],
     "fprCI95": [
-     0.2,
-     1.1
+     0.3,
+     1.3
     ]
    },
    "either": {
     "TP": 176,
     "FN": 9,
-    "FP": 53,
-    "TN": 880,
-    "precision": 0.769,
+    "FP": 83,
+    "TN": 883,
+    "precision": 0.68,
     "recall": 0.951,
-    "f1": 0.85,
-    "fpr": 0.057,
+    "f1": 0.793,
+    "fpr": 0.086,
     "fnr": 0.049,
     "recallCI95": [
      91,
      97.4
     ],
     "fprCI95": [
-     4.4,
-     7.4
+     7,
+     10.5
     ]
    },
    "both": {
     "TP": 1,
     "FN": 184,
     "FP": 1,
-    "TN": 932,
+    "TN": 965,
     "precision": 0.5,
     "recall": 0.005,
     "f1": 0.011,

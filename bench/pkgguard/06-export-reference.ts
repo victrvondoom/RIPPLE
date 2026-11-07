@@ -8,8 +8,9 @@ const authored = readFileSync(join(ROOT, 'lists', 'pypi-wellknown-authored.txt')
 const live = new Set(readJsonl<any>('pypi-controls.jsonl').filter((r) => r.group === 'popular' && r.status === 200).map((r) => r.name));
 const pypi = authored.filter((n) => live.has(n));
 const prov = JSON.parse(readFileSync(join(DATA, 'osv-provenance.json'), 'utf8'));
+const ctl = JSON.parse(readFileSync(join(DATA, 'controls-provenance.json'), 'utf8'));
 writeFileSync(join(ROOT, '..', '..', 'src', 'server', 'capabilities', 'pkgguard', 'reference-lists.json'), JSON.stringify({
-  provenance: { npm: 'top 2,000 by weekly downloads in the bench/pkgguard npm search crawl (2026-11-07), OSV-reported names removed', pypi: `authored well-known list (bench/pkgguard/lists), ${pypi.length} names existence-checked on PyPI 2026-11-07`, osvSnapshot: prov.npm.lastModified },
+  provenance: { npm: `top 2,000 by weekly downloads in the bench/pkgguard npm search crawl (${ctl.collectedAt.slice(0, 10)}: ${ctl.npmQueryTerms} terms + ${ctl.npmStemQueries} name-stem queries); names reported malicious in every version removed, names with only specific hijacked versions kept`, pypi: `authored well-known list (bench/pkgguard/lists), ${pypi.length} names existence-checked on PyPI 2026-11-07`, osvSnapshot: prov.npm.lastModified },
   npm, pypi,
 }));
 console.log({ npm: npm.length, pypi: pypi.length });

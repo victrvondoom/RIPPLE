@@ -149,8 +149,8 @@ export function PeopleAgents() {
                 <tr>
                   <th>Agent Role</th>
                   <th>Pack Domain</th>
-                  <th>Allowed Read Sources</th>
-                  <th>Allowed Write Connectors</th>
+                  <th>Reads</th>
+                  <th>Writes (connectors it has proposed actions on)</th>
                   <th>Safety Constraint & Policy Limit</th>
                 </tr>
               </thead>
@@ -163,13 +163,12 @@ export function PeopleAgents() {
                     </td>
                     <td className="small">{a.pack_id}</td>
                     <td className="small">
-                      <span className="badge">Plan Baseline</span>{' '}
-                      <span className="badge">Change Request</span>{' '}
-                      <span className="badge">Human Answers</span>
+                      {(a.reads ?? []).map((r: string) => <span key={r} className="badge" style={{ marginRight: 4 }}>{r}</span>)}
                     </td>
                     <td className="small">
-                      <span className="badge b-info">Local Outbox (Dry-run)</span>{' '}
-                      <span className="badge b-ok">Document Store</span>
+                      {a.scope === 'read' ? <span className="badge">none (read-only role)</span>
+                        : a.writes?.length ? a.writes.map((w: any) => <span key={w.key} className="badge b-info" style={{ marginRight: 4 }}>{w.name} ({w.actions})</span>)
+                        : <span className="muted">no action proposed yet</span>}
                     </td>
                     <td className="small" style={{ color: 'var(--warn)' }}>
                       {/* Session 18: the pack declares its agents' limits (labels.agentLimit); the UI no longer switches on pack id. */}

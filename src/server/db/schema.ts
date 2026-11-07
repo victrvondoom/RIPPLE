@@ -228,4 +228,9 @@ CREATE INDEX IF NOT EXISTS idx_wf_tasks_mission ON workflow_tasks(workspace_id, 
 CREATE INDEX IF NOT EXISTS idx_causal_mission ON causal_events(workspace_id, mission_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_mission ON audit_events(workspace_id, mission_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_msgs_mission ON messages(workspace_id, mission_id, created_at);
+-- Session 19: Squat Watch state (one row per invented package name per room; workspace-scoped).
+CREATE TABLE IF NOT EXISTS pkg_watch (
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, room TEXT NOT NULL, ecosystem TEXT NOT NULL, name TEXT NOT NULL,
+  status TEXT NOT NULL, observed_version TEXT, checked_at TEXT NOT NULL, registered_seen_at TEXT, last_mission_id TEXT,
+  UNIQUE (workspace_id, room, ecosystem, name));
 `;

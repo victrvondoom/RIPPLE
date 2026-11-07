@@ -8,6 +8,7 @@ import { parseChatIdentities } from './collab/chat.js';
 import { buildConnectors } from './connectors/index.js';
 import { providerFromEnv } from './agents/provider.js';
 import { createApp } from './api/app.js';
+import { PackageGateService, watchMinutes } from './api/pkgguard.js';
 import { seedWorkspace, syncDirectory } from './seed.js';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -28,8 +29,18 @@ syncDirectory(db, packs);
 const recovered = engine.recoverInterrupted();
 if (recovered) console.log(`Recovered ${recovered} interrupted agent task(s); affected missions are blocked and resumable.`);
 setInterval(() => { try { engine.sweepStaleTasks(); engine.sweepExpiredApprovals(); } catch (e) { console.error('stale-task sweep failed', e); } }, 15_000).unref();
+// Squat Watch (session 19): re-read every invented package name on npm/PyPI every PKGGUARD_WATCH_MINUTES (0 = off).
+const packageGate = new PackageGateService(engine);
+if (watchMinutes() > 0) {
+  let running = false;
+  setInterval(async () => {
+    if (running) return; running = true;
+    try { for (const w of db.all('SELECT id FROM workspaces')) await packageGate.watch(w.id); }
+    catch (e) { console.error('squat watch failed', e); } finally { running = false; }
+  }, watchMinutes() * 60_000).unref();
+}
 const port = Number(process.env.PORT ?? 8787);
-const server = serve({ fetch: createApp(engine, { production: prod }).fetch, port }, () => {
+const server = serve({ fetch: createApp(engine, { production: prod, packageGate }).fetch, port }, () => {
   console.log(`RIPPLE listening on http://localhost:${port}  collaboration=${collab.label}  provider=${engine.provider.name}`);
 });
 // A listen failure (e.g. the port is taken by another RIPPLE instance) is reported clearly instead of crashing with an unhandled 'error' event.

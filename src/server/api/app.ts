@@ -15,6 +15,7 @@ import { registerRealityRoutes, REALITY_TABLES } from './reality.js';
 import { registerCrossDomainRoutes } from './crossdomain.js';
 import { registerDashboardRoutes, DASH_TABLES } from './dashboards.js';
 import { registerFlipsideRoutes } from './flipside.js';
+import { PackageGateService, PKG_TABLES, registerPkgGuardRoutes } from './pkgguard.js';
 import { issueReceipt, verifyReceipt, type LedgerReceipt } from './receipt.js';
 import { SwitchConsole, registerConsoleRoutes } from '../console/console.js';
 
@@ -22,7 +23,7 @@ const COOKIE = 'ripple_session';
 const hashToken = (t: string) => createHash('sha256').update(t).digest('hex');
 type Env = { Variables: { actor: Actor } };
 
-export function createApp(engine: Engine, opts: { production?: boolean; webRoot?: string; console?: SwitchConsole } = {}) {
+export function createApp(engine: Engine, opts: { production?: boolean; webRoot?: string; console?: SwitchConsole; packageGate?: PackageGateService } = {}) {
   const app = new Hono<Env>();
   const db = engine.db;
   const attempts = new Map<string, { n: number; t: number }>();
@@ -115,11 +116,24 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     const roles = db.all('SELECT * FROM agent_roles WHERE workspace_id=?', ws);
     const open = db.all("SELECT owner_user_id AS uid, count(*) n FROM work_items WHERE workspace_id=? AND status!='done' GROUP BY owner_user_id", ws);
     const runStats = db.all("SELECT role_key, status, count(*) n FROM agent_runs WHERE workspace_id=? GROUP BY role_key, status", ws);
+    // Session 19: what each agent reads and writes comes from its pack declaration and from recorded actions, not a fixed list.
+    const used = db.all('SELECT m.pack_id, a.owner_role, a.connector, count(*) n FROM actions a JOIN missions m ON m.id = a.mission_id WHERE a.workspace_id=? GROUP BY m.pack_id, a.owner_role, a.connector', ws);
+    const conName = new Map(db.all('SELECT key, name FROM connectors WHERE workspace_id=?', ws).map((x) => [x.key, x.name]));
+    const access = (packId: string, key: string) => {
+      const pack = engine.packs.get(packId); const role = pack?.roles.find((r) => r.key === key);
+      const deps = pack?.roleDeps?.[key] ?? pack?.roleOrder.slice(0, Math.max(0, pack.roleOrder.indexOf(key))) ?? [];
+      return {
+        scope: role?.scope ?? 'act',
+        reads: ['plan baseline', 'change request', 'human answers', ...deps.map((d) => `${pack?.roles.find((r) => r.key === d)?.name ?? d} output`)],
+        writes: used.filter((u) => u.pack_id === packId && u.owner_role === key).map((u) => ({ key: u.connector, name: conName.get(u.connector) ?? u.connector, actions: u.n })),
+      };
+    };
     return c.json({
       users: users.map((u) => ({ ...u, openWork: open.find((o) => o.uid === u.id)?.n ?? 0, roles: roles.filter((r) => r.user_id === u.id).map((r) => ({ pack: r.pack_id, key: r.key, name: r.name })) })),
       agents: roles.filter((r) => r.kind === 'agent').map((a) => ({
         ...a,
         limit: engine.packs.get(a.pack_id)?.agentLimit ?? null,
+        ...access(a.pack_id, a.key),
         runs: runStats.filter((s) => s.role_key === a.key)
       }))
     });
@@ -198,6 +212,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   // Four dashboards (Mission Control, Operations Workbench, Trust & Evidence, Knowledge & Decisions) + capability catalog (session 10)
   registerDashboardRoutes(app, engine);
   registerFlipsideRoutes(app, engine);
+  registerPkgGuardRoutes(app, engine, opts.packageGate ?? new PackageGateService(engine));
   // Portable signed ledger receipts (session 16; inherited from switch-notary/Shipyard). Issue: manager/owner. Verify: any member.
   app.post('/api/dash/trust/receipt', (c) => c.json(issueReceipt(engine, A(c))));
   app.post('/api/dash/trust/receipt/verify', async (c) => {
@@ -225,7 +240,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
   });
   app.get('/api/workspace/export', (c) => {
     const a = A(c); engine.require(a, 'owner');
-    const tables = ['workspaces', 'users', 'missions', 'artifacts', 'baselines', 'change_events', 'graph_nodes', 'dependencies', 'work_items', 'agent_roles', 'agent_runs', 'rooms', 'messages', 'questions', 'approvals', 'actions', 'acknowledgements', 'evidence', 'outcomes', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES];
+    const tables = ['workspaces', 'users', 'missions', 'artifacts', 'baselines', 'change_events', 'graph_nodes', 'dependencies', 'work_items', 'agent_roles', 'agent_runs', 'rooms', 'messages', 'questions', 'approvals', 'actions', 'acknowledgements', 'evidence', 'outcomes', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES, ...PKG_TABLES];
     const out: Record<string, unknown> = { exportedAt: nowIso(), note: 'Password hashes are excluded.' };
     for (const t of tables) out[t] = db.all(`SELECT * FROM ${t} WHERE ${t === 'workspaces' ? 'id' : 'workspace_id'}=?`, a.workspaceId).map((r) => { const { password_hash, ...rest } = r as any; void password_hash; return rest; });
     engine.audit(a.workspaceId, null, 'user', a.name, 'workspace_export', 'Workspace data exported');
@@ -238,7 +253,7 @@ export function createApp(engine: Engine, opts: { production?: boolean; webRoot?
     const ws = db.get('SELECT name FROM workspaces WHERE id=?', a.workspaceId)!;
     if (b.confirmName !== ws.name) throw new EngineError(422, 'confirm_mismatch', 'Type the exact workspace name to confirm deletion.');
     db.tx(() => {
-      for (const t of ['acknowledgements', 'evidence', 'outcomes', 'actions', 'approvals', 'questions', 'messages', 'rooms', 'agent_runs', 'agent_roles', 'work_items', 'dependencies', 'graph_nodes', 'change_events', 'baselines', 'artifacts', 'missions', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES]) db.exec(`DELETE FROM ${t} WHERE workspace_id=?`, a.workspaceId);
+      for (const t of ['acknowledgements', 'evidence', 'outcomes', 'actions', 'approvals', 'questions', 'messages', 'rooms', 'agent_runs', 'agent_roles', 'work_items', 'dependencies', 'graph_nodes', 'change_events', 'baselines', 'artifacts', 'missions', 'connectors', 'audit_events', 'causal_events', 'workflow_tasks', ...REALITY_TABLES, ...DASH_TABLES, ...PKG_TABLES]) db.exec(`DELETE FROM ${t} WHERE workspace_id=?`, a.workspaceId);
       db.exec('DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE workspace_id=?)', a.workspaceId);
       db.exec('DELETE FROM users WHERE workspace_id=?', a.workspaceId);
       db.exec('DELETE FROM workspaces WHERE id=?', a.workspaceId);

@@ -7,7 +7,7 @@
 import type { PackageRef } from './installs.js';
 import { inspectArchive, type InspectResult } from './inspect.js';
 import type { PkgMeta } from './metadata.js';
-import { metaAt, pypiMeta, type NpmDoc } from './registry.js';
+import { docStatus, metaAt, pypiMeta, takedownTime, type NpmDoc } from './registry.js';
 
 export interface Observation {
   ecosystem: 'npm' | 'pypi'; name: string; requestedVersion: string | null; resolvedVersion: string | null;
@@ -16,10 +16,12 @@ export interface Observation {
   meta: PkgMeta | null;
   code: Pick<InspectResult, 'version' | 'score' | 'verdict' | 'hits' | 'installHook' | 'filesScanned'> | null;
   integrity: string | null; // registry-published archive digest (npm dist.integrity / PyPI sha256) for the version that was read
+  /** Session 19: a registry statement about the name itself, e.g. npm replaced it with a security placeholder after removing malware. */
+  registryNotice?: string | null;
 }
 
 const MAX_ARCHIVE = 30 * 1024 * 1024;
-type Fetcher = (url: string) => Promise<{ status: number; json?: any; bytes?: Buffer }>;
+export type Fetcher = (url: string) => Promise<{ status: number; json?: any; bytes?: Buffer }>;
 export const httpFetcher: Fetcher = async (url) => {
   const r = await fetch(url, { headers: { 'user-agent': 'ripple-pkgguard/1' }, signal: AbortSignal.timeout(60000) });
   if (!r.ok) return { status: r.status };
@@ -40,6 +42,8 @@ export async function observe(ref: PackageRef, opts: { inspect?: boolean; fetche
       if (r.status === 404) return { ...base, existence: 'not-found' };
       if (!r.json) return base;
       const doc = r.json as NpmDoc;
+      // npm replaces a package it removed for security reasons with a `0.0.1-security` placeholder: the name carried malware.
+      if (docStatus(doc) === 'placeholder') return { ...base, existence: 'exists', resolvedVersion: doc['dist-tags']?.latest ?? null, registryNotice: `npm security placeholder since ${takedownTime(doc) ?? 'an unknown date'}: npm removed this package's code for security reasons` };
       const want = ref.version && doc.versions?.[ref.version] ? ref.version : ref.version && doc['dist-tags']?.[ref.version] ? doc['dist-tags'][ref.version] : ref.version ? null : doc['dist-tags']?.latest ?? null;
       if (!want) return { ...base, existence: 'version-not-found' };
       const meta = metaAt(doc, ref.name, now, want);

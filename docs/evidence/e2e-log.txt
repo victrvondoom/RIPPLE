@@ -19,4 +19,4 @@ Procurement Lead completed their review item
 Completion criteria all met → mission Completed with outcome record and baseline v2
 SceneShift mission analysed on the same engine (script change → takes, continuity, departments)
 Mobile viewport (390px): no horizontal page overflow
-No unexpected browser console errors (only the pre-login 401 probe and the 1 deliberate 422 refusal)
+No unexpected browser console errors (only the 1 deliberate 422 refusal)

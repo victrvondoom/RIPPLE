@@ -28,6 +28,25 @@
 ## Not covered
 Mattermost-bridged rooms with humans in chat (the `!` commands being typed by a human); the gateway export with a human session (sessions 13–15 cover agent-only rooms and the agent API); real model API; real email/chat; UI component unit tests; load/security testing; browser matrix (Chromium only); accessibility audit (labels/roles used, not audited).
 
+## Session 19 - results (real runs, 2026-11-07)
+```
+$ npm run typecheck   (exit 0)        $ npm run lint   (exit 0)
+$ npx vitest run
+ Test Files  47 passed (47)
+      Tests  383 passed (383)
+$ bash scripts/fresh-server.sh 8791 && BASE_URL=http://localhost:8791 node scripts/<journey>.mjs
+e2e.mjs                -> E2E PASSED
+e2e-crossdomain.mjs    -> CROSS-DOMAIN JOURNEY PASSED
+e2e-flipside.mjs       -> FLIPSIDE JOURNEY PASSED
+e2e-sweep.mjs          -> SWEEP PASSED: no console errors, page errors or failed API calls
+e2e-package-gate.mjs   -> PACKAGE GATE LIVE JOURNEY PASSED   (reads the real npm and PyPI registries)
+# run earlier in session 19, after the e2e fixes but before the UI read-model changes (the final sweep covers those pages):
+e2e-inherited.mjs      -> ALL CHECKS PASSED;  e2e-cdii.mjs 8791 -> passed (1 console 409 = its deliberate stale-approval step)
+e2e-packs.mjs scopeguard|invoiceguard|shiftrelay|movemate|podflow|submitready -> PACK JOURNEY PASSED (each)
+$ python -m pytest tests_py -q   -> 27 passed, 2 skipped
+```
+Baseline on main before session 19 (c7c4958): 28 failing tests (merge cb071aa dropped pack registrations and two people).
+
 ## Session 18 - results (real runs, 2026-11-07)
 ```
 $ npm run typecheck        -> tsc --noEmit -p tsconfig.json   (exit 0)

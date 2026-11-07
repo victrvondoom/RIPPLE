@@ -30,6 +30,7 @@ const observation = z.object({
   meta: meta.nullable(),
   code: z.object({ version: z.string(), score: z.number(), verdict: z.enum(['clean', 'review', 'malicious-looking']), hits: z.array(z.object({ rule: z.string(), weight: z.number(), file: z.string(), line: z.number(), what: z.string() })).default([]), installHook: z.string().nullable(), filesScanned: z.number() }).nullable(),
   integrity: z.string().nullable().default(null),
+  registryNotice: z.string().nullable().optional(),
 });
 const pkgKey = z.object({ ecosystem: z.enum(['npm', 'pypi']), name: z.string() });
 export const planSchema = z.object({
@@ -54,7 +55,7 @@ const norm = (eco: string, n: string) => (eco === 'pypi' ? n.toLowerCase().repla
 const slug = (eco: string, name: string, v: string | null) => `${eco}_${name}_${v ?? 'unresolved'}`.replace(/[^a-zA-Z0-9]+/g, '_');
 export const approvalKey = (eco: string, name: string, v: string | null) => `approve_${slug(eco, name, v)}`;
 
-export type PkgStatus = 'clean' | 'approved' | 'approved-now' | 'denied' | 'invented' | 'replace' | 'review' | 'unverified';
+export type PkgStatus = 'clean' | 'approved' | 'approved-now' | 'denied' | 'invented' | 'removed' | 'replace' | 'review' | 'unverified';
 export interface PkgAssessment {
   ref: PackageRef; obs: Obs | null; status: PkgStatus; replacement: string | null; reasons: string[];
   metaFlagged: boolean; codeVerdict: string; key: string; reinvented: boolean;
@@ -72,6 +73,11 @@ export function assess(plan: Plan, change: Change, answers: AnalysisContext['ans
     if (!obs || obs.existence === 'unreachable') return { ...base, status: 'unverified' as const, reasons: ['no registry observation recorded: unverified, not clear'] };
     if (obs.existence === 'not-found') return { ...base, status: 'invented' as const, reasons: [`${ref.name} does not exist on ${obs.source} (observed ${obs.observedAt}): likely an invented name`] };
     if (obs.existence === 'version-not-found') return { ...base, status: 'unverified' as const, reasons: [`version ${ref.version} of ${ref.name} does not exist`] };
+    // A registry security placeholder is never installable as asked: replace it when it imitates a real package, else invented-like removal.
+    if (obs.registryNotice) {
+      const look = index[ref.ecosystem].check(ref.name).find((h) => STRONG_SQUAT.includes(h.kind));
+      return { ...base, status: look ? 'replace' as const : 'removed' as const, replacement: look?.target ?? null, metaFlagged: true, reasons: [obs.registryNotice, ...(look ? [`name ${look.detail}`] : [])] };
+    }
     if (plan.approvalLedger.some((l) => l.ecosystem === ref.ecosystem && norm(l.ecosystem, l.name) === norm(ref.ecosystem, ref.name) && l.version === version)) return { ...base, status: 'approved' as const, reasons: [`${ref.name}@${version} approved earlier (ledger)`] };
     const mv = obs.meta ? metadataVerdict(obs.meta as PkgMeta, index[ref.ecosystem]) : null;
     const reasons = [...(mv?.reasons ?? [])];
@@ -178,7 +184,7 @@ export const pkggatePack: WorkflowPack = {
 
   detectChanges(plan: Plan, change: Change): ChangeItem[] {
     const as = assess(plan, change);
-    return as.map((a) => ({ field: `package.${a.ref.ecosystem}.${a.ref.name}`, label: `${a.ref.ecosystem}: ${a.ref.name}${a.obs?.resolvedVersion ? '@' + a.obs.resolvedVersion : ''}`, before: 'requested', after: a.status, kind: 'added' as const, severity: a.status === 'clean' || a.status === 'approved' ? 'low' as const : a.status === 'invented' || a.status === 'replace' ? 'high' as const : 'medium' as const, note: a.reasons.join('; ') }));
+    return as.map((a) => ({ field: `package.${a.ref.ecosystem}.${a.ref.name}`, label: `${a.ref.ecosystem}: ${a.ref.name}${a.obs?.resolvedVersion ? '@' + a.obs.resolvedVersion : ''}`, before: 'requested', after: a.status, kind: 'added' as const, severity: a.status === 'clean' || a.status === 'approved' ? 'low' as const : a.status === 'invented' || a.status === 'removed' || a.status === 'replace' ? 'high' as const : 'medium' as const, note: a.reasons.join('; ') }));
   },
 
   applyChange(plan: Plan, change: Change, answers): Plan {

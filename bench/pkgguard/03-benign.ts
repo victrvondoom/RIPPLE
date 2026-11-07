@@ -2,7 +2,8 @@
  * Step 3: legitimate-package controls (negative set) and the popular-name reference lists.
  *
  * npm: the registry search API (registry.npmjs.org/-/v1/search) returns real weekly downloads. We crawl it with a fixed
- * list of generic query terms (lists/npm-query-terms.txt), 4 pages of 250 each, and keep the union.
+ * list of generic query terms (lists/npm-query-terms.txt), 4 pages of 250 each, then one page for each name stem of the
+ * 1,000 most-downloaded names found (pass 2), and keep the union.
  *   - reference list: the 2,000 names with the most weekly downloads in the union (used by the lookalike rule)
  *   - popular control: the top 1,000 (what developers install most; an install-weighted proxy)
  *   - long-tail control: 1,200 seeded-random names outside the top 5,000
@@ -17,12 +18,12 @@
  * Any name that appears in the OSV malicious data (all 222,871 npm / 11,971 PyPI names) is excluded from every control.
  * A control package is "legitimate" only in the sense "not reported malicious as of the OSV snapshot".
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { zipEntries } from '../../src/server/capabilities/pkgguard/archive.js';
 import { metaAt, type NpmDoc } from './npmdoc.js';
 import { pypiMeta } from './pypidoc.js';
-import { CACHE, ROOT, getCached, npmDocUrl, pool, readJsonl, rng, sample, split, writeJsonl } from './lib.js';
+import { CACHE, DATA, ROOT, getCached, npmDocUrl, pool, readJsonl, rng, sample, split, writeJsonl } from './lib.js';
 import type { MalRecord } from './01-malicious.js';
 
 const SEED = 7112026;
@@ -30,12 +31,22 @@ const r = rng(SEED);
 const lines = (f: string) => readFileSync(join(ROOT, 'lists', f), 'utf8').split('\n').map((s) => s.trim()).filter((s) => s && !s.startsWith('#'));
 
 // ---- all malicious names (exclusion set), read straight from the OSV archives ----
-function malNames(eco: 'npm' | 'PyPI'): Set<string> {
-  const s = new Set<string>();
+/** Every name in a non-withdrawn malicious report (`all`), and the subset reported as malicious in EVERY version
+ *  (`whole`). A name with only specific hijacked versions (chalk 5.6.1, debug 4.4.2, axios 1.14.1) is still the real
+ *  package: it stays in the popular-name reference list but is excluded from the legitimate controls. */
+function malNames(eco: 'npm' | 'PyPI'): Set<string> & { whole: Set<string> } {
+  const s = new Set<string>() as Set<string> & { whole: Set<string> }; s.whole = new Set<string>();
   for (const e of zipEntries(readFileSync(join(CACHE, `osv-${eco}-all.zip`)), { maxEntries: 1_000_000, maxEntryBytes: 16 * 1024 * 1024, maxUnpackedBytes: Number.MAX_SAFE_INTEGER })) {
     if ('skipped' in e || !e.path.startsWith('MAL-')) continue;
     const d = JSON.parse(e.data.toString('utf8'));
-    for (const a of d.affected ?? []) if (a.package?.name) s.add(eco === 'npm' ? String(a.package.name).toLowerCase() : String(a.package.name).toLowerCase().replace(/[-_.]+/g, '-'));
+    if (d.withdrawn) continue; // session 19 fix: a withdrawn report (e.g. MAL-2024-2929 for react) is not a malicious label
+    for (const a of d.affected ?? []) {
+      if (!a.package?.name) continue;
+      const n = eco === 'npm' ? String(a.package.name).toLowerCase() : String(a.package.name).toLowerCase().replace(/[-_.]+/g, '-');
+      s.add(n);
+      const bounded = (a.versions ?? []).length > 0 || (a.ranges ?? []).some((r: any) => (r.events ?? []).some((ev: any) => ev.fixed || ev.last_affected || (ev.introduced && ev.introduced !== '0')));
+      if (!bounded) s.whole.add(n);
+    }
   }
   return s;
 }
@@ -45,21 +56,35 @@ void readJsonl<MalRecord>;
 // ---------------- npm ----------------
 const terms = lines('npm-query-terms.txt');
 const crawl = new Map<string, { weekly: number; date: string }>();
-await pool(terms.flatMap((t) => [0, 250, 500, 750].map((from) => ({ t, from }))), 6, async ({ t, from }) => {
+const search = async ({ t, from }: { t: string; from: number }) => {
   const f = await getCached(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(t)}&size=250&from=${from}`);
   if (!f.body) return;
   for (const o of (JSON.parse(f.body).objects ?? []) as any[]) {
     const n = String(o.package.name).toLowerCase();
     crawl.set(n, { weekly: Number(o.downloads?.weekly ?? 0), date: String(o.package.date ?? '') });
   }
-}, 'npm-search');
+};
+await pool(terms.flatMap((t) => [0, 250, 500, 750].map((from) => ({ t, from }))), 6, search, 'npm-search');
+// Pass 2 (session 19 fix): query the name stems of the 1,000 most-downloaded names found so far (lodash.merge -> lodash,
+// @babel/core -> babel). The authored terms missed lodash (204M weekly downloads); stems come from the data itself.
+// Repeat until the top 2,000 yields no new stem (at most 4 rounds).
+const queried = new Set(terms); const stems: string[] = [];
+for (let round = 0; round < 4; round++) {
+  const fresh = [...new Set([...crawl.entries()].filter(([n]) => !malNpm.whole.has(n)).sort((a, b) => b[1].weekly - a[1].weekly).slice(0, 2000)
+    .map(([n]) => n.replace(/^@/, '').split(/[/.\-_]/)[0]).filter((s) => s.length >= 3 && !queried.has(s)))];
+  if (!fresh.length) break;
+  fresh.forEach((s) => queried.add(s)); stems.push(...fresh);
+  await pool(fresh.map((t) => ({ t, from: 0 })), 6, search, `npm-search-stems-${round + 1}`);
+}
 const ranked = [...crawl.entries()].filter(([n]) => !malNpm.has(n)).sort((a, b) => b[1].weekly - a[1].weekly);
-writeJsonl('npm-reference.jsonl', ranked.slice(0, 2000).map(([name, v], i) => ({ rank: i + 1, name, weekly: v.weekly })));
+const refRanked = [...crawl.entries()].filter(([n]) => !malNpm.whole.has(n)).sort((a, b) => b[1].weekly - a[1].weekly);
+writeJsonl('npm-reference.jsonl', refRanked.slice(0, 2000).map(([name, v], i) => ({ rank: i + 1, name, weekly: v.weekly, versionSpecificReport: malNpm.has(name) })));
 const popular = ranked.slice(0, 1000);
 const tail = sample(ranked.slice(5000), 1200, r);
 const recent = ranked.slice(5000).filter(([, v]) => v.date && Date.now() - Date.parse(v.date) < 30 * 86400000);
 const freshCandidates = sample(recent.filter(([n]) => !tail.some(([t]) => t === n)), 3000, r);
-writeJsonl('npm-names-control.jsonl', ranked.slice(2000).map(([name, v]) => ({ name, weekly: v.weekly, split: split('npm', name) })));
+const refSet = new Set(refRanked.slice(0, 2000).map(([n]) => n));
+writeJsonl('npm-names-control.jsonl', ranked.filter(([n]) => !refSet.has(n)).map(([name, v]) => ({ name, weekly: v.weekly, split: split('npm', name) })));
 
 async function npmControl(set: [string, { weekly: number }][], group: string) {
   return pool(set, 12, async ([name, v]) => {
@@ -105,4 +130,6 @@ async function pyControl(names: string[], group: string) {
 const pyRows = [...await pyControl(wellKnown, 'popular'), ...await pyControl(pyRandom.map((p) => p.name), 'random'), ...await pyControl(pyRecent.map((p) => p.name), 'recent-serial')];
 writeJsonl('pypi-controls.jsonl', pyRows);
 const ok = (rows: any[], g: string) => rows.filter((x) => x.group === g && x.status === 200).length;
-console.log(JSON.stringify({ npmCrawled: crawl.size, npmMalExcluded: crawl.size - ranked.length, npmPopular: ok(npmRows, 'popular'), npmLongtail: ok(npmRows, 'longtail'), npmFreshCandidates: ok(npmRows, 'fresh-candidate'), pypiProjects: projects.length, pypiPopular: ok(pyRows, 'popular'), pypiRandom: ok(pyRows, 'random'), pypiRecent: ok(pyRows, 'recent-serial') }));
+const provenance = { collectedAt: new Date().toISOString(), seed: SEED, npmQueryTerms: terms.length, npmStemQueries: stems.length, npmCrawled: crawl.size, npmMalExcluded: crawl.size - ranked.length, npmNameControls: ranked.filter(([n]) => !refSet.has(n)).length, npmPopular: ok(npmRows, 'popular'), npmLongtail: ok(npmRows, 'longtail'), npmFreshCandidates: ok(npmRows, 'fresh-candidate'), pypiProjects: projects.length, pypiWellKnown: ok(pyRows, 'popular'), pypiRandom: ok(pyRows, 'random'), pypiRecent: ok(pyRows, 'recent-serial') };
+writeFileSync(join(DATA, 'controls-provenance.json'), JSON.stringify(provenance, null, 1));
+console.log(JSON.stringify(provenance));

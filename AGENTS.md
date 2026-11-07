@@ -18,7 +18,7 @@ RIPPLE is one centralized workflow & intervention platform: *one change → ever
 - TypeScript strict. Business rules live in `engine/` or `packs/`, never in React components.
 - Every tenant-owned row has `workspace_id`; every query filters by it. Never add an unscoped query on tenant tables.
 - State changes ONLY via `Engine.transition()` (validated by `engine/states.ts`) and always audited.
-- New domain = new `WorkflowPack` object registered in `packs/registry.ts`. If you need to change the engine for a pack, ask whether the abstraction is wrong first.
+- New domain = new `WorkflowPack` object in `packs/<folder>/pack.ts`; it is discovered automatically (session 19) and declares its own `tier` ('core' for the default registry) and `system`. Never re-introduce a hand-written register list. If you need to change the engine for a pack, ask whether the abstraction is wrong first.
 - Agent/analyzer output is structured (`RoleResult`) and labelled with its analyzer id; deterministic vs model output must stay distinguishable.
 
 ## Run / test
@@ -32,6 +32,9 @@ node scripts/e2e-packs.mjs <scopeguard|invoiceguard|shiftrelay|movemate|podflow|
 node scripts/e2e-crossdomain.mjs                           # all packs in one Control Center
 BASE_URL=http://localhost:8791 node scripts/e2e-flipside.mjs   # Flipside review journey (author answers, approves, proof OK / PROOF_FAIL)
 npx tsx bench/pkgguard/05-evaluate.ts heldout                  # package-risk benchmark, offline from committed data
+npx tsx bench/pkgguard/08-render-docs.ts && npx tsx scripts/render-readme.ts   # re-render docs numbers / pack list from data
+BASE_URL=http://localhost:8791 node scripts/e2e-sweep.mjs       # every page x manager/viewer, fails on any console/API error
+BASE_URL=http://localhost:8791 node scripts/e2e-package-gate.mjs   # live Package Gate (needs network)
 ```
 
 ## Package Gate and the package-risk benchmark (session 18)

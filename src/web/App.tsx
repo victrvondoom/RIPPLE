@@ -23,9 +23,10 @@ const RealityPage = named(() => import('./pages/RealityPage'), 'RealityPage');
 const Workbench = named(() => import('./pages/dash/Workbench'), 'Workbench');
 const TrustCenter = named(() => import('./pages/dash/TrustCenter'), 'TrustCenter');
 const FlipsidePage = named(() => import('./pages/FlipsidePage'), 'FlipsidePage');
+const PackageGatePage = named(() => import('./pages/PackageGatePage'), 'PackageGatePage');
 const KnowledgeCenter = named(() => import('./pages/dash/KnowledgeCenter'), 'KnowledgeCenter');
 
-const NAV = [['mission-control', 'Mission Control'], ['workbench', 'Operations Workbench'], ['trust', 'Trust & Evidence'], ['knowledge', 'Knowledge & Decisions'], ['flipside', 'Flipside Review'], ['switch', 'Switch Room'], ['studio', 'Workflow Studio ✨'], ['case', 'Case Review'], ['how', 'How it works'],['control', 'Control Center'], ['reality', 'Reality Gap Engine'], ['missions', 'Missions'], ['graph', 'Work Graph'], ['people', 'People & Agents'], ['approvals', 'Approvals'], ['evidence', 'Evidence & Outcomes'], ['packs', 'Workflow Packs'], ['settings', 'Settings']] as const;
+const NAV = [['mission-control', 'Mission Control'], ['workbench', 'Operations Workbench'], ['trust', 'Trust & Evidence'], ['knowledge', 'Knowledge & Decisions'], ['flipside', 'Flipside Review'], ['package-gate', 'Package Gate'], ['switch', 'Switch Room'], ['studio', 'Workflow Studio ✨'], ['case', 'Case Review'], ['how', 'How it works'],['control', 'Control Center'], ['reality', 'Reality Gap Engine'], ['missions', 'Missions'], ['graph', 'Work Graph'], ['people', 'People & Agents'], ['approvals', 'Approvals'], ['evidence', 'Evidence & Outcomes'], ['packs', 'Workflow Packs'], ['settings', 'Settings']] as const;
 export type Me = { user: any; workspace: any; collab: any; provider: any };
 const useRoute = () => { const [h, setH] = useState(location.hash || '#/control'); useEffect(() => { const f = () => setH(location.hash || '#/control'); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f); }, []); return h.replace(/^#\//, '').split('/'); };
 
@@ -106,6 +107,7 @@ function Shell({ me, reloadMe }: { me: Me; reloadMe: () => void }) {
       {page === 'trust' && <TrustCenter me={me} />}
       {page === 'knowledge' && <KnowledgeCenter />}
       {page === 'flipside' && <FlipsidePage me={me} />}
+      {page === 'package-gate' && <PackageGatePage me={me} />}
       {page === 'switch' && <><h1>Switch Room</h1><p className="muted">One conversation with RIPPLE that can reach every dashboard. The switch connects or disconnects a Switch room; the console works locally either way.</p><SwitchRoom me={me} mode="page" /></>}
       {page === 'studio' && <WorkflowStudio me={me} />}
       {page === 'case' && <CaseReview />}

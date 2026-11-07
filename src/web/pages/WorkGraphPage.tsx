@@ -6,6 +6,8 @@ import { Graph } from '../components/Graph';
 export function WorkGraphPage() {
   const toast = useToast();
   const { data: list, error, loading, reload } = useApi<any>('/graph');
+  const { data: packList } = useApi<any>('/packs');
+  const packs: any[] = packList?.packs?.filter((p: any) => p.status === 'implemented') ?? [];
   const [sel, setSel] = useState<string>('');
   const [isDemoLoading, setIsDemoLoading] = useState<boolean>(false);
 
@@ -18,7 +20,7 @@ export function WorkGraphPage() {
     setIsDemoLoading(true);
     try {
       const res = await api('POST', `/packs/${packId}/demo`, { runAnalysis: true });
-      toast.ok(`Loaded ${packId} analyzed graph`);
+      toast.ok(`Loaded ${packs.find((p) => p.id === packId)?.name ?? packId} analysed graph`);
       reload();
       if (res?.mission?.id) {
         setSel(res.mission.id);
@@ -49,21 +51,9 @@ export function WorkGraphPage() {
           </p>
 
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button className="primary" onClick={() => loadDemoMission('beo-rescue')} disabled={isDemoLoading}>
-              🍽️ Load BEO Rescue Graph
-            </button>
-            <button onClick={() => loadDemoMission('scopeguard')} disabled={isDemoLoading}>
-              📑 Load ScopeGuard Graph
-            </button>
-            <button onClick={() => loadDemoMission('invoiceguard')} disabled={isDemoLoading}>
-              🧾 Load InvoiceGuard Graph
-            </button>
-            <button onClick={() => loadDemoMission('shiftrelay')} disabled={isDemoLoading}>
-              🔄 Load ShiftRelay Graph
-            </button>
-            <button onClick={() => loadDemoMission('submitready')} disabled={isDemoLoading}>
-              📋 Load SubmitReady Graph
-            </button>
+            {/* Session 19: one button per implemented pack, read from /api/packs (it used to list 5 packs by hand). */}
+            {packs.map((p, i) => <button key={p.id} className={i === 0 ? 'primary' : ''} onClick={() => loadDemoMission(p.id)} disabled={isDemoLoading} title={p.tagline}>Load {p.name} graph</button>)}
+            {!packs.length && <span className="small muted">Loading workflow packs…</span>}
           </div>
         </div>
       </div>

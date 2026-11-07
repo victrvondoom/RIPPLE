@@ -14,15 +14,17 @@ export function Missions({ me }: { me: Me }) {
     {creating && <NewMission onCreated={(id) => go(`#/mission/${id}`)} />}
     <div className="card flush"><div className="table-wrap"><table><thead><tr><th>Mission</th><th>Workflow</th><th>State</th><th>Why</th><th>Updated</th></tr></thead><tbody>
       {data.missions.map((m: any) => <tr key={m.id}><td><a href={`#/mission/${m.id}`}>{m.title}</a></td><td>{m.pack_name}</td><td><StateBadge state={m.state} /></td><td className="small muted" style={{ maxWidth: 420 }}>{m.state_reason}</td><td className="small">{fmtTime(m.updated_at)}</td></tr>)}
-    </tbody></table></div>{!data.missions.length && <Empty>No missions yet.{canCreate ? ' Click "New mission" and load the sample BEO.' : ''}</Empty>}</div>
+    </tbody></table></div>{!data.missions.length && <Empty>No missions yet.{canCreate ? ' Click "New mission", pick a workflow pack and load its sample plan.' : ''}</Empty>}</div>
   </>;
 }
 
 function NewMission({ onCreated }: { onCreated: (id: string) => void }) {
   const { data: packs } = useApi<any>('/packs');
-  const [packId, setPackId] = useState('beo-rescue'); const [title, setTitle] = useState(''); const [plan, setPlan] = useState(''); const [source, setSource] = useState('form'); const [msg, setMsg] = useState('');
+  const [packId, setPackId] = useState(''); const [title, setTitle] = useState(''); const [plan, setPlan] = useState(''); const [source, setSource] = useState('form'); const [msg, setMsg] = useState('');
   const { busy, run } = useAction();
   const impl = packs?.packs.filter((p: any) => p.status === 'implemented') ?? [];
+  // Session 19: default to the first pack the server lists (was a hardcoded id).
+  useEffect(() => { if (!packId && impl.length) setPackId(impl[0].id); }, [packId, impl.length]);
   const loadSample = async () => { const p = await api('GET', `/packs/${packId}`); setTitle(p.sample.title); setPlan(JSON.stringify(p.sample.plan, null, 2)); setSource('sample'); setMsg('Sample plan loaded (labelled demonstration data — edit it or paste your own).'); };
   useEffect(() => { setPlan(''); setMsg(''); }, [packId]);
   const onFile = async (f?: File) => { if (!f) return; if (f.size > 300_000) return setMsg('File too large (max 300 KB).'); const text = await f.text(); const r = await run('upload', () => api('POST', '/uploads/plan', { packId, filename: f.name, content: text })); if (r) { setPlan(JSON.stringify(r.plan, null, 2)); setSource(`upload:${r.filename}`); setMsg(`Validated ${r.filename}.`); if (!title) setTitle(r.plan.event?.name ?? r.plan.production?.title ?? f.name); } };

@@ -1,6 +1,6 @@
 {
  "split": "tune",
- "generatedAt": "2026-11-07T09:55:08.995Z",
+ "generatedAt": "2026-11-07T11:01:57.592Z",
  "rules": {
   "META_RULES": {
    "newDays": 7,
@@ -54,34 +54,34 @@
  },
  "E1_names": {
   "npm": {
-   "malicious": 6040,
-   "controls": 36198,
-   "excludedBecauseInReference": 0,
+   "malicious": 6039,
+   "controls": 68006,
+   "excludedBecauseInReference": 1,
    "lookalike": {
-    "TP": 7,
-    "FN": 6033,
-    "FP": 225,
-    "TN": 35973,
-    "precision": 0.03,
-    "recall": 0.001,
-    "f1": 0.002,
+    "TP": 12,
+    "FN": 6027,
+    "FP": 399,
+    "TN": 67607,
+    "precision": 0.029,
+    "recall": 0.002,
+    "f1": 0.004,
     "fpr": 0.006,
-    "fnr": 0.999,
+    "fnr": 0.998,
     "recallCI95": [
      0.1,
-     0.2
+     0.3
     ],
     "fprCI95": [
      0.5,
-     0.7
+     0.6
     ]
    },
    "combosquat": {
     "TP": 3,
-    "FN": 6037,
-    "FP": 31,
-    "TN": 36167,
-    "precision": 0.088,
+    "FN": 6036,
+    "FP": 84,
+    "TN": 67922,
+    "precision": 0.034,
     "recall": 0,
     "f1": 0.001,
     "fpr": 0.001,
@@ -92,22 +92,22 @@
     ],
     "fprCI95": [
      0.1,
-     0.1
+     0.2
     ]
    },
    "lookalikeOrCombo": {
-    "TP": 10,
-    "FN": 6030,
-    "FP": 256,
-    "TN": 35942,
-    "precision": 0.038,
+    "TP": 15,
+    "FN": 6024,
+    "FP": 483,
+    "TN": 67523,
+    "precision": 0.03,
     "recall": 0.002,
-    "f1": 0.003,
+    "f1": 0.005,
     "fpr": 0.007,
     "fnr": 0.998,
     "recallCI95": [
-     0.1,
-     0.3
+     0.2,
+     0.4
     ],
     "fprCI95": [
      0.6,
@@ -116,20 +116,24 @@
    },
    "byKind": {
     "typo-distance": {
-     "malicious": 7,
-     "control": 204
+     "malicious": 12,
+     "control": 356
     },
     "combosquat": {
      "malicious": 3,
-     "control": 31
-    },
-    "scope-confusion": {
-     "malicious": 0,
-     "control": 11
+     "control": 84
     },
     "separator-confusion": {
      "malicious": 0,
-     "control": 10
+     "control": 23
+    },
+    "scope-confusion": {
+     "malicious": 0,
+     "control": 19
+    },
+    "homoglyph": {
+     "malicious": 0,
+     "control": 1
     }
    },
    "topTargets": [
@@ -142,7 +146,15 @@
      1
     ],
     [
-     "socket.io",
+     "color-name",
+     1
+    ],
+    [
+     "pino-abstract-transport",
+     1
+    ],
+    [
+     "streamsearch",
      1
     ],
     [
@@ -158,46 +170,58 @@
      1
     ],
     [
+     "escodegen",
+     1
+    ],
+    [
+     "react-hook-form",
+     1
+    ],
+    [
      "http-proxy",
+     1
+    ],
+    [
+     "word-wrap",
      1
     ]
    ],
    "controlFalseAlarmExamples": [
-    "xpath ~ upath (typo-distance)",
+    "colors ~ color (typo-distance)",
+    "toad-cache ~ read-cache (typo-distance)",
+    "colord ~ color (typo-distance)",
+    "es6-promise ~ is-promise (typo-distance)",
+    "png-js ~ pngjs (separator-confusion)",
     "tsutils ~ esutils (typo-distance)",
+    "iobuffer ~ is-buffer (typo-distance)",
     "sass-loader ~ css-loader (typo-distance)",
     "arr-union ~ array-union (typo-distance)",
-    "isomorphic.js ~ isomorphic-ws (typo-distance)",
+    "es6-symbol ~ is-symbol (typo-distance)",
     "stable-hash-x ~ stable-hash (typo-distance)",
+    "ext ~ next (typo-distance)",
     "date-fns-tz ~ @date-fns/tz (scope-confusion)",
     "arr-flatten ~ array-flatten (typo-distance)",
+    "lodash.uniqby ~ lodash.uniq (typo-distance)",
     "babel-runtime ~ @babel/runtime (scope-confusion)",
     "array-uniq ~ array-union (typo-distance)",
     "jsonschema ~ json-schema (separator-confusion)",
-    "yazl ~ yaml (typo-distance)",
-    "uid-promise ~ is-promise (typo-distance)",
-    "binaryextensions ~ binary-extensions (separator-confusion)",
-    "is-object ~ isobject (separator-confusion)",
-    "css ~ csso (typo-distance)",
-    "stylus ~ stylis (typo-distance)",
-    "es-cookie ~ js-cookie (typo-distance)",
-    "ts-proto ~ has-proto (typo-distance)",
-    "parseuri ~ parseurl (typo-distance)"
+    "global ~ globals (typo-distance)",
+    "yazl ~ yaml (typo-distance)"
    ]
   },
   "pypi": {
    "malicious": 3581,
-   "controls": 15151,
+   "controls": 14761,
    "excludedBecauseInReference": 0,
    "lookalike": {
     "TP": 227,
     "FN": 3354,
-    "FP": 51,
-    "TN": 15100,
-    "precision": 0.817,
+    "FP": 59,
+    "TN": 14702,
+    "precision": 0.794,
     "recall": 0.063,
-    "f1": 0.118,
-    "fpr": 0.003,
+    "f1": 0.117,
+    "fpr": 0.004,
     "fnr": 0.937,
     "recallCI95": [
      5.6,
@@ -205,15 +229,15 @@
     ],
     "fprCI95": [
      0.3,
-     0.4
+     0.5
     ]
    },
    "combosquat": {
     "TP": 6,
     "FN": 3575,
-    "FP": 3,
-    "TN": 15148,
-    "precision": 0.667,
+    "FP": 4,
+    "TN": 14757,
+    "precision": 0.6,
     "recall": 0.002,
     "f1": 0.003,
     "fpr": 0,
@@ -230,9 +254,9 @@
    "lookalikeOrCombo": {
     "TP": 233,
     "FN": 3348,
-    "FP": 54,
-    "TN": 15097,
-    "precision": 0.812,
+    "FP": 63,
+    "TN": 14698,
+    "precision": 0.787,
     "recall": 0.065,
     "f1": 0.12,
     "fpr": 0.004,
@@ -249,11 +273,11 @@
    "byKind": {
     "typo-distance": {
      "malicious": 227,
-     "control": 51
+     "control": 59
     },
     "combosquat": {
      "malicious": 6,
-     "control": 3
+     "control": 4
     }
    },
    "topTargets": [
@@ -319,26 +343,26 @@
     ]
    ],
    "controlFalseAlarmExamples": [
-    "clirk ~ click (typo-distance)",
-    "kspython ~ dnspython (typo-distance)",
-    "ynput ~ pynput (typo-distance)",
-    "pyjmt ~ pyjwt (typo-distance)",
+    "pxutil ~ psutil (typo-distance)",
     "eytest ~ pytest (typo-distance)",
-    "driconfig ~ iniconfig (typo-distance)",
-    "docler ~ docker (typo-distance)",
-    "pyoj ~ py4j (typo-distance)",
-    "spytest ~ pytest (typo-distance)",
-    "dwebsocket2 ~ websockets (typo-distance)",
-    "twize ~ twine (typo-distance)",
-    "bono ~ boto (typo-distance)",
-    "shipy ~ scipy (typo-distance)",
-    "scapely ~ shapely (typo-distance)",
-    "kbtransfer ~ s3transfer (typo-distance)",
-    "pytest-core ~ pytest-cov (typo-distance)",
-    "hipython ~ ipython (typo-distance)",
-    "httpc ~ httpx (typo-distance)",
-    "clico ~ click (typo-distance)",
-    "pik ~ pika (typo-distance)"
+    "pyopenms ~ pyopenssl (typo-distance)",
+    "rtoml ~ toml (typo-distance)",
+    "asort ~ isort (typo-distance)",
+    "hich ~ rich (typo-distance)",
+    "scippy ~ scipy (typo-distance)",
+    "aiopandas ~ geopandas (typo-distance)",
+    "lython ~ cython (typo-distance)",
+    "dredis ~ redis (typo-distance)",
+    "torchfusion ~ torchvision (typo-distance)",
+    "rdjango ~ django (typo-distance)",
+    "vipe ~ vine (typo-distance)",
+    "pbspython ~ dnspython (typo-distance)",
+    "pztest ~ pytest (typo-distance)",
+    "pydest ~ pytest (typo-distance)",
+    "vika ~ pika (typo-distance)",
+    "qtalchemy ~ sqlalchemy (typo-distance)",
+    "pstest ~ pytest (typo-distance)",
+    "pyrsing ~ pyparsing (typo-distance)"
    ]
   }
  },
@@ -354,9 +378,9 @@
     "error": 0
    },
    "controls": {
-    "popular": 327,
-    "longtail": 328,
-    "fresh": 139
+    "popular": 328,
+    "longtail": 375,
+    "fresh": 172
    }
   },
   "signals": {
@@ -496,203 +520,203 @@
    },
    "control_popular": {
     "new_package": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "young_package": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "few_versions": {
-     "known": 327,
-     "hit": 14,
-     "pct": 4.3
+     "known": 328,
+     "hit": 16,
+     "pct": 4.9
     },
     "install_script": {
-     "known": 327,
+     "known": 328,
      "hit": 1,
      "pct": 0.3
     },
     "low_downloads": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "dependency_confusion_version": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "dormant_revival": {
-     "known": 321,
-     "hit": 76,
-     "pct": 23.7
+     "known": 323,
+     "hit": 89,
+     "pct": 27.6
     },
     "lookalike_name": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "combosquat_name": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "young_and_few_versions": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "young_and_install_script": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     },
     "COMPOSITE": {
-     "known": 327,
+     "known": 328,
      "hit": 0,
      "pct": 0
     }
    },
    "control_longtail": {
     "new_package": {
-     "known": 328,
-     "hit": 1,
-     "pct": 0.3
+     "known": 375,
+     "hit": 0,
+     "pct": 0
     },
     "young_package": {
-     "known": 328,
-     "hit": 13,
+     "known": 375,
+     "hit": 15,
      "pct": 4
     },
     "few_versions": {
-     "known": 328,
-     "hit": 34,
-     "pct": 10.4
+     "known": 375,
+     "hit": 60,
+     "pct": 16
     },
     "install_script": {
-     "known": 328,
-     "hit": 5,
-     "pct": 1.5
+     "known": 375,
+     "hit": 2,
+     "pct": 0.5
     },
     "low_downloads": {
-     "known": 328,
-     "hit": 47,
-     "pct": 14.3
+     "known": 375,
+     "hit": 117,
+     "pct": 31.2
     },
     "dependency_confusion_version": {
-     "known": 328,
+     "known": 375,
      "hit": 0,
      "pct": 0
     },
     "dormant_revival": {
-     "known": 312,
-     "hit": 32,
-     "pct": 10.3
+     "known": 336,
+     "hit": 37,
+     "pct": 11
     },
     "lookalike_name": {
-     "known": 328,
-     "hit": 3,
-     "pct": 0.9
+     "known": 375,
+     "hit": 1,
+     "pct": 0.3
     },
     "combosquat_name": {
-     "known": 328,
-     "hit": 0,
-     "pct": 0
+     "known": 375,
+     "hit": 1,
+     "pct": 0.3
     },
     "no_repository": {
-     "known": 328,
-     "hit": 31,
-     "pct": 9.5
+     "known": 375,
+     "hit": 60,
+     "pct": 16
     },
     "young_and_few_versions": {
-     "known": 328,
+     "known": 375,
      "hit": 1,
      "pct": 0.3
     },
     "young_and_install_script": {
-     "known": 328,
+     "known": 375,
      "hit": 0,
      "pct": 0
     },
     "COMPOSITE": {
-     "known": 328,
-     "hit": 4,
-     "pct": 1.2
+     "known": 375,
+     "hit": 2,
+     "pct": 0.5
     }
    },
    "control_fresh": {
     "new_package": {
-     "known": 139,
-     "hit": 5,
-     "pct": 3.6
+     "known": 172,
+     "hit": 15,
+     "pct": 8.7
     },
     "young_package": {
-     "known": 139,
-     "hit": 139,
+     "known": 172,
+     "hit": 172,
      "pct": 100
     },
     "few_versions": {
-     "known": 139,
-     "hit": 14,
-     "pct": 10.1
+     "known": 172,
+     "hit": 33,
+     "pct": 19.2
     },
     "install_script": {
-     "known": 139,
-     "hit": 1,
-     "pct": 0.7
+     "known": 172,
+     "hit": 0,
+     "pct": 0
     },
     "low_downloads": {
-     "known": 139,
-     "hit": 29,
-     "pct": 20.9
+     "known": 172,
+     "hit": 52,
+     "pct": 30.2
     },
     "dependency_confusion_version": {
-     "known": 139,
+     "known": 172,
      "hit": 1,
-     "pct": 0.7
+     "pct": 0.6
     },
     "dormant_revival": {
-     "known": 139,
+     "known": 172,
      "hit": 0,
      "pct": 0
     },
     "lookalike_name": {
-     "known": 139,
+     "known": 172,
      "hit": 0,
      "pct": 0
     },
     "combosquat_name": {
-     "known": 139,
+     "known": 172,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 139,
-     "hit": 27,
-     "pct": 19.4
+     "known": 172,
+     "hit": 37,
+     "pct": 21.5
     },
     "young_and_few_versions": {
-     "known": 139,
-     "hit": 14,
-     "pct": 10.1
+     "known": 172,
+     "hit": 33,
+     "pct": 19.2
     },
     "young_and_install_script": {
-     "known": 139,
-     "hit": 1,
-     "pct": 0.7
+     "known": 172,
+     "hit": 0,
+     "pct": 0
     },
     "COMPOSITE": {
-     "known": 139,
-     "hit": 15,
-     "pct": 10.8
+     "known": 172,
+     "hit": 34,
+     "pct": 19.8
     }
    }
   },
@@ -700,46 +724,46 @@
    "atPublish_vs_allControls": {
     "TP": 765,
     "FN": 59,
-    "FP": 19,
-    "TN": 775,
-    "precision": 0.976,
+    "FP": 36,
+    "TN": 839,
+    "precision": 0.955,
     "recall": 0.928,
-    "f1": 0.951,
-    "fpr": 0.024,
+    "f1": 0.942,
+    "fpr": 0.041,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     1.5,
-     3.7
+     3,
+     5.6
     ]
    },
    "atReport_vs_allControls": {
     "TP": 324,
     "FN": 500,
-    "FP": 19,
-    "TN": 775,
-    "precision": 0.945,
+    "FP": 36,
+    "TN": 839,
+    "precision": 0.9,
     "recall": 0.393,
-    "f1": 0.555,
-    "fpr": 0.024,
+    "f1": 0.547,
+    "fpr": 0.041,
     "fnr": 0.607,
     "recallCI95": [
      36,
      42.7
     ],
     "fprCI95": [
-     1.5,
-     3.7
+     3,
+     5.6
     ]
    },
    "atPublish_vs_popular": {
     "TP": 765,
     "FN": 59,
     "FP": 0,
-    "TN": 327,
+    "TN": 328,
     "precision": 1,
     "recall": 0.928,
     "f1": 0.963,
@@ -757,96 +781,96 @@
    "atPublish_vs_longtail": {
     "TP": 765,
     "FN": 59,
-    "FP": 4,
-    "TN": 324,
-    "precision": 0.995,
+    "FP": 2,
+    "TN": 373,
+    "precision": 0.997,
     "recall": 0.928,
-    "f1": 0.96,
-    "fpr": 0.012,
+    "f1": 0.962,
+    "fpr": 0.005,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     0.5,
-     3.1
+     0.1,
+     1.9
     ]
    },
    "atPublish_vs_fresh": {
     "TP": 765,
     "FN": 59,
-    "FP": 15,
-    "TN": 124,
-    "precision": 0.981,
+    "FP": 34,
+    "TN": 138,
+    "precision": 0.957,
     "recall": 0.928,
-    "f1": 0.954,
-    "fpr": 0.108,
+    "f1": 0.943,
+    "fpr": 0.198,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     6.6,
-     17
+     14.5,
+     26.4
     ]
    },
    "atPublish_vs_popular_atLatestRelease": {
     "TP": 765,
     "FN": 59,
-    "FP": 9,
+    "FP": 10,
     "TN": 318,
-    "precision": 0.988,
+    "precision": 0.987,
     "recall": 0.928,
     "f1": 0.957,
-    "fpr": 0.028,
+    "fpr": 0.03,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     1.5,
-     5.1
+     1.7,
+     5.5
     ]
    },
    "atPublish_vs_longtail_atLatestRelease": {
     "TP": 765,
     "FN": 59,
-    "FP": 37,
-    "TN": 291,
-    "precision": 0.954,
+    "FP": 63,
+    "TN": 312,
+    "precision": 0.924,
     "recall": 0.928,
-    "f1": 0.941,
-    "fpr": 0.113,
+    "f1": 0.926,
+    "fpr": 0.168,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     8.3,
-     15.2
+     13.4,
+     20.9
     ]
    },
    "atPublish_vs_fresh_atLatestRelease": {
     "TP": 765,
     "FN": 59,
-    "FP": 22,
-    "TN": 117,
-    "precision": 0.972,
+    "FP": 45,
+    "TN": 127,
+    "precision": 0.944,
     "recall": 0.928,
-    "f1": 0.95,
-    "fpr": 0.158,
+    "f1": 0.936,
+    "fpr": 0.262,
     "fnr": 0.072,
     "recallCI95": [
      90.9,
      94.4
     ],
     "fprCI95": [
-     10.7,
-     22.8
+     20.2,
+     33.2
     ]
    }
   },
@@ -973,20 +997,20 @@
    "confusion_midWindow_vs_allControls": {
     "TP": 438,
     "FN": 386,
-    "FP": 19,
-    "TN": 775,
-    "precision": 0.958,
+    "FP": 36,
+    "TN": 839,
+    "precision": 0.924,
     "recall": 0.532,
-    "f1": 0.684,
-    "fpr": 0.024,
+    "f1": 0.675,
+    "fpr": 0.041,
     "fnr": 0.468,
     "recallCI95": [
      49.7,
      56.5
     ],
     "fprCI95": [
-     1.5,
-     3.7
+     3,
+     5.6
     ]
    }
   },
@@ -1019,22 +1043,22 @@
   },
   "controlFlagRateByAge": {
    ">1 year": {
-    "n": 578,
-    "flagged": 3,
-    "pct": 0.5
+    "n": 623,
+    "flagged": 1,
+    "pct": 0.2
    },
    "30-365 days": {
-    "n": 64,
+    "n": 65,
     "flagged": 0,
     "pct": 0
    },
    "7-30 days": {
-    "n": 146,
-    "flagged": 16,
-    "pct": 11
+    "n": 172,
+    "flagged": 35,
+    "pct": 20.3
    },
    "1-7 days": {
-    "n": 6,
+    "n": 15,
     "flagged": 0,
     "pct": 0
    }
@@ -1231,63 +1255,63 @@
    "controls": {
     "popular": {
      ">=5,000": {
-      "n": 327,
+      "n": 328,
       "flagged": 0,
       "pct": 0
      }
     },
     "longtail": {
-     ">=5,000": {
-      "n": 113,
+     "<10": {
+      "n": 39,
       "flagged": 0,
       "pct": 0
      },
-     "500-4,999": {
-      "n": 79,
+     ">=5,000": {
+      "n": 95,
       "flagged": 0,
       "pct": 0
      },
      "50-499": {
-      "n": 89,
-      "flagged": 3,
-      "pct": 3.4
+      "n": 87,
+      "flagged": 1,
+      "pct": 1.1
      },
      "10-49": {
-      "n": 44,
+      "n": 78,
       "flagged": 1,
-      "pct": 2.3
+      "pct": 1.3
      },
-     "<10": {
-      "n": 3,
+     "500-4,999": {
+      "n": 76,
       "flagged": 0,
       "pct": 0
      }
     },
     "fresh": {
-     "10-49": {
-      "n": 22,
-      "flagged": 6,
-      "pct": 27.3
-     },
-     "<10": {
-      "n": 7,
-      "flagged": 2,
-      "pct": 28.6
-     },
-     ">=5,000": {
-      "n": 11,
-      "flagged": 1,
-      "pct": 9.1
+     "50-499": {
+      "n": 51,
+      "flagged": 12,
+      "pct": 23.5
      },
      "500-4,999": {
-      "n": 57,
-      "flagged": 1,
-      "pct": 1.8
+      "n": 52,
+      "flagged": 0,
+      "pct": 0
      },
-     "50-499": {
-      "n": 42,
+     ">=5,000": {
+      "n": 17,
+      "flagged": 1,
+      "pct": 5.9
+     },
+     "<10": {
+      "n": 9,
       "flagged": 5,
-      "pct": 11.9
+      "pct": 55.6
+     },
+     "10-49": {
+      "n": 43,
+      "flagged": 16,
+      "pct": 37.2
      }
     }
    }
@@ -1295,24 +1319,22 @@
   "falseAlarmExamples": {
    "popular": [],
    "longtail": [
-    "cli-loader: name edit distance 2 from css-loader",
-    "prod-log: name edit distance 1 from proc-log",
-    "dbml2drizzle: 13 day(s) old with 2 release(s)",
-    "cookie-esm: name edit distance 1 from cookie-es"
+    "postcss-logical-size: 8 day(s) old with 2 release(s)",
+    "gono: name edit distance 1 from hono"
    ],
    "fresh": [
-    "@blockcast/moq-media-sync: 17 day(s) old with 2 release(s)",
-    "@liusiqi-dev/dsh-util-crypto: 19 day(s) old with 2 release(s)",
-    "dolljs: 16 day(s) old with 2 release(s)",
-    "@haybarn/ext-redis-h2-0-0: version 202610.x on a package with 2 release(s) (dependency-confusion pattern); 13 day(s) old with 2 release(s)",
-    "canvas-export: 21 day(s) old with 2 release(s)",
-    "@hypit/composition: 28 day(s) old with 2 release(s)",
-    "@sveltekit-i18n/parser-fluent: 19 day(s) old with 2 release(s)",
-    "n8n-nodes-rcon-proxy: 28 day(s) old with 2 release(s)",
-    "@huntye1/pi-auto-session-name: 28 day(s) old with 2 release(s)",
-    "@iushev/rbac-db-drizzle: 25 day(s) old with 2 release(s)",
-    "@matthew-cochran/scientific-process: 21 day(s) old and runs an install script",
-    "@newsmbds/mongo-migrate: 14 day(s) old with 2 release(s)"
+    "@unprofane/perspective-api-client: 13 day(s) old with 2 release(s)",
+    "@elyri/motion: 26 day(s) old with 2 release(s)",
+    "@avclabs.ai/video-mcp: 12 day(s) old with 2 release(s)",
+    "@zaki-goumri-2/stamp: 21 day(s) old with 2 release(s)",
+    "@macts/xcode: 7 day(s) old with 2 release(s)",
+    "dsh-plugin-auto-video: 27 day(s) old with 2 release(s)",
+    "@onsitesai/docx-editor-i18n: 25 day(s) old with 2 release(s)",
+    "@jk-uzi/dsh-multi-remote: 28 day(s) old with 2 release(s)",
+    "dbml2drizzle: 13 day(s) old with 2 release(s)",
+    "supaguard-cli: 25 day(s) old with 2 release(s)",
+    "centui: 28 day(s) old with 2 release(s)",
+    "amv-sentinel-store-redis: 10 day(s) old with 2 release(s)"
    ]
   },
   "missedExamples": [
@@ -1402,24 +1424,24 @@
    },
    "random": {
     "new_package": {
-     "known": 454,
+     "known": 411,
      "hit": 2,
-     "pct": 0.4
+     "pct": 0.5
     },
     "young_package": {
-     "known": 454,
-     "hit": 13,
-     "pct": 2.9
+     "known": 411,
+     "hit": 7,
+     "pct": 1.7
     },
     "few_versions": {
-     "known": 454,
-     "hit": 190,
-     "pct": 41.9
+     "known": 411,
+     "hit": 174,
+     "pct": 42.3
     },
     "install_script": {
-     "known": 454,
-     "hit": 64,
-     "pct": 14.1
+     "known": 411,
+     "hit": 65,
+     "pct": 15.8
     },
     "low_downloads": {
      "known": 0,
@@ -1427,64 +1449,64 @@
      "pct": null
     },
     "dependency_confusion_version": {
-     "known": 454,
-     "hit": 2,
-     "pct": 0.4
-    },
-    "dormant_revival": {
-     "known": 324,
-     "hit": 28,
-     "pct": 8.6
-    },
-    "lookalike_name": {
-     "known": 458,
+     "known": 411,
      "hit": 0,
      "pct": 0
     },
+    "dormant_revival": {
+     "known": 293,
+     "hit": 17,
+     "pct": 5.8
+    },
+    "lookalike_name": {
+     "known": 414,
+     "hit": 1,
+     "pct": 0.2
+    },
     "combosquat_name": {
-     "known": 458,
+     "known": 414,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 458,
-     "hit": 134,
-     "pct": 29.3
+     "known": 414,
+     "hit": 143,
+     "pct": 34.5
     },
     "young_and_few_versions": {
-     "known": 454,
-     "hit": 11,
-     "pct": 2.4
+     "known": 411,
+     "hit": 4,
+     "pct": 1
     },
     "young_and_install_script": {
-     "known": 454,
+     "known": 411,
      "hit": 0,
      "pct": 0
     },
     "COMPOSITE": {
-     "known": 458,
-     "hit": 13,
-     "pct": 2.8
+     "known": 414,
+     "hit": 5,
+     "pct": 1.2
     }
    },
    "fresh": {
     "new_package": {
-     "known": 132,
-     "hit": 75,
-     "pct": 56.8
+     "known": 145,
+     "hit": 86,
+     "pct": 59.3
     },
     "young_package": {
-     "known": 132,
-     "hit": 132,
+     "known": 145,
+     "hit": 145,
      "pct": 100
     },
     "few_versions": {
-     "known": 132,
-     "hit": 65,
-     "pct": 49.2
+     "known": 145,
+     "hit": 73,
+     "pct": 50.3
     },
     "install_script": {
-     "known": 132,
+     "known": 145,
      "hit": 0,
      "pct": 0
     },
@@ -1494,44 +1516,44 @@
      "pct": null
     },
     "dependency_confusion_version": {
-     "known": 132,
-     "hit": 0,
-     "pct": 0
+     "known": 145,
+     "hit": 1,
+     "pct": 0.7
     },
     "dormant_revival": {
-     "known": 86,
+     "known": 99,
      "hit": 0,
      "pct": 0
     },
     "lookalike_name": {
-     "known": 132,
-     "hit": 1,
-     "pct": 0.8
+     "known": 145,
+     "hit": 0,
+     "pct": 0
     },
     "combosquat_name": {
-     "known": 132,
+     "known": 145,
      "hit": 0,
      "pct": 0
     },
     "no_repository": {
-     "known": 132,
-     "hit": 40,
-     "pct": 30.3
+     "known": 145,
+     "hit": 42,
+     "pct": 29
     },
     "young_and_few_versions": {
-     "known": 132,
-     "hit": 65,
-     "pct": 49.2
+     "known": 145,
+     "hit": 73,
+     "pct": 50.3
     },
     "young_and_install_script": {
-     "known": 132,
+     "known": 145,
      "hit": 0,
      "pct": 0
     },
     "COMPOSITE": {
-     "known": 132,
-     "hit": 65,
-     "pct": 49.2
+     "known": 145,
+     "hit": 74,
+     "pct": 51
     }
    }
   },
@@ -1605,55 +1627,55 @@
   "confusion_liveMalicious_vs_allControls": {
    "TP": 16,
    "FN": 14,
-   "FP": 67,
-   "TN": 618,
-   "precision": 0.193,
+   "FP": 75,
+   "TN": 584,
+   "precision": 0.176,
    "recall": 0.533,
-   "f1": 0.283,
-   "fpr": 0.098,
+   "f1": 0.264,
+   "fpr": 0.114,
    "fnr": 0.467,
    "recallCI95": [
     36.1,
     69.8
    ],
    "fprCI95": [
-    7.8,
-    12.2
+    9.2,
+    14
    ]
   }
  },
  "E3_code": {
   "npm": {
-   "attempted": 501,
-   "scanned": 497,
+   "attempted": 560,
+   "scanned": 557,
    "sizes": {
     "malicious": 86,
-    "popular": 168,
-    "longtail": 104,
-    "fresh": 139
+    "popular": 170,
+    "longtail": 130,
+    "fresh": 171
    },
    "atReview": {
     "vsAllBenign": {
      "TP": 2,
      "FN": 84,
-     "FP": 1,
-     "TN": 410,
-     "precision": 0.667,
+     "FP": 2,
+     "TN": 469,
+     "precision": 0.5,
      "recall": 0.023,
-     "f1": 0.045,
-     "fpr": 0.002,
+     "f1": 0.044,
+     "fpr": 0.004,
      "fnr": 0.977,
      "recallCI95": [
       0.6,
       8.1
      ],
      "fprCI95": [
-      0,
-      1.4
+      0.1,
+      1.5
      ]
     },
     "fpr_popular": {
-     "n": 168,
+     "n": 170,
      "hits": 0,
      "pct": 0,
      "ci95": [
@@ -1662,21 +1684,21 @@
      ]
     },
     "fpr_longtail": {
-     "n": 104,
-     "hits": 0,
-     "pct": 0,
+     "n": 130,
+     "hits": 1,
+     "pct": 0.8,
      "ci95": [
-      0,
-      3.6
+      0.1,
+      4.2
      ]
     },
     "fpr_fresh": {
-     "n": 139,
+     "n": 171,
      "hits": 1,
-     "pct": 0.7,
+     "pct": 0.6,
      "ci95": [
       0.1,
-      4
+      3.2
      ]
     }
    },
@@ -1685,7 +1707,7 @@
      "TP": 1,
      "FN": 85,
      "FP": 0,
-     "TN": 411,
+     "TN": 471,
      "precision": 1,
      "recall": 0.012,
      "f1": 0.023,
@@ -1697,11 +1719,11 @@
      ],
      "fprCI95": [
       0,
-      0.9
+      0.8
      ]
     },
     "fpr_popular": {
-     "n": 168,
+     "n": 170,
      "hits": 0,
      "pct": 0,
      "ci95": [
@@ -1710,21 +1732,21 @@
      ]
     },
     "fpr_longtail": {
-     "n": 104,
+     "n": 130,
      "hits": 0,
      "pct": 0,
      "ci95": [
       0,
-      3.6
+      2.9
      ]
     },
     "fpr_fresh": {
-     "n": 139,
+     "n": 171,
      "hits": 0,
      "pct": 0,
      "ci95": [
       0,
-      2.7
+      2.2
      ]
     }
    },
@@ -1740,14 +1762,18 @@
     "runs_at_install": 1
    },
    "benignRuleFrequency": {
-    "js_network": 37,
-    "credential_paths": 6,
-    "npm_install_hook": 2,
-    "py_network": 2,
-    "js_shell_tools": 1
+    "js_network": 29,
+    "credential_paths": 4,
+    "messaging_api": 2,
+    "raw_ip_url": 1,
+    "npm_install_hook": 1,
+    "js_obfuscator": 1,
+    "persistence": 1,
+    "py_network": 1
    },
    "benignFlaggedExamples": [
-    "fresh/capybara-devtools@0.8.0: 5 [js_network,js_shell_tools]"
+    "longtail/@fajiang/fashuyun-cli@1.10.2: 5 [npm_install_hook,js_obfuscator]",
+    "fresh/my-durable@0.0.123: 6 [js_network,persistence,messaging_api]"
    ],
    "maliciousMissedExamples": [
     "index.marko@1.0.0: score 2, files 2 [npm_install_hook]",
@@ -1807,31 +1833,31 @@
    }
   },
   "pypi": {
-   "attempted": 267,
-   "scanned": 262,
+   "attempted": 245,
+   "scanned": 239,
    "sizes": {
     "malicious": 30,
     "popular": 105,
-    "random": 127
+    "random": 104
    },
    "atReview": {
     "vsAllBenign": {
      "TP": 13,
      "FN": 17,
-     "FP": 10,
-     "TN": 222,
-     "precision": 0.565,
+     "FP": 8,
+     "TN": 201,
+     "precision": 0.619,
      "recall": 0.433,
-     "f1": 0.491,
-     "fpr": 0.043,
+     "f1": 0.51,
+     "fpr": 0.038,
      "fnr": 0.567,
      "recallCI95": [
       27.4,
       60.8
      ],
      "fprCI95": [
-      2.4,
-      7.8
+      2,
+      7.4
      ]
     },
     "fpr_popular": {
@@ -1844,12 +1870,12 @@
      ]
     },
     "fpr_random": {
-     "n": 127,
-     "hits": 4,
-     "pct": 3.1,
+     "n": 104,
+     "hits": 2,
+     "pct": 1.9,
      "ci95": [
-      1.2,
-      7.8
+      0.5,
+      6.7
      ]
     }
    },
@@ -1858,19 +1884,19 @@
      "TP": 1,
      "FN": 29,
      "FP": 3,
-     "TN": 229,
+     "TN": 206,
      "precision": 0.25,
      "recall": 0.033,
      "f1": 0.059,
-     "fpr": 0.013,
+     "fpr": 0.014,
      "fnr": 0.967,
      "recallCI95": [
       0.6,
       16.7
      ],
      "fprCI95": [
-      0.4,
-      3.7
+      0.5,
+      4.1
      ]
     },
     "fpr_popular": {
@@ -1883,12 +1909,12 @@
      ]
     },
     "fpr_random": {
-     "n": 127,
+     "n": 104,
      "hits": 1,
-     "pct": 0.8,
+     "pct": 1,
      "ci95": [
-      0.1,
-      4.3
+      0.2,
+      5.2
      ]
     }
    },
@@ -1903,20 +1929,19 @@
     "pip_install_url": 1
    },
    "benignRuleFrequency": {
-    "py_network": 79,
-    "credential_paths": 13,
-    "py_setup_runs": 7,
+    "py_network": 73,
+    "credential_paths": 10,
+    "py_setup_runs": 10,
+    "download_and_run": 4,
     "messaging_api": 3,
-    "download_and_run": 3,
-    "py_pth_import": 3,
+    "py_pth_import": 2,
     "py_setup_override": 2,
-    "raw_ip_url": 2,
+    "py_fingerprint": 2,
+    "collect_and_send": 2,
     "py_startfile": 2,
     "exfil_endpoint": 1,
     "js_network": 1,
-    "py_fingerprint": 1,
-    "collect_and_send": 1,
-    "agent_directives": 1
+    "raw_ip_url": 1
    },
    "benignFlaggedExamples": [
     "popular/huggingface-hub@2.4.0: 10 [download_and_run,credential_paths,exfil_endpoint]",
@@ -1925,10 +1950,8 @@
     "popular/pymongo@4.19.0: 5 [download_and_run,py_network]",
     "popular/ansible-core@2.22.0: 10 [py_network,py_fingerprint,collect_and_send,raw_ip_url,credential_paths]",
     "popular/pycryptodomex@3.24.2: 4 [credential_paths,py_setup_override]",
-    "random/sripluscalculator@0.0.1: 7 [py_network,raw_ip_url,credential_paths,messaging_api]",
-    "random/pyproject-pip@0.1.28: 6 [py_pth_import,py_network,credential_paths]",
-    "random/iso-freeze@0.0.14: 6 [py_pth_import,py_network,credential_paths]",
-    "random/marge-mri@1.0.0rc3: 4 [py_startfile,py_network]"
+    "random/pxrun@0.1.1: 7 [credential_paths,download_and_run,py_network]",
+    "random/synapse-fm@0.0.6: 6 [py_fingerprint,py_network,collect_and_send]"
    ],
    "maliciousMissedExamples": [
     "crunchie@205.0.0: score 2, files 8 [py_setup_override]",
@@ -1991,97 +2014,97 @@
     "n": 86
    },
    "benign": {
-    "metadataOnly": 17,
-    "codeOnly": 1,
+    "metadataOnly": 35,
+    "codeOnly": 2,
     "both": 0,
-    "neither": 393,
-    "n": 411
+    "neither": 434,
+    "n": 471
    },
    "benignByGroup": {
     "popular": {
      "metadataOnly": 0,
      "codeOnly": 0,
      "both": 0,
-     "neither": 168,
-     "n": 168
+     "neither": 170,
+     "n": 170
     },
     "longtail": {
-     "metadataOnly": 2,
-     "codeOnly": 0,
-     "both": 0,
-     "neither": 102,
-     "n": 104
-    },
-    "fresh": {
-     "metadataOnly": 15,
+     "metadataOnly": 1,
      "codeOnly": 1,
      "both": 0,
-     "neither": 123,
-     "n": 139
+     "neither": 128,
+     "n": 130
+    },
+    "fresh": {
+     "metadataOnly": 34,
+     "codeOnly": 1,
+     "both": 0,
+     "neither": 136,
+     "n": 171
     }
    },
    "metadataOnly": {
     "TP": 84,
     "FN": 2,
-    "FP": 17,
-    "TN": 394,
-    "precision": 0.832,
+    "FP": 35,
+    "TN": 436,
+    "precision": 0.706,
     "recall": 0.977,
-    "f1": 0.898,
-    "fpr": 0.041,
+    "f1": 0.82,
+    "fpr": 0.074,
     "fnr": 0.023,
     "recallCI95": [
      91.9,
      99.4
     ],
     "fprCI95": [
-     2.6,
-     6.5
+     5.4,
+     10.2
     ]
    },
    "codeOnly": {
     "TP": 2,
     "FN": 84,
-    "FP": 1,
-    "TN": 410,
-    "precision": 0.667,
+    "FP": 2,
+    "TN": 469,
+    "precision": 0.5,
     "recall": 0.023,
-    "f1": 0.045,
-    "fpr": 0.002,
+    "f1": 0.044,
+    "fpr": 0.004,
     "fnr": 0.977,
     "recallCI95": [
      0.6,
      8.1
     ],
     "fprCI95": [
-     0,
-     1.4
+     0.1,
+     1.5
     ]
    },
    "either": {
     "TP": 85,
     "FN": 1,
-    "FP": 18,
-    "TN": 393,
-    "precision": 0.825,
+    "FP": 37,
+    "TN": 434,
+    "precision": 0.697,
     "recall": 0.988,
-    "f1": 0.899,
-    "fpr": 0.044,
+    "f1": 0.817,
+    "fpr": 0.079,
     "fnr": 0.012,
     "recallCI95": [
      93.7,
      99.8
     ],
     "fprCI95": [
-     2.8,
-     6.8
+     5.8,
+     10.6
     ]
    },
    "both": {
     "TP": 1,
     "FN": 85,
     "FP": 0,
-    "TN": 411,
+    "TN": 471,
     "precision": 1,
     "recall": 0.012,
     "f1": 0.023,
@@ -2093,7 +2116,7 @@
     ],
     "fprCI95": [
      0,
-     0.9
+     0.8
     ]
    }
   },
@@ -2106,59 +2129,59 @@
     "n": 86
    },
    "benign": {
-    "metadataOnly": 17,
+    "metadataOnly": 35,
     "codeOnly": 0,
     "both": 0,
-    "neither": 394,
-    "n": 411
+    "neither": 436,
+    "n": 471
    },
    "benignByGroup": {
     "popular": {
      "metadataOnly": 0,
      "codeOnly": 0,
      "both": 0,
-     "neither": 168,
-     "n": 168
+     "neither": 170,
+     "n": 170
     },
     "longtail": {
-     "metadataOnly": 2,
+     "metadataOnly": 1,
      "codeOnly": 0,
      "both": 0,
-     "neither": 102,
-     "n": 104
+     "neither": 129,
+     "n": 130
     },
     "fresh": {
-     "metadataOnly": 15,
+     "metadataOnly": 34,
      "codeOnly": 0,
      "both": 0,
-     "neither": 124,
-     "n": 139
+     "neither": 137,
+     "n": 171
     }
    },
    "metadataOnly": {
     "TP": 84,
     "FN": 2,
-    "FP": 17,
-    "TN": 394,
-    "precision": 0.832,
+    "FP": 35,
+    "TN": 436,
+    "precision": 0.706,
     "recall": 0.977,
-    "f1": 0.898,
-    "fpr": 0.041,
+    "f1": 0.82,
+    "fpr": 0.074,
     "fnr": 0.023,
     "recallCI95": [
      91.9,
      99.4
     ],
     "fprCI95": [
-     2.6,
-     6.5
+     5.4,
+     10.2
     ]
    },
    "codeOnly": {
     "TP": 1,
     "FN": 85,
     "FP": 0,
-    "TN": 411,
+    "TN": 471,
     "precision": 1,
     "recall": 0.012,
     "f1": 0.023,
@@ -2170,33 +2193,33 @@
     ],
     "fprCI95": [
      0,
-     0.9
+     0.8
     ]
    },
    "either": {
     "TP": 84,
     "FN": 2,
-    "FP": 17,
-    "TN": 394,
-    "precision": 0.832,
+    "FP": 35,
+    "TN": 436,
+    "precision": 0.706,
     "recall": 0.977,
-    "f1": 0.898,
-    "fpr": 0.041,
+    "f1": 0.82,
+    "fpr": 0.074,
     "fnr": 0.023,
     "recallCI95": [
      91.9,
      99.4
     ],
     "fprCI95": [
-     2.6,
-     6.5
+     5.4,
+     10.2
     ]
    },
    "both": {
     "TP": 1,
     "FN": 85,
     "FP": 0,
-    "TN": 411,
+    "TN": 471,
     "precision": 1,
     "recall": 0.012,
     "f1": 0.023,
@@ -2208,7 +2231,7 @@
     ],
     "fprCI95": [
      0,
-     0.9
+     0.8
     ]
    }
   }

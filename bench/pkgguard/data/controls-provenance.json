@@ -1,0 +1,16 @@
+{
+ "collectedAt": "2026-11-07T10:59:45.138Z",
+ "seed": 7112026,
+ "npmQueryTerms": 150,
+ "npmStemQueries": 859,
+ "npmCrawled": 228692,
+ "npmMalExcluded": 1313,
+ "npmNameControls": 225411,
+ "npmPopular": 1000,
+ "npmLongtail": 1200,
+ "npmFreshCandidates": 3000,
+ "pypiProjects": 933633,
+ "pypiWellKnown": 330,
+ "pypiRandom": 1447,
+ "pypiRecent": 1492
+}

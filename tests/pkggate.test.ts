@@ -159,6 +159,19 @@ describe('package-gate pack (pure)', () => {
   });
 });
 
+describe('npm security placeholders (session 19)', () => {
+  it('the observer marks a security placeholder, and the pack replaces a lookalike placeholder or removes any other', async () => {
+    const ph = { 'dist-tags': { latest: '0.0.1-security' }, versions: { '0.0.1-security': {} }, time: { created: '2020-01-01T00:00:00Z', '1.0.0': '2019-12-31T00:00:00Z', '0.0.1-security': '2020-01-02T00:00:00Z' } };
+    const o = await observe({ ecosystem: 'npm', name: 'lodahs', raw: 'lodahs', tool: 'npm' }, { fetcher: async () => ({ status: 200, json: ph }) });
+    expect(o.registryNotice).toMatch(/security placeholder since 2020-01-02/);
+    expect(o.code).toBeNull();
+    const plan = planSchema.parse({ room: '#r', securityLead: 'noor@harborvine.example' });
+    const mk = (name: string) => changeSchema.parse({ message: `npm i ${name}`, requestedBy: { name: 'a', kind: 'agent' }, postedAt: '2026-11-07T00:00:00Z', observations: [{ ...o, name }] });
+    expect(assess(plan, mk('lodahs'))[0]).toMatchObject({ status: 'replace', replacement: 'lodash' });
+    expect(assess(plan, mk('zz-unrelated-name'))[0]).toMatchObject({ status: 'removed' });
+  });
+});
+
 describe('package-gate mission (engine)', () => {
   it('only the security lead decides; then a safe line is proposed, approved, executed and verified', async () => {
     const e = makeEnv(new LocalCollab(), extendedRegistry());
@@ -197,5 +210,9 @@ describe('People & Agents read model (agent limits come from the pack, not a UI 
     expect(limitOf('beo-rescue')).toMatch(/certifying food safety/);
     expect(limitOf('package-gate')).toMatch(/never installs, runs or certifies/);
     expect(people.agents.find((a: any) => a.pack_id === 'deploy-gate').limit).toBeNull();
+    // reads/writes are derived: a read-only role writes nothing; reads include its declared upstream roles
+    const scout = people.agents.find((a: any) => a.pack_id === 'package-gate' && a.key === 'pg_scout');
+    expect(scout.scope).toBe('read'); expect(scout.writes).toEqual([]);
+    expect(people.agents.find((a: any) => a.key === 'pg_fixer').reads).toEqual(expect.arrayContaining(['Scout output', 'Inspector output', 'Squat Watch output']));
   });
 });
